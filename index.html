@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#f4f0e8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f2eb" />
   <meta name="description" content="Mai-Reads is a minimal PDF and DOCX reader for distraction-free reading and study. Open documents from your device and read in a calm, paper-like interface." />
   <link rel="canonical" href="https://mai-reads.vercel.app/" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -25,92 +25,342 @@
 </head>
 <body>
   <input id="file-picker" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
-  <main id="welcome" class="welcome">
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme"><span id="theme-icon" aria-hidden="true">☼</span></button>
-    <div class="welcome-inner">
-      <h1>Mai-Reads</h1>
-      <button class="open-card" id="welcome-open" aria-label="Open your document">
-        <span class="plus-wrap"><span class="plus">＋</span></span>
-        <span class="open-label">Open your document</span>
-        <span class="file-hint">PDF or DOCX · stays on this device</span>
+
+  <!-- Drag & Drop Overlay -->
+  <div id="drop-overlay" class="drop-overlay hidden" aria-hidden="true">
+    <div class="drop-card">
+      <div class="drop-icon-wrap">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="12" y2="12"/>
+          <line x1="15" y1="15" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div class="drop-title">Drop your document here</div>
+      <div class="drop-hint">PDF or DOCX · stays on your device</div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- History Sidebar (ChatGPT style) -->
+  <aside id="history-panel" class="history-panel" aria-label="Reading history" aria-hidden="true">
+    <div class="history-header">
+      <div class="history-title-wrap">
+        <svg class="history-header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        </svg>
+        <span class="history-title">Reading History</span>
+        <span id="history-count" class="history-count-badge">0</span>
+      </div>
+      <button id="history-close" class="history-close-btn" aria-label="Close reading history">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
       </button>
     </div>
+    <div id="history-list" class="history-list"></div>
+    <div class="history-footer">
+      <button id="history-clear" class="history-clear-btn" type="button">Clear reading history</button>
+    </div>
+  </aside>
+  <div id="history-backdrop" class="history-backdrop hidden"></div>
+
+  <!-- Welcome / Home View -->
+  <main id="welcome" class="welcome">
+    <nav class="welcome-nav" aria-label="Quick actions">
+      <button id="history-toggle-welcome" class="nav-button history-toggle" type="button" aria-label="Open reading history" title="Reading history (H)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        </svg>
+        <span id="welcome-history-dot" class="nav-badge hidden"></span>
+      </button>
+
+      <button id="theme-toggle" class="nav-button theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+        <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true">
+          <!-- Populated by JS with SVG sun/moon -->
+        </span>
+      </button>
+    </nav>
+
+    <div class="welcome-inner">
+      <div class="welcome-eyebrow">DISTRACTION-FREE DOCUMENT READER</div>
+      <h1>Mai-Reads</h1>
+      <button class="open-card" id="welcome-open" aria-label="Open your document" type="button">
+        <div class="plus-wrap">
+          <svg class="plus-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <span class="open-label">Open your document</span>
+        <span class="file-hint">PDF or DOCX · Stays private on your device</span>
+      </button>
+
+      <!-- Instant Resume Last Read Document Card -->
+      <div id="resume-container" class="resume-container hidden">
+        <button id="resume-btn" class="resume-card" type="button" aria-label="Resume reading">
+          <div class="resume-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <div class="resume-info">
+            <span class="resume-kicker">RESUME READING</span>
+            <div id="resume-title" class="resume-title">Document name</div>
+            <div id="resume-meta" class="resume-meta">Page 1 · Resumes instantly</div>
+          </div>
+          <div class="resume-arrow" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </button>
+      </div>
+    </div>
+
     <section class="product-facts" aria-labelledby="about-mai-reads">
-      <p class="welcome-copy"><strong>A calmer way to read.</strong><br />Mai-Reads is a minimal PDF and DOCX reader for focused reading and study. Open a document from your device and settle into the page without a busy interface.</p>
+      <p class="welcome-copy"><strong>A calmer way to read.</strong><br />Mai-Reads is a minimal PDF and DOCX reader designed for focused reading and study. Open a document from your device and settle into the page without a busy interface.</p>
+      
       <section class="studio-card" aria-label="About the creators">
         <span class="studio-kicker">Mai-Reads by</span>
         <h2>MAITHIL STUDIOS</h2>
         <p>Thoughtful digital products, creative experiences, and technology shaped by design and experimentation.</p>
-        <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer">Visit Maithil Studios <span aria-hidden="true">↗</span></a>
+        <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer">
+          Visit Maithil Studios
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="7" y1="17" x2="17" y2="7"/>
+            <polyline points="7 7 17 7 17 17"/>
+          </svg>
+        </a>
       </section>
+
       <h2 id="about-mai-reads">About Mai-Reads</h2>
       <p>Mai-Reads is a distraction-free document reader for PDF and DOCX files, designed for students, readers, and researchers. It opens selected files in the browser and keeps reading controls out of the way until they are needed.</p>
+      
       <h3>Why Mai-Reads exists</h3>
       <p>The document stays at the center while reading controls remain hidden until requested. Mai-Reads is designed for people who want to open a document, settle into the page, and read without a busy interface competing for attention.</p>
+      
       <h3>Mai-Reads at a glance</h3>
       <dl class="fact-list">
         <div><dt>PDF and DOCX reading</dt><dd>Supported</dd></div>
         <div><dt>Account required</dt><dd>No</dd></div>
         <div><dt>Choose a local file</dt><dd>Yes; processing happens in this browser</dd></div>
         <div><dt>Distraction-free reading controls</dt><dd>Controls hide while reading</dd></div>
-        <div><dt>Paper brightness</dt><dd>Adjustable independently from the interface theme</dd></div>
+        <div><dt>Paper brightness</dt><dd>Adjustable independently from interface theme</dd></div>
         <div><dt>Reading layouts</dt><dd>Single-page and continuous scrolling</dd></div>
-        <div><dt>Reading position</dt><dd>Saved locally; reselect the file to resume</dd></div>
+        <div><dt>Reading position</dt><dd>Saved locally; reselect file to resume</dd></div>
+        <div><dt>Reading history</dt><dd>Saved locally in sidebar</dd></div>
         <div><dt>Fullscreen</dt><dd>Supported in compatible browsers</dd></div>
       </dl>
+
       <h3>Frequently asked questions</h3>
       <div class="faq-list">
-        <details><summary>What is Mai-Reads?</summary><p>Mai-Reads is a minimal PDF and DOCX reader designed for distraction-free reading and study. It opens documents from your device in a clean, paper-like interface.</p></details>
-        <details><summary>Can Mai-Reads open PDF and Word documents?</summary><p>Yes. Mai-Reads supports PDF files and DOCX files. DOCX documents are converted into reflowable web content, so their original Word pagination may differ.</p></details>
-        <details><summary>Do I need to upload my document?</summary><p>No upload to a Mai-Reads document-storage service is required. You select a local file and the reader processes it in your browser. This local build does load its reading libraries from CDNs; it does not send the selected document to a Mai-Reads server.</p></details>
-        <details><summary>Does Mai-Reads require an account?</summary><p>No. The current reading experience has no account or sign-in flow.</p></details>
-        <details><summary>Is Mai-Reads designed for studying?</summary><p>Yes. Its minimal interface, page navigation, and reading layouts are designed to support focused reading and study.</p></details>
-        <details><summary>Can I reduce the brightness of the document?</summary><p>Yes. Paper brightness is controlled separately from the light or dark interface theme.</p></details>
-        <details><summary>Can I read one page at a time or scroll continuously?</summary><p>Yes. Choose One page for page-by-page scrolling or Continuous to move through the document vertically.</p></details>
-        <details><summary>Does Mai-Reads remember where I stopped?</summary><p>It stores reading position metadata in this browser. Select the same local file again to resume; the browser does not reopen it automatically.</p></details>
-        <details><summary>Who makes Mai-Reads?</summary><p>Mai-Reads is created by Maithil Studios.</p></details>
+        <details>
+          <summary>What is Mai-Reads?</summary>
+          <p>Mai-Reads is a minimal PDF and DOCX reader designed for distraction-free reading and study. It opens documents from your device in a clean, paper-like interface.</p>
+        </details>
+        <details>
+          <summary>Can Mai-Reads open PDF and Word documents?</summary>
+          <p>Yes. Mai-Reads supports PDF files and DOCX files. DOCX documents are converted into reflowable web content, so their original Word pagination may differ.</p>
+        </details>
+        <details>
+          <summary>Do I need to upload my document?</summary>
+          <p>No upload to a Mai-Reads document-storage service is required. You select a local file and the reader processes it in your browser. This local build does load its reading libraries from CDNs; it does not send the selected document to a Mai-Reads server.</p>
+        </details>
+        <details>
+          <summary>Does Mai-Reads require an account?</summary>
+          <p>No. The reading experience has no account or sign-in flow.</p>
+        </details>
+        <details>
+          <summary>Is Mai-Reads designed for studying?</summary>
+          <p>Yes. Its minimal interface, page navigation, and reading layouts are designed to support focused reading and study.</p>
+        </details>
+        <details>
+          <summary>Can I reduce the brightness of the document?</summary>
+          <p>Yes. Paper brightness is controlled separately from the light or dark interface theme.</p>
+        </details>
+        <details>
+          <summary>Can I read one page at a time or scroll continuously?</summary>
+          <p>Yes. Choose One page for page-by-page scrolling or Continuous to move through the document vertically.</p>
+        </details>
+        <details>
+          <summary>Does Mai-Reads remember where I stopped?</summary>
+          <p>It stores reading position and history in this browser. Reselect the file from the History sidebar or file picker to resume exactly where you left off.</p>
+        </details>
+        <details>
+          <summary>Who makes Mai-Reads?</summary>
+          <p>Mai-Reads is created by Maithil Studios.</p>
+        </details>
       </div>
+
       <p class="studio-credit">Mai-Reads is a product by <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer">Maithil Studios</a>.</p>
     </section>
+
     <footer class="welcome-foot">Made for unhurried reading</footer>
   </main>
 
+  <!-- Document Reader View -->
   <section id="reader" class="reader hidden" aria-label="Document reader">
     <div id="reading-surface" class="reading-surface mode-continuous">
       <div id="paper" class="paper"><div id="pages" class="pages"></div></div>
     </div>
-    <div id="loading" class="loading hidden">Opening your document…</div>
+    
+    <div id="loading" class="loading hidden">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <div class="loading-text">Opening your document…</div>
+    </div>
+    
     <div id="error" class="error hidden" role="alert"></div>
-    <button id="control-toggle" class="control-toggle" aria-label="Show reading controls" title="Reading controls"><span class="toggle-glyph">☰</span></button>
+
+    <!-- Floating Top-Left History Button in Reader -->
+    <button id="history-toggle-reader" class="floating-btn history-toggle-reader" type="button" aria-label="Open reading history" title="Reading history (H)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+        <path d="M12 7v5l4 2"/>
+      </svg>
+      <span class="btn-label-desktop">History</span>
+    </button>
+
+    <!-- Floating Bottom-Right Reading Controls Toggle -->
+    <button id="control-toggle" class="floating-btn control-toggle" aria-label="Show reading controls" title="Reading controls">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="6" x2="20" y2="6"/>
+        <line x1="4" y1="12" x2="20" y2="12"/>
+        <line x1="4" y1="18" x2="20" y2="18"/>
+        <circle cx="8" cy="6" r="2" fill="currentColor"/>
+        <circle cx="16" cy="12" r="2" fill="currentColor"/>
+        <circle cx="10" cy="18" r="2" fill="currentColor"/>
+      </svg>
+    </button>
+
+    <!-- Reading Controls Panel -->
     <aside id="controls" class="controls hidden" aria-label="Reading controls">
       <div class="control-top">
-        <div class="page-readout"><span id="page-label">Page</span><strong id="page-current">—</strong><span class="slash">/</span><span id="page-total">—</span></div>
-        <button id="close-controls" class="icon-button" aria-label="Hide controls">×</button>
+        <div class="page-readout">
+          <span id="page-label">Page</span>
+          <strong id="page-current">—</strong>
+          <span class="slash">/</span>
+          <span id="page-total">—</span>
+        </div>
+        <button id="close-controls" class="icon-button" aria-label="Hide controls" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
+
       <input id="page-slider" class="range page-range" type="range" min="1" max="1" value="1" aria-label="Go to page" />
-      <div class="control-row zoom-row"><label for="zoom">Zoom</label><span id="zoom-value">Fit</span></div>
+
+      <div class="control-row zoom-row">
+        <label for="zoom">Zoom</label>
+        <span id="zoom-value">Fit</span>
+      </div>
       <input id="zoom" class="range" type="range" min="60" max="160" value="100" aria-label="Document zoom" />
-      <span class="zoom-hint">Slider, two-finger pinch, or trackpad pinch</span>
-      <div class="control-row brightness-row"><label for="brightness">Paper brightness</label><span id="brightness-value">100%</span></div>
+      <span class="zoom-hint">Slider, pinch, or trackpad gesture</span>
+
+      <div class="control-row brightness-row">
+        <label for="brightness">Paper brightness</label>
+        <span id="brightness-value">100%</span>
+      </div>
       <input id="brightness" class="range" type="range" min="55" max="100" value="100" aria-label="Paper brightness" />
-      <div class="control-row mode-row"><span>Page layout</span><div class="segmented"><button class="mode-button" data-mode="single">One page</button><button class="mode-button selected" data-mode="continuous">Continuous</button></div></div>
+
+      <div class="control-row mode-row">
+        <span>Page layout</span>
+        <div class="segmented">
+          <button class="mode-button" data-mode="single" type="button">One page</button>
+          <button class="mode-button selected" data-mode="continuous" type="button">Continuous</button>
+        </div>
+      </div>
+
       <div class="utility-row">
-        <button id="search-toggle" class="text-button">Find in document</button>
-        <button id="bookmark-add" class="text-button">＋ Bookmark page</button>
+        <button id="search-toggle" class="text-button" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Find in document
+        </button>
+        <button id="bookmark-add" class="text-button" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+          Bookmark page
+        </button>
       </div>
-      <div id="search-box" class="search-box hidden"><input id="search-input" type="search" placeholder="Search this document" aria-label="Search this document" /><div id="search-results" class="search-results" aria-live="polite"></div></div>
+
+      <div id="search-box" class="search-box hidden">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input id="search-input" type="search" placeholder="Search this document…" aria-label="Search this document" />
+        </div>
+        <div id="search-results" class="search-results" aria-live="polite"></div>
+      </div>
+
       <div id="bookmark-list" class="bookmark-list"></div>
-      <details id="outline" class="outline hidden"><summary>Contents</summary><div id="outline-list" class="outline-list"></div></details>
+
+      <details id="outline" class="outline hidden">
+        <summary>Table of contents</summary>
+        <div id="outline-list" class="outline-list"></div>
+      </details>
+
       <div class="control-actions">
-        <button id="fullscreen" class="action-button"><span>⛶</span> Full screen</button>
-        <button id="open-another" class="action-button"><span>＋</span> Open another</button>
-        <button id="back-to-home" class="action-button back-home-button"><span>⌂</span> Back to Mai-Reads</button>
+        <button id="fullscreen" class="action-button" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+          <span>Full screen</span>
+        </button>
+        <button id="controls-history-toggle" class="action-button" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M12 7v5l4 2"/>
+          </svg>
+          <span>History</span>
+        </button>
+        <button id="open-another" class="action-button" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Open another</span>
+        </button>
+        <button id="back-to-home" class="action-button" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span>Mai-Reads</span>
+        </button>
       </div>
-      <button id="clear-data" class="clear-data">Clear saved reading data</button>
+
+      <button id="clear-data" class="clear-data" type="button">Clear saved reading data</button>
       <p class="privacy-note">Your document is read in this browser and is never uploaded.</p>
     </aside>
-    <div id="doc-title" class="doc-title"></div>
+
+    <div id="doc-title" class="doc-title">
+      <svg class="doc-title-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <span id="doc-title-text" class="doc-title-text"></span>
+    </div>
   </section>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
   <script src="reader.js"></script>
