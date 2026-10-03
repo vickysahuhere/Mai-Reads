@@ -52,15 +52,26 @@ The browser's local storage keeps display preferences, bookmarks, and reading-po
 | `index.html` | Welcome page, reader structure, metadata, and product FAQ |
 | `styles.css` | Reader layout, themes, and responsive styling |
 | `reader.js` | Local file loading, rendering, navigation, search, and saved state |
-| `robots.txt` | Allows OAI-SearchBot and general crawlers |
+| `robots.txt` | Allows OAI-SearchBot, Googlebot, Bingbot, and general crawlers; points to the sitemap |
+| `sitemap.xml` | Lists the production homepage for crawler discovery |
 | `social-preview.svg` | Social sharing preview artwork |
 | `PLAN.md` | Product scope and implementation plan |
 
 ## Search discoverability
 
-The homepage includes descriptive metadata, WebApplication structured data, visible product information, and an FAQ. `robots.txt` allows OAI-SearchBot. Search engines and answer engines decide independently whether to crawl, index, or cite a page; these files do not guarantee placement.
+The homepage includes descriptive metadata, canonical and social URLs, WebApplication structured data, visible product information, and an FAQ. `robots.txt` allows OAI-SearchBot, Googlebot, Bingbot, and general crawlers. Search engines and answer engines decide independently whether to crawl, index, or cite a page; these files do not guarantee placement.
 
-Before publishing, add the production domain to the canonical and social metadata and create a sitemap. Those values are intentionally unset until a public domain is chosen. The social preview artwork is in `social-preview.svg`.
+The production URL is `https://mai-reads.vercel.app/`. The social preview artwork is in `social-preview.svg` and is referenced by the Open Graph and Twitter metadata.
+
+### Submit the site for indexing
+
+1. Deploy the current project to Vercel and confirm these URLs load publicly: `/`, `/robots.txt`, `/sitemap.xml`, and `/social-preview.svg`.
+2. Add and verify `https://mai-reads.vercel.app/` as a URL-prefix property in [Google Search Console](https://search.google.com/search-console/). Submit `https://mai-reads.vercel.app/sitemap.xml` in **Sitemaps**.
+3. In Search Console, use **URL inspection** for `https://mai-reads.vercel.app/` and request indexing.
+4. Add and verify the site in [Bing Webmaster Tools](https://www.bing.com/webmasters/about). Submit the sitemap and use URL Inspection to check crawl and index status. Bing also offers IndexNow for notifying participating search engines about updates.
+5. Keep `OAI-SearchBot` allowed in `robots.txt`; it is OpenAI's crawler for ChatGPT Search. GPTBot is a separate crawler preference.
+
+Submitting a sitemap or requesting a crawl is a discovery request, not a guarantee of indexing or ranking. Allow time for crawlers to revisit the deployed site.
 
 ## Roadmap
 
