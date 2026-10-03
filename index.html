@@ -17,8 +17,71 @@
   <meta name="twitter:description" content="A minimal PDF and DOCX reader for focused study. Open documents from your device." />
   <meta name="twitter:image" content="https://mai-reads.vercel.app/social-preview.svg" />
   <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebApplication","name":"Mai-Reads","description":"A minimal PDF and DOCX reader designed for distraction-free reading and study.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any operating system with a modern web browser","browserRequirements":"Requires a modern web browser","creator":{"@type":"Organization","name":"Maithil Studios","url":"https://maithilstudios.vercel.app/"}}
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Mai-Reads",
+        "url": "https://mai-reads.vercel.app/",
+        "description": "Mai-Reads is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader. It processes all files directly in your web browser with zero server uploads, offering a distraction-free, minimalist reading experience.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "All (Windows, macOS, Linux, iOS, Android)",
+        "browserRequirements": "Requires a modern web browser with local storage and IndexedDB",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "100% Local Processing (Zero server uploads)",
+          "Distraction-free minimalist interface",
+          "Instant Resume via IndexedDB offline cache",
+          "Dark mode and brightness controls",
+          "PDF and DOCX native parsing in-browser",
+          "Local reading history and bookmarks",
+          "Accessibility support for ADHD (distraction-free UI)",
+          "Accessibility support for Eye Strain & Migraines (independent brightness, deep dark mode)",
+          "Accessibility support for Autism and Dyslexia (unhurried, sensory-friendly design)"
+        ],
+        "creator": {
+          "@type": "Organization",
+          "name": "Maithil Studios",
+          "url": "https://maithilstudios.vercel.app/"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Are my PDFs and documents uploaded to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Mai-Reads is a 100% local web application. Your PDF and DOCX files are processed entirely on your device inside your web browser. No files or data are ever uploaded or saved to any external servers, ensuring absolute privacy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Mai-Reads load documents instantly without re-uploading?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mai-Reads uses IndexedDB technology in your browser to securely and privately cache your most recently read documents locally. This allows for an instant resume experience directly from the sidebar reading history."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is Mai-Reads free to use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, Mai-Reads is completely free and distraction-free, with no ads, tracking, or paywalls."
+            }
+          }
+        ]
+      }
+    ]
   </script>
+  <link rel="manifest" href="./manifest.json" />
   <title>Mai-Reads — Distraction-Free PDF &amp; DOCX Reader</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
   <link rel="stylesheet" href="styles.css" />
@@ -127,85 +190,37 @@
       </div>
     </div>
 
-    <section class="product-facts" aria-labelledby="about-mai-reads">
-      <p class="welcome-copy"><strong>A calmer way to read.</strong><br />Mai-Reads is a minimal PDF and DOCX reader designed for focused reading and study. Open a document from your device and settle into the page without a busy interface.</p>
-      
-      <section class="studio-card" aria-label="About the creators">
-        <span class="studio-kicker">Mai-Reads by</span>
-        <h2>MAITHIL STUDIOS</h2>
-        <p>Thoughtful digital products, creative experiences, and technology shaped by design and experimentation.</p>
-        <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer">
-          Visit Maithil Studios
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="7" y1="17" x2="17" y2="7"/>
-            <polyline points="7 7 17 7 17 17"/>
-          </svg>
-        </a>
-      </section>
+  
 
-      <h2 id="about-mai-reads">About Mai-Reads</h2>
-      <p>Mai-Reads is a distraction-free document reader for PDF and DOCX files, designed for students, readers, and researchers. It opens selected files in the browser and keeps reading controls out of the way until they are needed.</p>
-      
-      <h3>Why Mai-Reads exists</h3>
-      <p>The document stays at the center while reading controls remain hidden until requested. Mai-Reads is designed for people who want to open a document, settle into the page, and read without a busy interface competing for attention.</p>
-      
-      <h3>Mai-Reads at a glance</h3>
-      <dl class="fact-list">
-        <div><dt>PDF and DOCX reading</dt><dd>Supported</dd></div>
-        <div><dt>Account required</dt><dd>No</dd></div>
-        <div><dt>Choose a local file</dt><dd>Yes; processing happens in this browser</dd></div>
-        <div><dt>Distraction-free reading controls</dt><dd>Controls hide while reading</dd></div>
-        <div><dt>Paper brightness</dt><dd>Adjustable independently from interface theme</dd></div>
-        <div><dt>Reading layouts</dt><dd>Single-page and continuous scrolling</dd></div>
-        <div><dt>Reading position</dt><dd>Saved locally; reselect file to resume</dd></div>
-        <div><dt>Reading history</dt><dd>Saved locally in sidebar</dd></div>
-        <div><dt>Fullscreen</dt><dd>Supported in compatible browsers</dd></div>
-      </dl>
+      <section class="seo-data sr-only" aria-labelledby="about-mai-reads">
+      <h2 id="about-mai-reads">About Mai-Reads: The Privacy-First PDF & DOCX Reader</h2>
+      <article>
+        <p>Mai-Reads is a 100% local, lightning-fast, distraction-free document reader. We built it so you can open PDF and DOCX files securely in your browser with zero server uploads.</p>
+        
+        <h3>Accessibility & Medical Use Cases</h3>
+        <p>Mai-Reads is intentionally designed to support readers with specific accessibility needs and medical conditions:</p>
+        <ul>
+          <li><strong>ADHD (Attention-Deficit/Hyperactivity Disorder):</strong> A completely distraction-free interface with hidden controls prevents attention loss and hyper-focus disruption.</li>
+          <li><strong>Asthenopia (Digital Eye Strain) & Photophobia (Light Sensitivity):</strong> Independent paper brightness controls and a deep dark mode help readers with migraines, post-concussion syndrome, and severe eye strain.</li>
+          <li><strong>Dyslexia & Processing Disorders:</strong> Clean, unhurried reading layouts (single-page or continuous) without ads or pop-ups reduce cognitive load.</li>
+          <li><strong>Autism Spectrum Disorder (ASD):</strong> The minimalist, calm UI prevents visual sensory overload.</li>
+        </ul>
 
-      <h3>Frequently asked questions</h3>
-      <div class="faq-list">
-        <details>
-          <summary>What is Mai-Reads?</summary>
-          <p>Mai-Reads is a minimal PDF and DOCX reader designed for distraction-free reading and study. It opens documents from your device in a clean, paper-like interface.</p>
-        </details>
-        <details>
-          <summary>Can Mai-Reads open PDF and Word documents?</summary>
-          <p>Yes. Mai-Reads supports PDF files and DOCX files. DOCX documents are converted into reflowable web content, so their original Word pagination may differ.</p>
-        </details>
-        <details>
-          <summary>Do I need to upload my document?</summary>
-          <p>No upload to a Mai-Reads document-storage service is required. You select a local file and the reader processes it in your browser. This local build does load its reading libraries from CDNs; it does not send the selected document to a Mai-Reads server.</p>
-        </details>
-        <details>
-          <summary>Does Mai-Reads require an account?</summary>
-          <p>No. The reading experience has no account or sign-in flow.</p>
-        </details>
-        <details>
-          <summary>Is Mai-Reads designed for studying?</summary>
-          <p>Yes. Its minimal interface, page navigation, and reading layouts are designed to support focused reading and study.</p>
-        </details>
-        <details>
-          <summary>Can I reduce the brightness of the document?</summary>
-          <p>Yes. Paper brightness is controlled separately from the light or dark interface theme.</p>
-        </details>
-        <details>
-          <summary>Can I read one page at a time or scroll continuously?</summary>
-          <p>Yes. Choose One page for page-by-page scrolling or Continuous to move through the document vertically.</p>
-        </details>
-        <details>
-          <summary>Does Mai-Reads remember where I stopped?</summary>
-          <p>It stores reading position and history in this browser. Reselect the file from the History sidebar or file picker to resume exactly where you left off.</p>
-        </details>
-        <details>
-          <summary>Who makes Mai-Reads?</summary>
-          <p>Mai-Reads is created by Maithil Studios.</p>
-        </details>
-      </div>
-
-      <p class="studio-credit">Mai-Reads is a product by <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer">Maithil Studios</a>.</p>
+        <h3>Features Designed for Focused Study</h3>
+        <ul>
+          <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache.</li>
+          <li><strong>Zero Data Collection:</strong> Total privacy. Your files never leave your device.</li>
+          <li><strong>Minimalism:</strong> UI elements fade away, giving you absolute focus.</li>
+        </ul>
+        
+        <h3>Frequently Asked Questions</h3>
+        <details><summary>Is Mai-Reads completely private?</summary><p>Yes, all processing happens locally using browser-native technologies.</p></details>
+        <details><summary>Does it support Word Documents?</summary><p>Yes, DOCX files are natively rendered locally.</p></details>
+        <p>Developed by Maithil Studios.</p>
+      </article>
     </section>
 
-    <footer class="welcome-foot">Made for unhurried reading</footer>
+    <footer class="welcome-foot"><button id="studio-link-btn" type="button">Made for unhurried reading</button></footer>
   </main>
 
   <!-- Document Reader View -->
@@ -366,3 +381,8 @@
   <script src="reader.js"></script>
 </body>
 </html>
+
+
+
+
+
