@@ -781,7 +781,16 @@
     }
   }
 
+  let globalPdfBytes = null;
+  let documentHighlights = [];
+  let isHighlighting = false;
+  
   async function renderPdf(bytes, token) {
+    globalPdfBytes = bytes;
+    documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
+    if (documentHighlights.length > 0) $('download-pdf')?.classList.remove('hidden');
+    else $('download-pdf')?.classList.add('hidden');
+
     if (!window.pdfjsLib) throw new Error('PDF support could not load. Check your internet connection and reload this page.');
     pdf = await pdfjsLib.getDocument({ data: new Uint8Array(bytes) }).promise;
     $('page-total').textContent = pdf.numPages;
@@ -901,6 +910,21 @@
       const page = await pdf.getPage(i + 1);
       await drawPdfPage(page, pageNodes[i].querySelector('canvas'), pageNodes[i], page.getViewport({ scale: 1 }));
       if (mode === 'continuous') surface.scrollTop = scrollRatio * surface.scrollHeight;
+      
+      // Render highlights for this page
+      pageNodes[i].querySelectorAll('.highlight-box').forEach(el => el.remove());
+      const pageNum = i + 1;
+      const pageHighlights = documentHighlights.filter(h => h.page === pageNum);
+      pageHighlights.forEach(h => {
+        const box = document.createElement('div');
+        box.className = 'highlight-box';
+        box.style.left = `${h.x}%`;
+        box.style.top = `${h.y}%`;
+        box.style.width = `${h.w}%`;
+        box.style.height = `${h.h}%`;
+        pageNodes[i].appendChild(box);
+      });
+
     }
     updateSinglePageSlots();
     if (mode === 'continuous') surface.scrollTop = scrollRatio * surface.scrollHeight;
@@ -1147,3 +1171,162 @@
 
 
 
+
+  // Highlighter Feature
+  const highlightToggleBtn = $('highlight-toggle');
+  const downloadPdfBtn = $('download-pdf');
+  
+  if (highlightToggleBtn) {
+    highlightToggleBtn.addEventListener('click', () => {
+      if (docxMode) {
+        alert("Highlighting is currently supported for PDFs only.");
+        return;
+      }
+      isHighlighting = !isHighlighting;
+      if (isHighlighting) {
+        surface.classList.add('highlighting-mode');
+        highlightToggleBtn.style.color = 'var(--primary)';
+      } else {
+        surface.classList.remove('highlighting-mode');
+        highlightToggleBtn.style.color = '';
+      }
+    });
+  }
+
+  let highlightStart = null;
+  let activeHighlightBox = null;
+  let activePageNode = null;
+  let activePageNum = null;
+
+  surface.addEventListener('pointerdown', e => {
+    if (!isHighlighting || !pdf || e.button !== 0 || e.pointerType === 'touch') return;
+    const targetNode = e.target.closest('.page');
+    if (!targetNode) return;
+    
+    e.preventDefault();
+    const rect = targetNode.getBoundingClientRect();
+    activePageNode = targetNode;
+    activePageNum = Number(targetNode.dataset.page) || (pageNodes.indexOf(targetNode) + 1);
+    
+    highlightStart = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      rectW: rect.width,
+      rectH: rect.height
+    };
+
+    activeHighlightBox = document.createElement('div');
+    activeHighlightBox.className = 'highlight-box highlight-drawing';
+    activeHighlightBox.style.left = `${(highlightStart.x / rect.width) * 100}%`;
+    activeHighlightBox.style.top = `${(highlightStart.y / rect.height) * 100}%`;
+    activeHighlightBox.style.width = '0%';
+    activeHighlightBox.style.height = '0%';
+    activePageNode.appendChild(activeHighlightBox);
+  });
+
+  window.addEventListener('pointermove', e => {
+    if (!highlightStart || !activeHighlightBox) return;
+    const rect = activePageNode.getBoundingClientRect();
+    const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+    
+    const minX = Math.min(highlightStart.x, currentX);
+    const minY = Math.min(highlightStart.y, currentY);
+    const width = Math.abs(currentX - highlightStart.x);
+    const height = Math.abs(currentY - highlightStart.y);
+
+    activeHighlightBox.style.left = `${(minX / rect.width) * 100}%`;
+    activeHighlightBox.style.top = `${(minY / rect.height) * 100}%`;
+    activeHighlightBox.style.width = `${(width / rect.width) * 100}%`;
+    activeHighlightBox.style.height = `${(height / rect.height) * 100}%`;
+  });
+
+  window.addEventListener('pointerup', e => {
+    if (!highlightStart || !activeHighlightBox) return;
+    
+    const rect = activePageNode.getBoundingClientRect();
+    const width = parseFloat(activeHighlightBox.style.width);
+    const height = parseFloat(activeHighlightBox.style.height);
+    
+    if (width > 0.5 && height > 0.5) {
+      activeHighlightBox.classList.remove('highlight-drawing');
+      documentHighlights.push({
+        page: activePageNum,
+        x: parseFloat(activeHighlightBox.style.left),
+        y: parseFloat(activeHighlightBox.style.top),
+        w: width,
+        h: height
+      });
+      localStorage.setItem('mai-highlights-' + fileKey, JSON.stringify(documentHighlights));
+      $('download-pdf')?.classList.remove('hidden');
+    } else {
+      activeHighlightBox.remove();
+    }
+    
+    highlightStart = null;
+    activeHighlightBox = null;
+    activePageNode = null;
+    activePageNum = null;
+  });
+
+  if (downloadPdfBtn) {
+    downloadPdfBtn.addEventListener('click', async () => {
+      if (!globalPdfBytes || !window.PDFLib) {
+        alert("PDF-lib is not loaded or file is missing.");
+        return;
+      }
+      try {
+        downloadPdfBtn.style.opacity = '0.5';
+        downloadPdfBtn.textContent = 'Exporting...';
+        
+        const { PDFDocument, rgb } = PDFLib;
+        const pdfDoc = await PDFDocument.load(globalPdfBytes);
+        const pages = pdfDoc.getPages();
+        
+        documentHighlights.forEach(h => {
+          if (h.page <= pages.length) {
+            const page = pages[h.page - 1];
+            const { width, height } = page.getSize();
+            const x = (h.x / 100) * width;
+            const w = (h.w / 100) * width;
+            const hPt = (h.h / 100) * height;
+            const y = height - ((h.y / 100) * height) - hPt;
+            
+            page.drawRectangle({
+              x: x,
+              y: y,
+              width: w,
+              height: hPt,
+              color: rgb(1, 0.92, 0.23),
+              opacity: 0.4,
+            });
+          }
+        });
+        
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const originalName = $('doc-title-text').textContent || 'document';
+        a.download = originalName.replace('.pdf', '') + '_highlighted.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+      } catch (err) {
+        console.error(err);
+        alert('Failed to export PDF: ' + err.message);
+      } finally {
+        downloadPdfBtn.style.opacity = '1';
+        downloadPdfBtn.innerHTML = `
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg> Export
+        `;
+      }
+    });
+  }
