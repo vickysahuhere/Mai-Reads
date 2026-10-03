@@ -32,3 +32,4 @@ body,.welcome{background:var(--app-bg);color:var(--ink)}.welcome h1{color:var(--
 #welcome .studio-card{margin-top:48px;margin-bottom:42px}
 #welcome .welcome-foot{display:block;text-align:center;padding:0 0 32px}
 @media(max-width:600px){#welcome .welcome-inner{padding:82px 20px 32px}#welcome .welcome-inner h1{margin-bottom:36px}#welcome .product-facts{padding-top:46px}#welcome .studio-card{margin-top:38px;margin-bottom:32px}}
+.reading-surface{touch-action:pan-y}.pages.pinch-zooming .pdf-page{transform:scale(var(--pinch-scale,1));transform-origin:center center;transition:none}.zoom-hint{display:block;margin-top:7px;color:var(--muted);font-size:10px}
