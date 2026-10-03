@@ -851,8 +851,13 @@
       transform: ratio === 1 ? null : [ratio, 0, 0, ratio, 0, 0]
     }).promise;
 
-    // Render Text Layer for real text selection & highlighting
+    // Render Text Layer for real text selection & highlighting with cancellation protection
     try {
+      if (node._textTask) {
+        try { node._textTask.cancel(); } catch {}
+        node._textTask = null;
+      }
+
       let textLayerDiv = node.querySelector('.textLayer');
       if (!textLayerDiv) {
         textLayerDiv = document.createElement('div');
@@ -866,14 +871,16 @@
       textLayerDiv.style.setProperty('--scale-factor', `${viewport.scale}`);
 
       const textContent = await page.getTextContent();
-      const textTask = pdfjsLib.renderTextLayer({
+      node._textTask = pdfjsLib.renderTextLayer({
         textContentSource: textContent,
         container: textLayerDiv,
         viewport: viewport
       });
-      await textTask.promise;
+      await node._textTask.promise;
     } catch (err) {
-      console.warn('Text layer render failed:', err);
+      if (err?.name !== 'RenderingCancelledException') {
+        console.warn('Text layer render failed:', err);
+      }
     }
   }
 
@@ -1239,6 +1246,7 @@
           band.title = 'Click to delete highlight';
           band.addEventListener('click', e => {
             e.stopPropagation();
+            if (window.getSelection()?.toString()?.trim()) return;
             deleteHighlight(h.id);
           });
           wrap.appendChild(band);
@@ -1318,40 +1326,64 @@
     if (!selectedText) return;
 
     const range = selection.getRangeAt(0);
-    let container = range.commonAncestorContainer;
-    if (container.nodeType === 3) container = container.parentElement;
-    const pageNode = container.closest('.document-page');
-    if (!pageNode) return;
-
     const rects = Array.from(range.getClientRects());
     if (!rects.length) return;
 
-    const pageRect = pageNode.getBoundingClientRect();
-    const pageNum = Number(pageNode.dataset.page) || 1;
+    // Multi-page grouping: map each client rectangle to its respective page container
+    const pageGroups = new Map();
 
-    const highlightRects = rects.map(r => ({
-      x: ((r.left - pageRect.left) / pageRect.width) * 100,
-      y: ((r.top - pageRect.top) / pageRect.height) * 100,
-      w: (r.width / pageRect.width) * 100,
-      h: (r.height / pageRect.height) * 100
-    })).filter(r => r.w > 0.05 && r.h > 0.05);
+    rects.forEach(r => {
+      if (r.width < 1 || r.height < 1) return;
+      const midX = r.left + r.width / 2;
+      const midY = r.top + r.height / 2;
+      const els = document.elementsFromPoint(midX, midY) || [];
+      const pageNode = els.find(el => el.classList.contains('document-page'));
+      if (pageNode) {
+        if (!pageGroups.has(pageNode)) pageGroups.set(pageNode, []);
+        pageGroups.get(pageNode).push(r);
+      }
+    });
 
-    if (!highlightRects.length) return;
+    // Fallback if elementsFromPoint fails (e.g. scroll edge)
+    if (!pageGroups.size) {
+      let container = range.commonAncestorContainer;
+      if (container.nodeType === 3) container = container.parentElement;
+      const fallbackNode = container.closest('.document-page');
+      if (fallbackNode) pageGroups.set(fallbackNode, rects);
+      else return;
+    }
 
-    const highlightItem = {
-      id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-      page: pageNum,
-      text: selectedText,
-      rects: highlightRects
-    };
+    let addedCount = 0;
+    pageGroups.forEach((pRects, pageNode) => {
+      const pageRect = pageNode.getBoundingClientRect();
+      const pageNum = Number(pageNode.dataset.page) || 1;
 
-    documentHighlights.push(highlightItem);
-    saveHighlights();
-    renderPageHighlights(pageNum, pageNode);
+      const highlightRects = pRects.map(r => ({
+        x: ((r.left - pageRect.left) / pageRect.width) * 100,
+        y: ((r.top - pageRect.top) / pageRect.height) * 100,
+        w: (r.width / pageRect.width) * 100,
+        h: (r.height / pageRect.height) * 100
+      })).filter(r => r.w > 0.04 && r.h > 0.04);
 
-    selection.removeAllRanges();
-    hideSelectionTooltip();
-    showToast('Highlighted!');
+      if (highlightRects.length) {
+        const highlightItem = {
+          id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+          page: pageNum,
+          text: selectedText,
+          rects: highlightRects
+        };
+        documentHighlights.push(highlightItem);
+        renderPageHighlights(pageNum, pageNode);
+        addedCount++;
+      }
+    });
+
+    if (addedCount > 0) {
+      saveHighlights();
+      selection.removeAllRanges();
+      hideSelectionTooltip();
+      showToast('Highlighted!');
+    }
   }
 
   // Selection events
@@ -1363,6 +1395,9 @@
     }
   });
 
+  surface.addEventListener('scroll', hideSelectionTooltip, { passive: true });
+  zoomInput.addEventListener('input', hideSelectionTooltip, { passive: true });
+  window.addEventListener('resize', hideSelectionTooltip, { passive: true });
   $('btn-highlight-selection')?.addEventListener('click', applyHighlightToSelection);
 
   $('btn-copy-selection')?.addEventListener('click', () => {
@@ -1421,6 +1456,7 @@
   surface.addEventListener('pointerdown', e => {
     if (!isHighlighting || !pdf) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (touchPointers.size > 1) return;
 
     const targetNode = e.target.closest('.document-page');
     if (!targetNode) return;
