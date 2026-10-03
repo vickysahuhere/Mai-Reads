@@ -34,6 +34,12 @@
 
   $('welcome-open').addEventListener('click', () => picker.click());
   $('open-another').addEventListener('click', () => picker.click());
+  $('back-to-home').addEventListener('click', async () => {
+    if (document.fullscreenElement) { try { await document.exitFullscreen(); } catch {} }
+    controls.classList.add('hidden');
+    reader.classList.add('hidden');
+    welcome.classList.remove('hidden');
+  });
   picker.addEventListener('change', async e => { const file = e.target.files?.[0]; if (file) await openFile(file); e.target.value = ''; });
   toggle.addEventListener('click', () => controls.classList.toggle('hidden'));
   $('close-controls').addEventListener('click', () => controls.classList.add('hidden'));
