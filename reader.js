@@ -556,11 +556,14 @@
         canvas.style.height = `${canvasHeight * ratio}px`;
       });
       updateSinglePageSlots();
+      if (pinchState.startScrollTop !== undefined) {
+        surface.scrollTop = pinchState.startScrollTop * ratio;
+      }
     }
   }
 
   function beginZoomGesture(startZoom = Number(zoomInput.value)) {
-    pinchState = { startZoom };
+    pinchState = { startZoom, startScrollTop: surface.scrollTop };
     if (pdf) {
       pinchState.pageSizes = pageNodes.map(node => {
         const canvas = node.querySelector('canvas');
@@ -889,14 +892,19 @@
 
   async function redrawPdf() {
     const token = ++renderToken;
-    const pageToRestore = Number($('page-current').textContent) || 1;
+    const oldScrollTop = surface.scrollTop;
+    const oldScrollHeight = surface.scrollHeight || 1;
+    const scrollRatio = oldScrollTop / oldScrollHeight;
+
     for (let i = 0; i < pageNodes.length; i++) {
       if (token !== renderToken) return;
       const page = await pdf.getPage(i + 1);
       await drawPdfPage(page, pageNodes[i].querySelector('canvas'), pageNodes[i], page.getViewport({ scale: 1 }));
+      if (mode === 'continuous') surface.scrollTop = scrollRatio * surface.scrollHeight;
     }
     updateSinglePageSlots();
-    scrollToPage(pageToRestore, false);
+    if (mode === 'continuous') surface.scrollTop = scrollRatio * surface.scrollHeight;
+    else scrollToPage(Number($('page-current').textContent) || 1, false);
     updateCurrentPage();
   }
 
