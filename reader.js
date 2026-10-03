@@ -48,16 +48,27 @@
     const next = Math.max(Number(zoomInput.min), Math.min(Number(zoomInput.max), value));
     zoomInput.value = String(Math.round(next));
     zoomInput.dispatchEvent(new Event('input', { bubbles: true }));
-    if (pdf && pinchState) pages.style.setProperty('--pinch-scale', String(next / pinchState.startZoom));
+    if (pdf && pinchState?.pageSizes) {
+      const ratio = next / pinchState.startZoom;
+      pinchState.pageSizes.forEach(({ node, canvas, width, height, canvasWidth, canvasHeight }) => {
+        node.style.width = `${width * ratio}px`; node.style.height = `${height * ratio}px`;
+        canvas.style.width = `${canvasWidth * ratio}px`; canvas.style.height = `${canvasHeight * ratio}px`;
+      });
+      updateSinglePageSlots();
+    }
   }
   function beginZoomGesture(startZoom = Number(zoomInput.value)) {
     pinchState = { startZoom };
-    if (pdf) pages.classList.add('pinch-zooming');
+    if (pdf) {
+      pinchState.pageSizes = pageNodes.map(node => {
+        const canvas = node.querySelector('canvas');
+        return { node, canvas, width: node.offsetWidth, height: node.offsetHeight, canvasWidth: canvas.offsetWidth, canvasHeight: canvas.offsetHeight };
+      });
+    }
   }
   function finishZoomGesture() {
     if (!pinchState) return;
     pinchState = null;
-    pages.classList.remove('pinch-zooming'); pages.style.removeProperty('--pinch-scale');
     zoomInput.dispatchEvent(new Event('change', { bubbles: true }));
   }
   function scheduleZoomFinish() { clearTimeout(zoomCommitTimer); zoomCommitTimer = setTimeout(finishZoomGesture, 160); }
@@ -214,7 +225,17 @@
       if (token !== renderToken) return;
       const page = await pdf.getPage(i + 1); await drawPdfPage(page, pageNodes[i].querySelector('canvas'), pageNodes[i], page.getViewport({ scale: 1 }));
     }
+    updateSinglePageSlots();
     scrollToPage(pageToRestore, false); updateCurrentPage();
+  }
+  function updateSinglePageSlots() {
+    if (!pdf) return;
+    pageNodes.forEach(node => {
+      if (mode === 'single') {
+        const spacer = Math.max(0, surface.clientHeight - node.offsetHeight);
+        node.style.marginTop = `${spacer / 2}px`; node.style.marginBottom = `${spacer / 2}px`;
+      } else { node.style.marginTop = ''; node.style.marginBottom = ''; }
+    });
   }
   function updateDocxPageCount() {
     if (!docxMode || !pageNodes[0]) return;
