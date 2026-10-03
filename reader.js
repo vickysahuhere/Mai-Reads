@@ -41,8 +41,71 @@
   document.querySelectorAll('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
   $('fullscreen').addEventListener('click', async () => { try { if (!document.fullscreenElement) await reader.requestFullscreen(); else await document.exitFullscreen(); } catch {} });
   slider.addEventListener('input', () => scrollToPage(Number(slider.value)));
-  $('zoom').addEventListener('input', e => { $('zoom-value').textContent = `${e.target.value}%`; paper.style.setProperty('--doc-zoom', Number(e.target.value) / 100); });
-  $('zoom').addEventListener('change', () => { if (pdf) redrawPdf(); });
+  const zoomInput = $('zoom');
+  let pinchState = null, zoomCommitTimer = 0, safariGestureZoom = null;
+  const touchPointers = new Map();
+  function setZoomPreview(value) {
+    const next = Math.max(Number(zoomInput.min), Math.min(Number(zoomInput.max), value));
+    zoomInput.value = String(Math.round(next));
+    zoomInput.dispatchEvent(new Event('input', { bubbles: true }));
+    if (pdf && pinchState) pages.style.setProperty('--pinch-scale', String(next / pinchState.startZoom));
+  }
+  function beginZoomGesture(startZoom = Number(zoomInput.value)) {
+    pinchState = { startZoom };
+    if (pdf) pages.classList.add('pinch-zooming');
+  }
+  function finishZoomGesture() {
+    if (!pinchState) return;
+    pinchState = null;
+    pages.classList.remove('pinch-zooming'); pages.style.removeProperty('--pinch-scale');
+    zoomInput.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  function scheduleZoomFinish() { clearTimeout(zoomCommitTimer); zoomCommitTimer = setTimeout(finishZoomGesture, 160); }
+  zoomInput.addEventListener('input', e => { $('zoom-value').textContent = `${e.target.value}%`; paper.style.setProperty('--doc-zoom', Number(e.target.value) / 100); });
+  $('zoom').addEventListener('change', () => { if (pdf) redrawPdf(); else { updateDocxPageCount(); updateCurrentPage(); } });
+
+  surface.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch') return;
+    touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touchPointers.size === 2) {
+      const [a, b] = [...touchPointers.values()];
+      beginZoomGesture(Number(zoomInput.value));
+      pinchState.startDistance = Math.hypot(a.x - b.x, a.y - b.y);
+    }
+  });
+  surface.addEventListener('pointermove', e => {
+    if (!touchPointers.has(e.pointerId)) return;
+    touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touchPointers.size < 2 || !pinchState?.startDistance) return;
+    const [a, b] = [...touchPointers.values()], distance = Math.hypot(a.x - b.x, a.y - b.y);
+    if (!distance) return;
+    e.preventDefault(); setZoomPreview(pinchState.startZoom * distance / pinchState.startDistance);
+  }, { passive: false });
+  function endTouchPointer(e) {
+    touchPointers.delete(e.pointerId);
+    if (pinchState?.startDistance) { touchPointers.clear(); finishZoomGesture(); }
+  }
+  surface.addEventListener('pointerup', endTouchPointer);
+  surface.addEventListener('pointercancel', endTouchPointer);
+  surface.addEventListener('wheel', e => {
+    if (!e.ctrlKey || reader.classList.contains('hidden')) return;
+    e.preventDefault();
+    if (!pinchState) beginZoomGesture(Number(zoomInput.value));
+    setZoomPreview(Number(zoomInput.value) * Math.exp(-e.deltaY * 0.002));
+    scheduleZoomFinish();
+  }, { passive: false });
+  surface.addEventListener('gesturestart', e => {
+    if (reader.classList.contains('hidden') || touchPointers.size >= 2) return;
+    e.preventDefault(); safariGestureZoom = Number(zoomInput.value); beginZoomGesture(safariGestureZoom);
+  }, { passive: false });
+  surface.addEventListener('gesturechange', e => {
+    if (safariGestureZoom === null || !pinchState) return;
+    e.preventDefault(); setZoomPreview(safariGestureZoom * e.scale);
+  }, { passive: false });
+  surface.addEventListener('gestureend', e => {
+    if (safariGestureZoom === null) return;
+    e.preventDefault(); safariGestureZoom = null; finishZoomGesture();
+  }, { passive: false });
   $('search-toggle').addEventListener('click', () => { $('search-box').classList.toggle('hidden'); if (!$('search-box').classList.contains('hidden')) $('search-input').focus(); });
   $('search-input').addEventListener('input', runSearch);
   $('bookmark-add').addEventListener('click', addBookmark);
@@ -146,11 +209,12 @@
   }
   async function redrawPdf() {
     const token = ++renderToken;
+    const pageToRestore = Number($('page-current').textContent) || 1;
     for (let i = 0; i < pageNodes.length; i++) {
       if (token !== renderToken) return;
       const page = await pdf.getPage(i + 1); await drawPdfPage(page, pageNodes[i].querySelector('canvas'), pageNodes[i], page.getViewport({ scale: 1 }));
     }
-    updateCurrentPage();
+    scrollToPage(pageToRestore, false); updateCurrentPage();
   }
   function updateDocxPageCount() {
     if (!docxMode || !pageNodes[0]) return;

@@ -8,7 +8,7 @@ Mai-Reads is a minimal PDF and DOCX reader for focused reading and study. Open a
 
 - Open PDF and DOCX files using the browser's file picker.
 - Read PDFs in continuous or one-page mode; DOCX pages reflow to fit the screen.
-- Use the page slider, zoom, fullscreen, and in-document search.
+- Use the page slider, zoom, fullscreen, and in-document search. Zoom with the slider, a two-finger touchscreen pinch, or a laptop touchpad pinch gesture.
 - Adjust document brightness independently of the interface theme.
 - Switch the interface between light and dark mode from the welcome screen.
 - Save reading positions and page bookmarks in the browser.
