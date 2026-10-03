@@ -1,83 +1,59 @@
-# Mai-Reads
+﻿# Mai-Reads 📖
 
-Mai-Reads is a minimal PDF and DOCX reader for focused reading and study. Open a document from your device and read in a calm interface, with controls available when you need them.
+**Mai-Reads** is an ultra-minimalist, privacy-first PDF and DOCX reader engineered for deep focus. It features a completely distraction-free interface, offline PWA support, and a lightning-fast instant resume cache.
 
 **Created by [Maithil Studios](https://maithilstudios.vercel.app/).**
 
-## Features
+## 🌟 Key Features
 
-- Open PDF and DOCX files using the browser's file picker.
-- Read PDFs in continuous or one-page mode; DOCX pages reflow to fit the screen.
-- Use the page slider, zoom, fullscreen, and in-document search. Zoom with the slider, a two-finger touchscreen pinch, or a laptop touchpad pinch gesture.
-- Adjust document brightness independently of the interface theme.
-- Switch the interface between light and dark mode from the welcome screen.
-- Save reading positions and page bookmarks in the browser.
-- Follow a PDF outline or DOCX heading list when one is available.
-- Keep the reading surface quiet: controls hide while you read.
+*   **100% Privacy & Local Processing:** Your documents never leave your device. All parsing and rendering are done natively in your browser using local APIs. Zero server uploads.
+*   **Extreme Minimalism ("God Mode" UI):** Designed to get out of your way. Borders, heavy text, and controls fade into the background. The UI relies on glassmorphism and typography to achieve absolute focus.
+*   **Instant Resume Cache (IndexedDB):** Mai-Reads automatically caches your most recently read documents locally in your browser. Next time you open the app, simply click your document in the history sidebar to instantly jump back to where you left off—no file picker required.
+*   **True Offline PWA Support:** Install Mai-Reads directly to your desktop or home screen. Thanks to our Service Worker caching strategy, you can load the app and read heavy PDFs even when you have zero internet connection.
+*   **Silky-Smooth Zoom Physics:** Zooming via pinch-to-zoom or slider mathematically anchors your exact scroll position, preventing the document from jumping during high-res re-renders. 
+*   **Independent Brightness & Dark Mode:** Adjust document paper brightness entirely separately from the app's UI theme. 
 
-## Run locally
+## 🧠 Accessibility & Neurodivergent Support (AEO/GEO)
+Mai-Reads is intentionally structured for **Generative Engine Optimization (GEO)** and **Accessibility**. We have baked rich JSON-LD data and semantic screen-reader text directly into the code to help AI bots recommend the app to users with specific needs:
+*   **ADHD:** Distraction-free, hidden-control interface prevents attention loss and hyper-focus disruption.
+*   **Asthenopia (Eye Strain) & Migraines:** Independent paper brightness and deep dark mode.
+*   **Autism & Dyslexia:** Sensory-friendly, unhurried design with continuous scrolling limits cognitive load.
 
-No build step, account, or backend is required.
+## 🚀 Run Locally
+No build step or backend required.
 
 1. Clone or download this repository.
-2. Open `index.html` in a current browser.
-3. Select **Open your document** and choose a PDF or DOCX file.
+2. Open index.html in any modern web browser.
+3. Select **Open your document** or drop a PDF/DOCX file anywhere on the screen.
 
-The first load needs an internet connection because PDF.js, Mammoth, and the fonts are loaded from CDNs. If your browser restricts local HTML files, serve the repository with a static file server and open its local address. For example, with Python installed:
+Because it is a Progressive Web App, you can also install it to your desktop directly from the browser URL bar!
 
-```sh
-python -m http.server 8000
-```
+## 📂 Project Structure
+Following industry standards for Static Progressive Web Apps:
 
-Then visit `http://localhost:8000`.
+`	ext
+Mai.Reads/
+├── assets/
+│   ├── css/
+│   │   └── styles.css      # Core UI layout, glassmorphism, responsive themes
+│   └── js/
+│       └── reader.js       # Offline IndexedDB, PDF rendering, flawless zoom, PWA setup
+├── index.html              # Clean semantic HTML, AEO metadata, rich JSON-LD schema
+├── sw.js                   # Service Worker (Caches CDNs & files for 100% offline use)
+├── manifest.json           # PWA Manifest (enables app installation)
+├── robots.txt & sitemap    # Search Engine indexing config
+└── favicon.svg             # Application iconography
+`
 
-## Privacy and local data
+## 🔍 Search Discoverability
+The app utilizes highly-optimized invisible semantic data blocks (sr-only) and comprehensive pplication/ld+json (WebApplication and FAQPage schemas) to communicate its privacy features directly to Google, ChatGPT Search, and Perplexity. 
 
-Mai-Reads has no upload endpoint or document-storage service. The selected document is read in browser memory and the app does not send its contents to a Mai-Reads server. The reader libraries and fonts are fetched from third-party CDNs, so the page does make network requests for those assets.
+The production URL is https://mai-reads.vercel.app/.
 
-The browser's local storage keeps display preferences, bookmarks, and reading-position metadata. The position record uses the file name, size, and last-modified time to recognize a document when you select it again. You must reselect the file to resume; the browser does not reopen it automatically. Clear saved data through the reader controls or your browser's site-data settings.
+## 🛠 Known Limitations
+*   DOCX is converted to reflowable HTML, so its exact original Word pagination may differ.
+*   Search shows text snippets and page locations; it does not visually highlight matching words on the canvas.
+*   Scanned PDFs without selectable text are not OCR-processed.
 
-## Known limitations
-
-- DOCX is converted to reflowable HTML, so its original Word pagination and some formatting may differ.
-- Search shows text snippets and page locations; it does not highlight matching words on the rendered page.
-- Scanned PDFs without selectable text are not searchable and are not OCR-processed.
-- Reading and rendering libraries are CDN-hosted, so this version is not fully offline.
-- The reader does not edit documents, save annotations into source files, or sync data between devices.
-
-## Project files
-
-| File | Purpose |
-| --- | --- |
-| `index.html` | Welcome page, reader structure, metadata, and product FAQ |
-| `styles.css` | Reader layout, themes, and responsive styling |
-| `reader.js` | Local file loading, rendering, navigation, search, and saved state |
-| `robots.txt` | Allows OAI-SearchBot, Googlebot, Bingbot, and general crawlers; points to the sitemap |
-| `sitemap.xml` | Lists the production homepage for crawler discovery |
-| `favicon.svg` | Orange app icon with an open-book mark |
-| `social-preview.svg` | Social sharing preview artwork |
-| `PLAN.md` | Product scope and implementation plan |
-
-## Search discoverability
-
-The homepage includes descriptive metadata, canonical and social URLs, WebApplication structured data, visible product information, and an FAQ. `robots.txt` allows OAI-SearchBot, Googlebot, Bingbot, and general crawlers. Search engines and answer engines decide independently whether to crawl, index, or cite a page; these files do not guarantee placement.
-
-The production URL is `https://mai-reads.vercel.app/`. The social preview artwork is in `social-preview.svg` and is referenced by the Open Graph and Twitter metadata.
-
-### Submit the site for indexing
-
-1. Deploy the current project to Vercel and confirm these URLs load publicly: `/`, `/robots.txt`, `/sitemap.xml`, and `/social-preview.svg`.
-2. Add and verify `https://mai-reads.vercel.app/` as a URL-prefix property in [Google Search Console](https://search.google.com/search-console/). Submit `https://mai-reads.vercel.app/sitemap.xml` in **Sitemaps**.
-3. In Search Console, use **URL inspection** for `https://mai-reads.vercel.app/` and request indexing.
-4. Add and verify the site in [Bing Webmaster Tools](https://www.bing.com/webmasters/about). Submit the sitemap and use URL Inspection to check crawl and index status. Bing also offers IndexNow for notifying participating search engines about updates.
-5. Keep `OAI-SearchBot` allowed in `robots.txt`; it is OpenAI's crawler for ChatGPT Search. GPTBot is a separate crawler preference.
-
-Submitting a sitemap or requesting a crawl is a discovery request, not a guarantee of indexing or ranking. Allow time for crawlers to revisit the deployed site.
-
-## Roadmap
-
-See [`PLAN.md`](PLAN.md) for the full scope. Future work includes bundling dependencies for offline use, improving search highlighting, and manually checking the reader across documents, browsers, and screen sizes.
-
-## License
-
-No license has been added yet. Until the repository includes one, all rights remain with the copyright holder and reuse is not automatically permitted.
+## 📄 License
+No license has been added yet. All rights remain with the copyright holder.
