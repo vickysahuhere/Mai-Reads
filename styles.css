@@ -33,3 +33,7 @@ body,.welcome{background:var(--app-bg);color:var(--ink)}.welcome h1{color:var(--
 #welcome .welcome-foot{display:block;text-align:center;padding:0 0 32px}
 @media(max-width:600px){#welcome .welcome-inner{padding:82px 20px 32px}#welcome .welcome-inner h1{margin-bottom:36px}#welcome .product-facts{padding-top:46px}#welcome .studio-card{margin-top:38px;margin-bottom:32px}}
 .reading-surface{touch-action:pan-y}.pages.pinch-zooming .pdf-page{transform:scale(var(--pinch-scale,1));transform-origin:center center;transition:none}.zoom-hint{display:block;margin-top:7px;color:var(--muted);font-size:10px}
+/* One-page mode uses real stacked pages and scroll snap; zoom grows their layout boxes. */
+.mode-single{scroll-snap-type:y mandatory;scroll-padding-block:12px}.mode-single .pages{min-height:100%;height:auto;gap:0;padding:14px 0;align-items:center}.mode-single .document-page{scroll-snap-align:start;scroll-snap-stop:always;margin:0 auto;max-width:none;max-height:none}
+button,a,input,summary{-webkit-tap-highlight-color:transparent}button:active,a:active{filter:brightness(.96)}
+.mode-single .pages{padding:0}.mode-single .document-page{margin:0 auto;max-width:none;max-height:none}
