@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mai-reads-v1-offline';
+﻿const CACHE_NAME = 'mai-reads-v2-offline';
 const ASSETS = [
   './',
   './index.html',
@@ -49,4 +49,5 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
 
