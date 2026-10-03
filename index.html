@@ -235,6 +235,23 @@
     </div>
     
     <div id="error" class="error hidden" role="alert"></div>
+    <!-- Floating Selection Tooltip for Highlighting & Copying -->
+    <div id="selection-tooltip" class="selection-tooltip hidden" role="toolbar" aria-label="Selection actions">
+      <button id="btn-highlight-selection" class="tooltip-btn tooltip-btn-highlight" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+          <path d="m2 2 7.586 7.586"/>
+        </svg>
+        <span>Highlight</span>
+      </button>
+      <button id="btn-copy-selection" class="tooltip-btn" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+        </svg>
+        <span>Copy</span>
+      </button>
+    </div>
 
     <!-- Floating Active Highlighter Bar at top of reading screen -->
     <div id="highlight-bar" class="highlight-bar hidden">
@@ -312,6 +329,7 @@
           <button id="highlight-clear" class="mode-button hidden" type="button" title="Clear highlights from this document">Clear</button>
           <button id="download-pdf" class="mode-button hidden" type="button" title="Export highlighted PDF">Export</button>
         </div>
+        <span class="zoom-hint">Select text to highlight, or click Draw to box</span>
       </div>
 
       <div class="utility-row">

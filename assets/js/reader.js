@@ -850,6 +850,31 @@
       viewport,
       transform: ratio === 1 ? null : [ratio, 0, 0, ratio, 0, 0]
     }).promise;
+
+    // Render Text Layer for real text selection & highlighting
+    try {
+      let textLayerDiv = node.querySelector('.textLayer');
+      if (!textLayerDiv) {
+        textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'textLayer';
+        node.appendChild(textLayerDiv);
+      } else {
+        textLayerDiv.replaceChildren();
+      }
+      textLayerDiv.style.width = `${viewport.width}px`;
+      textLayerDiv.style.height = `${viewport.height}px`;
+      textLayerDiv.style.setProperty('--scale-factor', `${viewport.scale}`);
+
+      const textContent = await page.getTextContent();
+      const textTask = pdfjsLib.renderTextLayer({
+        textContentSource: textContent,
+        container: textLayerDiv,
+        viewport: viewport
+      });
+      await textTask.promise;
+    } catch (err) {
+      console.warn('Text layer render failed:', err);
+    }
   }
 
   async function renderDocx(bytes, token) {
@@ -866,6 +891,9 @@
     pages.append(article);
     pageNodes.push(article);
     docxMode = true;
+    documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
+    updateHighlightUi();
+    renderPageHighlights(1, article);
 
     outlineItems = [...article.querySelectorAll('h1,h2,h3,h4')].map((h, i) => ({
       title: h.textContent,
@@ -1169,7 +1197,15 @@
     });
   }
 
-  // --- Robust Highlighter Feature ---
+  
+  // --- Professional Text Selection & Highlighter System ---
+  function saveHighlights() {
+    try {
+      localStorage.setItem('mai-highlights-' + fileKey, JSON.stringify(documentHighlights));
+    } catch {}
+    updateHighlightUi();
+  }
+
   function updateHighlightUi() {
     const hasHighlights = documentHighlights.length > 0;
     $('download-pdf')?.classList.toggle('hidden', !hasHighlights);
@@ -1181,9 +1217,172 @@
     }
   }
 
+  function renderPageHighlights(pageNum, node) {
+    if (!node) return;
+    node.querySelectorAll('.text-highlight-wrap').forEach(el => el.remove());
+    node.querySelectorAll('.highlight-box:not(.highlight-drawing)').forEach(el => el.remove());
+
+    const pageHighlights = documentHighlights.filter(h => h.page === pageNum);
+    pageHighlights.forEach(h => {
+      const wrap = document.createElement('div');
+      wrap.className = 'text-highlight-wrap';
+      wrap.dataset.id = h.id;
+
+      if (h.rects && h.rects.length) {
+        h.rects.forEach(r => {
+          const band = document.createElement('div');
+          band.className = 'text-highlight-band';
+          band.style.left = `${r.x}%`;
+          band.style.top = `${r.y}%`;
+          band.style.width = `${r.w}%`;
+          band.style.height = `${r.h}%`;
+          band.title = 'Click to delete highlight';
+          band.addEventListener('click', e => {
+            e.stopPropagation();
+            deleteHighlight(h.id);
+          });
+          wrap.appendChild(band);
+        });
+      } else if (h.x !== undefined && h.w !== undefined) {
+        const band = document.createElement('div');
+        band.className = 'text-highlight-band';
+        band.style.left = `${h.x}%`;
+        band.style.top = `${h.y}%`;
+        band.style.width = `${h.w}%`;
+        band.style.height = `${h.h}%`;
+        band.title = 'Click to delete highlight';
+        band.addEventListener('click', e => {
+          e.stopPropagation();
+          deleteHighlight(h.id);
+        });
+        wrap.appendChild(band);
+      }
+
+      node.appendChild(wrap);
+    });
+  }
+
+  function deleteHighlight(id) {
+    documentHighlights = documentHighlights.filter(h => h.id !== id);
+    saveHighlights();
+    document.querySelectorAll(`.text-highlight-wrap[data-id="${id}"]`).forEach(el => el.remove());
+    showToast('Highlight deleted');
+  }
+
+  function hideSelectionTooltip() {
+    $('selection-tooltip')?.classList.add('hidden');
+  }
+
+  function handleTextSelection() {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.rangeCount) {
+      hideSelectionTooltip();
+      return;
+    }
+
+    const selectedText = selection.toString().trim();
+    if (!selectedText) {
+      hideSelectionTooltip();
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    let container = range.commonAncestorContainer;
+    if (container.nodeType === 3) container = container.parentElement;
+    if (!container.closest('#reading-surface')) {
+      hideSelectionTooltip();
+      return;
+    }
+
+    const rect = range.getBoundingClientRect();
+    if (rect.width < 2 || rect.height < 2) {
+      hideSelectionTooltip();
+      return;
+    }
+
+    const tooltip = $('selection-tooltip');
+    if (!tooltip) return;
+
+    const left = Math.max(80, Math.min(window.innerWidth - 80, rect.left + rect.width / 2));
+    const top = Math.max(12, rect.top - 8);
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.classList.remove('hidden');
+  }
+
+  function applyHighlightToSelection() {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return;
+
+    const selectedText = selection.toString().trim();
+    if (!selectedText) return;
+
+    const range = selection.getRangeAt(0);
+    let container = range.commonAncestorContainer;
+    if (container.nodeType === 3) container = container.parentElement;
+    const pageNode = container.closest('.document-page');
+    if (!pageNode) return;
+
+    const rects = Array.from(range.getClientRects());
+    if (!rects.length) return;
+
+    const pageRect = pageNode.getBoundingClientRect();
+    const pageNum = Number(pageNode.dataset.page) || 1;
+
+    const highlightRects = rects.map(r => ({
+      x: ((r.left - pageRect.left) / pageRect.width) * 100,
+      y: ((r.top - pageRect.top) / pageRect.height) * 100,
+      w: (r.width / pageRect.width) * 100,
+      h: (r.height / pageRect.height) * 100
+    })).filter(r => r.w > 0.05 && r.h > 0.05);
+
+    if (!highlightRects.length) return;
+
+    const highlightItem = {
+      id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      page: pageNum,
+      text: selectedText,
+      rects: highlightRects
+    };
+
+    documentHighlights.push(highlightItem);
+    saveHighlights();
+    renderPageHighlights(pageNum, pageNode);
+
+    selection.removeAllRanges();
+    hideSelectionTooltip();
+    showToast('Highlighted!');
+  }
+
+  // Selection events
+  document.addEventListener('mouseup', () => setTimeout(handleTextSelection, 30));
+  document.addEventListener('touchend', () => setTimeout(handleTextSelection, 120));
+  document.addEventListener('mousedown', e => {
+    if (!e.target.closest('#selection-tooltip')) {
+      hideSelectionTooltip();
+    }
+  });
+
+  $('btn-highlight-selection')?.addEventListener('click', applyHighlightToSelection);
+
+  $('btn-copy-selection')?.addEventListener('click', () => {
+    const selection = window.getSelection();
+    const text = selection ? selection.toString().trim() : '';
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard');
+        hideSelectionTooltip();
+      }).catch(() => {
+        showToast('Text copied');
+        hideSelectionTooltip();
+      });
+    }
+  });
+
+  // Freehand Draw mode
   function setHighlighterMode(active) {
     if (docxMode && active) {
-      showToast('Highlighting is supported on PDF documents');
+      showToast('Draw mode is for PDFs; select text directly to highlight');
       return;
     }
     isHighlighting = Boolean(active);
@@ -1191,7 +1390,7 @@
     $('highlight-bar')?.classList.toggle('hidden', !isHighlighting);
     updateHighlightUi();
     if (isHighlighting) {
-      showToast('Highlighter active: drag on page to highlight');
+      showToast('Draw mode active: drag a box over any text');
     }
   }
 
@@ -1208,6 +1407,7 @@
     if (!confirm('Clear all highlights from this document?')) return;
     documentHighlights = [];
     try { localStorage.removeItem('mai-highlights-' + fileKey); } catch {}
+    document.querySelectorAll('.text-highlight-wrap').forEach(el => el.remove());
     document.querySelectorAll('.highlight-box').forEach(el => el.remove());
     updateHighlightUi();
     showToast('All highlights cleared');
@@ -1222,7 +1422,6 @@
     if (!isHighlighting || !pdf) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-    // Use .document-page (correct class in DOM)
     const targetNode = e.target.closest('.document-page');
     if (!targetNode) return;
 
@@ -1276,10 +1475,10 @@
     const pixelWidth = Math.abs(e.clientX - highlightStart.clientX);
     const pixelHeight = Math.abs(e.clientY - highlightStart.clientY);
 
-    // Require at least a 6px drag so accidental taps don't leave micro dots
     if (pixelWidth > 6 || pixelHeight > 6) {
       activeHighlightBox.classList.remove('highlight-drawing');
       const newHighlight = {
+        id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         page: activePageNum,
         x: parseFloat(activeHighlightBox.style.left),
         y: parseFloat(activeHighlightBox.style.top),
@@ -1287,10 +1486,8 @@
         h: parseFloat(activeHighlightBox.style.height)
       };
       documentHighlights.push(newHighlight);
-      try {
-        localStorage.setItem('mai-highlights-' + fileKey, JSON.stringify(documentHighlights));
-      } catch {}
-      updateHighlightUi();
+      saveHighlights();
+      renderPageHighlights(activePageNum, activePageNode);
       showToast('Highlight added');
     } else {
       activeHighlightBox.remove();
@@ -1302,6 +1499,7 @@
     activePageNum = null;
   });
 
+  // Export PDF with burned-in highlights
   $('download-pdf')?.addEventListener('click', async () => {
     if (!globalPdfBytes) {
       showToast('Original PDF data not found');
@@ -1326,18 +1524,23 @@
         if (h.page <= pages.length) {
           const page = pages[h.page - 1];
           const { width, height } = page.getSize();
-          const x = (h.x / 100) * width;
-          const w = (h.w / 100) * width;
-          const hPt = (h.h / 100) * height;
-          const y = height - ((h.y / 100) * height) - hPt;
 
-          page.drawRectangle({
-            x: x,
-            y: y,
-            width: w,
-            height: hPt,
-            color: rgb(1, 0.92, 0.23),
-            opacity: 0.45,
+          const rectsToDraw = h.rects && h.rects.length ? h.rects : [{ x: h.x, y: h.y, w: h.w, h: h.h }];
+
+          rectsToDraw.forEach(r => {
+            const x = (r.x / 100) * width;
+            const w = (r.w / 100) * width;
+            const hPt = (r.h / 100) * height;
+            const y = height - ((r.y / 100) * height) - hPt;
+
+            page.drawRectangle({
+              x: x,
+              y: y,
+              width: w,
+              height: hPt,
+              color: rgb(1, 0.92, 0.23),
+              opacity: 0.45,
+            });
           });
         }
       });
@@ -1365,6 +1568,7 @@
       updateHighlightUi();
     }
   });
+
 })();
 
 
