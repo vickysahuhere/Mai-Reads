@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f4f0e8"/>
+  <circle cx="600" cy="295" r="190" fill="#faf8f2" stroke="#d8d0c2" stroke-width="2"/>
+  <path d="M535 200c0-10 8-18 18-18h94c10 0 18 8 18 18v188c0 10-8 18-18 18h-94c-10 0-18-8-18-18z" fill="#fff" stroke="#d5cec1" stroke-width="3"/>
+  <path d="M557 239h86M557 265h86M557 291h63M557 317h77M557 343h52" stroke="#a79b87" stroke-width="5" stroke-linecap="round"/>
+  <text x="600" y="520" fill="#393a34" font-family="Georgia,serif" font-size="52" text-anchor="middle">Mai-Reads</text>
+  <text x="600" y="565" fill="#918b7f" font-family="Arial,sans-serif" font-size="17" letter-spacing="3" text-anchor="middle">A CALMER WAY TO READ</text>
+</svg>
