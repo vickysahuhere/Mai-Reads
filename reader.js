@@ -719,6 +719,7 @@
     $('loading').classList.remove('hidden');
     $('error').classList.add('hidden');
 
+    if (pdf && typeof pdf.destroy === 'function') { try { pdf.destroy(); } catch (e) {} }
     pages.replaceChildren();
     pageNodes = [];
     pdfTexts = [];
@@ -1105,7 +1106,24 @@
     });
   }
 
+
+  const studioBtn = document.getElementById('studio-link-btn');
+  if (studioBtn) {
+    studioBtn.addEventListener('click', () => {
+      if (confirm('Would you like to visit Maithil Studios in a new tab?')) {
+        window.open('https://maithilstudios.vercel.app/', '_blank');
+      }
+    });
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed'));
+    });
+  }
+
   let resizeTimer;
+
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
@@ -1114,3 +1132,10 @@
     }, 150);
   });
 })();
+
+
+
+
+
+
+

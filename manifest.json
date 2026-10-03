@@ -1,0 +1,16 @@
+﻿{
+  "name": "Mai-Reads",
+  "short_name": "Mai-Reads",
+  "description": "A distraction-free, privacy-first local PDF and DOCX reader.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f3ec",
+  "theme_color": "#f6f3ec",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
