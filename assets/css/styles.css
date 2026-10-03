@@ -1729,3 +1729,108 @@ button:active, a:active {
 
 .welcome-foot button { background: none; border: none; color: inherit; font: inherit; cursor: pointer; letter-spacing: inherit; padding: 0; outline: none; transition: color 0.2s var(--ease-out); }
 .welcome-foot button:hover { color: var(--ink); text-decoration: none; }
+
+/* Selection Tooltip */
+.selection-tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--control-bg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 60;
+  animation: popIn 0.18s var(--ease-out);
+  pointer-events: auto;
+}
+
+.tooltip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: 500 12px var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tooltip-btn:hover {
+  background: var(--button-hover-bg);
+  color: var(--accent);
+}
+
+.tooltip-btn-highlight {
+  background: rgba(255, 220, 0, 0.22);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tooltip-btn-highlight:hover {
+  background: rgba(255, 220, 0, 0.38);
+}
+
+/* Real Text Layer over Canvas */
+.textLayer {
+  position: absolute;
+  text-align: initial;
+  inset: 0;
+  overflow: hidden;
+  line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 3;
+}
+
+.textLayer :is(span, br) {
+  color: transparent !important;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0 0;
+}
+
+.textLayer ::selection {
+  background: rgba(251, 192, 45, 0.45);
+}
+
+/* Highlight Bands */
+.text-highlight-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.text-highlight-band {
+  position: absolute;
+  background-color: rgba(255, 230, 0, 0.4);
+  mix-blend-mode: multiply;
+  border-radius: 2px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background-color 0.15s, outline 0.15s;
+}
+
+.text-highlight-band:hover {
+  background-color: rgba(255, 205, 0, 0.65);
+  outline: 1px solid rgba(200, 150, 0, 0.8);
+}
+
+[data-theme='dark'] .text-highlight-band {
+  background-color: rgba(255, 235, 59, 0.35);
+  mix-blend-mode: screen;
+}
+
+[data-theme='dark'] .text-highlight-band:hover {
+  background-color: rgba(255, 235, 59, 0.55);
+}
