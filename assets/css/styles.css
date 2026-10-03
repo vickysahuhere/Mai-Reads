@@ -1423,10 +1423,30 @@ button:active, a:active {
 
 /* Utilities (Find / Bookmark) */
 .utility-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 18px;
+}
+
+/* Highlighter feature */
+.highlighting-mode {
+  cursor: crosshair !important;
+}
+.highlight-box {
+  position: absolute;
+  background-color: rgba(255, 235, 59, 0.4);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 10;
+}
+.highlight-drawing {
+  background-color: rgba(255, 235, 59, 0.6);
+  border: 1px dashed rgba(0,0,0,0.3);
+}
+[data-theme='dark'] .highlight-box {
+  background-color: rgba(255, 235, 59, 0.25);
+  mix-blend-mode: screen;
 }
 
 .text-button {
@@ -1639,23 +1659,3 @@ button:active, a:active {
 
 .welcome-foot button { background: none; border: none; color: inherit; font: inherit; cursor: pointer; letter-spacing: inherit; padding: 0; outline: none; transition: color 0.2s var(--ease-out); }
 .welcome-foot button:hover { color: var(--ink); text-decoration: none; }
-
-/* Highlighter feature */
-.highlighting-mode {
-  cursor: crosshair !important;
-}
-.highlight-box {
-  position: absolute;
-  background-color: rgba(255, 235, 59, 0.4);
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 10;
-}
-.highlight-drawing {
-  background-color: rgba(255, 235, 59, 0.6);
-  border: 1px dashed rgba(0,0,0,0.3);
-}
-[data-theme='dark'] .highlight-box {
-  background-color: rgba(255, 235, 59, 0.25);
-  mix-blend-mode: screen;
-}
