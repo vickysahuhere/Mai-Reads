@@ -236,6 +236,13 @@
     
     <div id="error" class="error hidden" role="alert"></div>
 
+    <!-- Floating Active Highlighter Bar at top of reading screen -->
+    <div id="highlight-bar" class="highlight-bar hidden">
+      <span class="highlight-bar-dot" aria-hidden="true"></span>
+      <span class="highlight-bar-text">Highlighter Active — Drag across page to highlight</span>
+      <button id="highlight-bar-done" type="button">Done</button>
+    </div>
+
     <!-- Floating Top-Left History Button in Reader -->
     <button id="history-toggle-reader" class="floating-btn history-toggle-reader" type="button" aria-label="Open reading history" title="Reading history (H)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -298,24 +305,16 @@
         </div>
       </div>
 
+      <div class="control-row highlight-row">
+        <span>Highlighter</span>
+        <div class="segmented">
+          <button id="highlight-toggle" class="mode-button" type="button">Draw</button>
+          <button id="highlight-clear" class="mode-button hidden" type="button" title="Clear highlights from this document">Clear</button>
+          <button id="download-pdf" class="mode-button hidden" type="button" title="Export highlighted PDF">Export</button>
+        </div>
+      </div>
+
       <div class="utility-row">
-        <button id="highlight-toggle" class="text-button" type="button">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-            <path d="M2 2l7.586 7.586"></path>
-            <circle cx="11" cy="11" r="2"></circle>
-          </svg>
-          Highlighter
-        </button>
-        <button id="download-pdf" class="text-button hidden" type="button">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Export PDF
-        </button>
         <button id="search-toggle" class="text-button" type="button">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>

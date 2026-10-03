@@ -1423,29 +1423,99 @@ button:active, a:active {
 
 /* Utilities (Find / Bookmark) */
 .utility-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  justify-content: space-between;
   gap: 8px;
   margin-top: 18px;
 }
 
-/* Highlighter feature */
-.highlighting-mode {
-  cursor: crosshair !important;
+/* Highlighter feature & Top Bar */
+.highlight-row {
+  margin-top: 14px;
 }
+
+.highlight-bar {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  background: var(--control-bg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-lg);
+  font: 500 12px var(--font-sans);
+  color: var(--ink);
+  z-index: 40;
+  animation: popIn 0.22s var(--ease-out);
+}
+
+.highlight-bar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fbc02d;
+  box-shadow: 0 0 8px rgba(251, 192, 45, 0.8);
+  animation: pulse 1.6s infinite;
+}
+
+.highlight-bar button {
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: 600 11px var(--font-sans);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.highlight-bar button:hover {
+  opacity: 0.88;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+.reading-surface.highlighting-mode {
+  cursor: crosshair !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.reading-surface.highlighting-mode .document-page,
+.reading-surface.highlighting-mode canvas {
+  cursor: crosshair !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
 .highlight-box {
   position: absolute;
-  background-color: rgba(255, 235, 59, 0.4);
+  background-color: rgba(255, 230, 0, 0.38);
   mix-blend-mode: multiply;
-  pointer-events: none;
+  pointer-events: auto;
+  border-radius: 2px;
   z-index: 10;
+  transition: opacity 0.15s;
 }
+
 .highlight-drawing {
-  background-color: rgba(255, 235, 59, 0.6);
-  border: 1px dashed rgba(0,0,0,0.3);
+  background-color: rgba(255, 230, 0, 0.45) !important;
+  border: 1px dashed rgba(180, 130, 0, 0.8) !important;
+  pointer-events: none !important;
+  z-index: 20 !important;
 }
+
 [data-theme='dark'] .highlight-box {
-  background-color: rgba(255, 235, 59, 0.25);
+  background-color: rgba(255, 235, 59, 0.32);
   mix-blend-mode: screen;
 }
 
