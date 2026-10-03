@@ -37,3 +37,6 @@ body,.welcome{background:var(--app-bg);color:var(--ink)}.welcome h1{color:var(--
 .mode-single{scroll-snap-type:y mandatory;scroll-padding-block:12px}.mode-single .pages{min-height:100%;height:auto;gap:0;padding:14px 0;align-items:center}.mode-single .document-page{scroll-snap-align:start;scroll-snap-stop:always;margin:0 auto;max-width:none;max-height:none}
 button,a,input,summary{-webkit-tap-highlight-color:transparent}button:active,a:active{filter:brightness(.96)}
 .mode-single .pages{padding:0}.mode-single .document-page{margin:0 auto;max-width:none;max-height:none}
+
+.back-home-button{grid-column:1 / -1}
+

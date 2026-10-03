@@ -54,6 +54,7 @@ The browser's local storage keeps display preferences, bookmarks, and reading-po
 | `reader.js` | Local file loading, rendering, navigation, search, and saved state |
 | `robots.txt` | Allows OAI-SearchBot, Googlebot, Bingbot, and general crawlers; points to the sitemap |
 | `sitemap.xml` | Lists the production homepage for crawler discovery |
+| `favicon.svg` | Orange app icon with an open-book mark |
 | `social-preview.svg` | Social sharing preview artwork |
 | `PLAN.md` | Product scope and implementation plan |
 
