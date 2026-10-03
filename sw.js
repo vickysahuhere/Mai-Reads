@@ -1,9 +1,9 @@
-﻿const CACHE_NAME = 'mai-reads-v1-offline';
+const CACHE_NAME = 'mai-reads-v1-offline';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './reader.js',
+  './assets/css/styles.css',
+  './assets/js/reader.js',
   './manifest.json',
   './favicon.svg',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
@@ -49,3 +49,4 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
