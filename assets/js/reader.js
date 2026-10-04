@@ -593,9 +593,12 @@
     return { node: pageNodes[0], index: 0, offsetRatio: 0 };
   }
 
-  function applyBatchPageDimensions(zoomVal) {
+  let activePinchAnchor = null;
+  let activePinchTimer = null;
+
+  function applyBatchPageDimensions(zoomVal, syncScroll = false) {
     if (!pdf || !pageNodes.length) return null;
-    const anchor = getAnchorPage();
+    const anchor = syncScroll ? getAnchorPage() : null;
 
     for (let i = 0; i < pageNodes.length; i++) {
       const base = pdfPageBases[i];
@@ -622,7 +625,7 @@
 
     updateSinglePageSlots();
 
-    if (mode === 'continuous' && anchor?.node) {
+    if (syncScroll && mode === 'continuous' && anchor?.node) {
       surface.scrollTop = anchor.node.offsetTop + (anchor.offsetRatio * anchor.node.offsetHeight);
     }
     return anchor;
@@ -647,8 +650,20 @@
     paper.style.setProperty('--doc-zoom', clamped / 100);
 
     if (pdf) {
-      applyBatchPageDimensions(clamped);
+      if (!activePinchAnchor) {
+        activePinchAnchor = getAnchorPage();
+      }
+      applyBatchPageDimensions(clamped, false);
+      if (mode === 'continuous' && activePinchAnchor?.node) {
+        surface.scrollTop = activePinchAnchor.node.offsetTop + (activePinchAnchor.offsetRatio * activePinchAnchor.node.offsetHeight);
+      }
     }
+
+    clearTimeout(activePinchTimer);
+    activePinchTimer = setTimeout(() => {
+      activePinchAnchor = null;
+    }, 200);
+
     scheduleZoomRedraw(140);
   }
 
@@ -657,11 +672,12 @@
     $('zoom-value').textContent = `${val}%`;
     paper.style.setProperty('--doc-zoom', val / 100);
     if (pdf) {
-      applyBatchPageDimensions(val);
+      applyBatchPageDimensions(val, true);
     }
   });
 
   zoomInput.addEventListener('change', () => {
+    activePinchAnchor = null;
     if (pdf) redrawPdf();
     else { updateDocxPageCount(); updateCurrentPage(); }
   });
@@ -670,6 +686,9 @@
   surface.addEventListener('wheel', e => {
     if (!e.ctrlKey || reader.classList.contains('hidden')) return;
     e.preventDefault();
+    if (!activePinchAnchor) {
+      activePinchAnchor = getAnchorPage();
+    }
     const factor = Math.exp(-e.deltaY * 0.0025);
     const current = Number(zoomInput.value || 100);
     setLiveZoom(current * factor);
@@ -683,6 +702,7 @@
       const [a, b] = [...touchPointers.values()];
       touchStartDist = Math.hypot(a.x - b.x, a.y - b.y);
       touchStartZoom = Number(zoomInput.value || 100);
+      activePinchAnchor = getAnchorPage();
     }
   });
 
@@ -703,6 +723,7 @@
     touchPointers.delete(e.pointerId);
     if (touchPointers.size < 2) {
       touchStartDist = 0;
+      activePinchAnchor = null;
     }
   }
   surface.addEventListener('pointerup', endTouchPointer);
@@ -713,6 +734,7 @@
     if (reader.classList.contains('hidden')) return;
     e.preventDefault();
     safariGestureZoom = Number(zoomInput.value || 100);
+    activePinchAnchor = getAnchorPage();
   }, { passive: false });
 
   surface.addEventListener('gesturechange', e => {
@@ -725,6 +747,7 @@
     if (safariGestureZoom === null) return;
     e.preventDefault();
     safariGestureZoom = null;
+    activePinchAnchor = null;
     scheduleZoomRedraw(40);
   }, { passive: false });
 
@@ -1073,8 +1096,8 @@
     const token = ++renderToken;
     const zoomVal = Number($('zoom').value || 100);
 
-    // 1. Batch size all page containers & anchor scroll ONCE (instant geometry pass)
-    applyBatchPageDimensions(zoomVal);
+    // 1. Ensure page container dimensions match target zoom without disturbing scroll
+    applyBatchPageDimensions(zoomVal, false);
 
     // 2. Identify visible pages in viewport to prioritize immediate rendering
     const viewTop = surface.scrollTop;
@@ -1174,7 +1197,6 @@
     }
     $('page-current').textContent = best;
     slider.value = best;
-    slider.dispatchEvent(new Event('input'));
   }
 
   function scrollToPage(number, smooth = true) {
