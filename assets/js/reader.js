@@ -558,6 +558,9 @@
   const touchPointers = new Map();
   let touchStartDist = 0;
   let touchStartZoom = 100;
+  let rafZoomId = null;
+  let pendingZoom = null;
+  let pendingAnchor = null;
 
   function getPdfPageScale(base, zoomVal = Number(zoomInput.value || 100)) {
     const width = Math.min(window.innerWidth - 48, 920);
@@ -577,71 +580,25 @@
     };
   }
 
-  function getAnchorPage() {
-    if (!pageNodes.length) return null;
-    const surfaceTop = surface.scrollTop;
-    const targetY = surfaceTop + surface.clientHeight * 0.3;
-    for (let i = 0; i < pageNodes.length; i++) {
-      const node = pageNodes[i];
-      const top = node.offsetTop;
-      const height = node.offsetHeight;
-      if (top <= targetY && (top + height) >= targetY) {
-        return {
-          node,
-          index: i,
-          offsetRatio: (surfaceTop - top) / Math.max(1, height)
-        };
-      }
-    }
-    for (let i = 0; i < pageNodes.length; i++) {
-      const node = pageNodes[i];
-      if (node.offsetTop + node.offsetHeight >= surfaceTop) {
-        return {
-          node,
-          index: i,
-          offsetRatio: Math.max(0, (surfaceTop - node.offsetTop) / Math.max(1, node.offsetHeight))
-        };
-      }
-    }
-    return { node: pageNodes[0], index: 0, offsetRatio: 0 };
-  }
-
-  let activePinchAnchor = null;
-  let activePinchTimer = null;
-
-  function applyBatchPageDimensions(zoomVal, syncScroll = false) {
-    if (!pdf || !pageNodes.length) return null;
-    const anchor = syncScroll ? getAnchorPage() : null;
-
+  function refreshPageBaseDimensions() {
+    if (!pdf || !pageNodes.length) return;
     for (let i = 0; i < pageNodes.length; i++) {
       const base = pdfPageBases[i];
       if (!base) continue;
-      const dims = getPageDimensions(base, zoomVal);
+      const baseScale = getPdfPageScale(base, 100);
+      const baseW = Math.floor(base.width * baseScale);
+      const baseH = Math.floor(base.height * baseScale);
       const node = pageNodes[i];
-
-      node.style.width = `${dims.width}px`;
-      node.style.height = `${dims.height}px`;
-
-      const canvas = node.querySelector('canvas');
-      if (canvas) {
-        canvas.style.width = `${dims.width}px`;
-        canvas.style.height = `${dims.height}px`;
-      }
-
-      const textLayer = node.querySelector('.textLayer');
-      if (textLayer) {
-        textLayer.style.width = `${dims.width}px`;
-        textLayer.style.height = `${dims.height}px`;
-        textLayer.style.setProperty('--scale-factor', `${dims.scale}`);
-      }
+      node.style.setProperty('--page-w', `${baseW}px`);
+      node.style.setProperty('--page-h', `${baseH}px`);
     }
+  }
 
-    updateSinglePageSlots();
-
-    if (syncScroll && mode === 'continuous' && anchor?.node) {
-      surface.scrollTop = anchor.node.offsetTop + (anchor.offsetRatio * anchor.node.offsetHeight);
-    }
-    return anchor;
+  function applyBatchPageDimensions(zoomVal) {
+    refreshPageBaseDimensions();
+    const clamped = Math.max(60, Math.min(200, Number(zoomVal) || 100));
+    paper.style.setProperty('--doc-zoom', String(clamped / 100));
+    return null;
   }
 
   function scheduleZoomRedraw(delay = 140) {
@@ -652,59 +609,77 @@
     }, delay);
   }
 
-  function setLiveZoom(targetVal) {
+  function setLiveZoom(targetVal, anchor = null) {
     const min = Number(zoomInput.min || 60);
     const max = Number(zoomInput.max || 200);
     const clamped = Math.max(min, Math.min(max, Math.round(targetVal)));
-    if (Number(zoomInput.value) === clamped) return;
 
-    zoomInput.value = String(clamped);
-    $('zoom-value').textContent = `${clamped}%`;
-    paper.style.setProperty('--doc-zoom', clamped / 100);
+    pendingZoom = clamped;
+    if (anchor) pendingAnchor = anchor;
 
-    if (pdf) {
-      if (!activePinchAnchor) {
-        activePinchAnchor = getAnchorPage();
-      }
-      applyBatchPageDimensions(clamped, false);
-      if (mode === 'continuous' && activePinchAnchor?.node) {
-        surface.scrollTop = activePinchAnchor.node.offsetTop + (activePinchAnchor.offsetRatio * activePinchAnchor.node.offsetHeight);
+    if (!rafZoomId) {
+      rafZoomId = requestAnimationFrame(applyLiveZoomFrame);
+    }
+  }
+
+  function applyLiveZoomFrame() {
+    rafZoomId = null;
+    if (pendingZoom === null) return;
+
+    const prevZoom = Number(zoomInput.value || 100);
+    const newZoom = pendingZoom;
+    const anchor = pendingAnchor;
+    pendingZoom = null;
+    pendingAnchor = null;
+
+    if (prevZoom === newZoom && !anchor) return;
+
+    zoomInput.value = String(newZoom);
+    $('zoom-value').textContent = `${newZoom}%`;
+
+    const zoomRatio = newZoom / 100;
+    paper.style.setProperty('--doc-zoom', String(zoomRatio));
+
+    if (pdf && pageNodes.length) {
+      // Fluid geometric anchor preservation without layout thrashing
+      const anchorY = anchor?.y !== undefined ? anchor.y : (surface.clientHeight * 0.35);
+      const contentPointY = surface.scrollTop + anchorY;
+      const ratio = newZoom / Math.max(1, prevZoom);
+      const newContentPointY = contentPointY * ratio;
+      surface.scrollTop = Math.max(0, Math.round(newContentPointY - anchorY));
+
+      if (anchor?.x !== undefined && surface.scrollWidth > surface.clientWidth) {
+        const anchorX = anchor.x;
+        const contentPointX = surface.scrollLeft + anchorX;
+        const newContentPointX = contentPointX * ratio;
+        surface.scrollLeft = Math.max(0, Math.round(newContentPointX - anchorX));
       }
     }
-
-    clearTimeout(activePinchTimer);
-    activePinchTimer = setTimeout(() => {
-      activePinchAnchor = null;
-    }, 200);
 
     scheduleZoomRedraw(140);
   }
 
   zoomInput.addEventListener('input', e => {
     const val = Number(e.target.value);
-    $('zoom-value').textContent = `${val}%`;
-    paper.style.setProperty('--doc-zoom', val / 100);
-    if (pdf) {
-      applyBatchPageDimensions(val, true);
-    }
+    setLiveZoom(val, null);
   });
 
   zoomInput.addEventListener('change', () => {
-    activePinchAnchor = null;
-    if (pdf) redrawPdf();
-    else { updateDocxPageCount(); updateCurrentPage(); }
+    scheduleZoomRedraw(30);
   });
 
   // Trackpad pinch (Ctrl + Wheel) with smooth exponential scaling & anchor lock
   surface.addEventListener('wheel', e => {
     if (!e.ctrlKey || reader.classList.contains('hidden')) return;
     e.preventDefault();
-    if (!activePinchAnchor) {
-      activePinchAnchor = getAnchorPage();
-    }
-    const factor = Math.exp(-e.deltaY * 0.0025);
-    const current = Number(zoomInput.value || 100);
-    setLiveZoom(current * factor);
+    const factor = Math.exp(-e.deltaY * 0.003);
+    const current = pendingZoom !== null ? pendingZoom : Number(zoomInput.value || 100);
+    const rect = surface.getBoundingClientRect();
+    const anchor = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+    setLiveZoom(current * factor, anchor);
   }, { passive: false });
 
   // Two-finger touch pinch
@@ -715,7 +690,6 @@
       const [a, b] = [...touchPointers.values()];
       touchStartDist = Math.hypot(a.x - b.x, a.y - b.y);
       touchStartZoom = Number(zoomInput.value || 100);
-      activePinchAnchor = getAnchorPage();
     }
   });
 
@@ -727,7 +701,12 @@
       const [a, b] = [...touchPointers.values()];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       if (dist > 5) {
-        setLiveZoom(touchStartZoom * (dist / touchStartDist));
+        const rect = surface.getBoundingClientRect();
+        const anchor = {
+          x: ((a.x + b.x) / 2) - rect.left,
+          y: ((a.y + b.y) / 2) - rect.top
+        };
+        setLiveZoom(touchStartZoom * (dist / touchStartDist), anchor);
       }
     }
   }, { passive: false });
@@ -736,7 +715,7 @@
     touchPointers.delete(e.pointerId);
     if (touchPointers.size < 2) {
       touchStartDist = 0;
-      activePinchAnchor = null;
+      scheduleZoomRedraw(40);
     }
   }
   surface.addEventListener('pointerup', endTouchPointer);
@@ -747,20 +726,23 @@
     if (reader.classList.contains('hidden')) return;
     e.preventDefault();
     safariGestureZoom = Number(zoomInput.value || 100);
-    activePinchAnchor = getAnchorPage();
   }, { passive: false });
 
   surface.addEventListener('gesturechange', e => {
     if (safariGestureZoom === null) return;
     e.preventDefault();
-    setLiveZoom(safariGestureZoom * e.scale);
+    const rect = surface.getBoundingClientRect();
+    const anchor = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+    setLiveZoom(safariGestureZoom * e.scale, anchor);
   }, { passive: false });
 
   surface.addEventListener('gestureend', e => {
     if (safariGestureZoom === null) return;
     e.preventDefault();
     safariGestureZoom = null;
-    activePinchAnchor = null;
     scheduleZoomRedraw(40);
   }, { passive: false });
 
@@ -938,9 +920,18 @@
       pdfTexts.push(text.items.map(item => item.str).join(' '));
       const base = page.getViewport({ scale: 1 });
       pdfPageBases.push(base);
+
+      const baseScale = getPdfPageScale(base, 100);
+      const baseW = Math.floor(base.width * baseScale);
+      const baseH = Math.floor(base.height * baseScale);
+
       const node = document.createElement('div');
       node.className = 'document-page pdf-page';
       node.dataset.page = n;
+      node.style.setProperty('--page-w', `${baseW}px`);
+      node.style.setProperty('--page-h', `${baseH}px`);
+      node.style.setProperty('--rendered-scale', '1');
+
       const canvas = document.createElement('canvas');
       node.append(canvas);
       pages.append(node);
@@ -967,16 +958,19 @@
   }
 
   async function drawPdfPage(page, canvas, node, base) {
-    const scale = getPdfPageScale(base, Number($('zoom').value || 100));
+    const zoomVal = Number($('zoom').value || 100);
+    const scale = getPdfPageScale(base, zoomVal);
     const viewport = page.getViewport({ scale });
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
 
     canvas.width = Math.floor(viewport.width * ratio);
     canvas.height = Math.floor(viewport.height * ratio);
-    canvas.style.width = `${viewport.width}px`;
-    canvas.style.height = `${viewport.height}px`;
-    node.style.width = `${viewport.width}px`;
-    node.style.height = `${viewport.height}px`;
+
+    const baseScale = getPdfPageScale(base, 100);
+    node.style.setProperty('--rendered-scale', String(scale / Math.max(0.001, baseScale)));
+    node.style.setProperty('--rendered-w', `${viewport.width}px`);
+    node.style.setProperty('--rendered-h', `${viewport.height}px`);
+    node.dataset.renderedZoom = String(zoomVal);
 
     // Cancellation protection for active canvas rendering
     if (node._renderTask) {
@@ -1081,8 +1075,13 @@
     surface.classList.toggle('mode-single', mode === 'single');
     surface.classList.toggle('mode-continuous', mode === 'continuous');
     document.querySelectorAll('.mode-button').forEach(b => b.classList.toggle('selected', b.dataset.mode === mode));
-    if (pdf) redrawPdf();
-    else { updateDocxPageCount(); updateCurrentPage(); }
+    if (pdf) {
+      refreshPageBaseDimensions();
+      redrawPdf();
+    } else {
+      updateDocxPageCount();
+      updateCurrentPage();
+    }
   }
 
   let lazyObserver = null;
@@ -1137,10 +1136,7 @@
     const token = ++renderToken;
     const zoomVal = Number($('zoom').value || 100);
 
-    // 1. Ensure page container dimensions match target zoom without disturbing scroll
-    applyBatchPageDimensions(zoomVal, false);
-
-    // 2. Identify visible pages in viewport to prioritize immediate rendering
+    // Identify visible pages in viewport to prioritize immediate rendering
     const viewTop = surface.scrollTop;
     const viewBottom = viewTop + surface.clientHeight;
     const visibleIndices = [];
@@ -1157,16 +1153,16 @@
       }
     }
 
-    // 3. Render visible pages first for instant crispness (<50ms)
+    // Render visible pages first for instant crispness (<50ms)
     for (const i of visibleIndices) {
       if (token !== renderToken) return;
       await renderSinglePage(i, token);
     }
 
-    // 4. Connect intersection observer for smooth lazy rendering when user scrolls
+    // Connect intersection observer for smooth lazy rendering when user scrolls
     setupLazyObserver();
 
-    // 5. Render remaining pages in order of proximity to viewport center without blocking
+    // Render remaining pages in order of proximity to viewport center without blocking
     const viewCenter = viewTop + surface.clientHeight / 2;
     otherIndices.sort((a, b) => {
       const distA = Math.abs((pageNodes[a].offsetTop + pageNodes[a].offsetHeight / 2) - viewCenter);
@@ -1184,24 +1180,11 @@
       }
     }
 
-    if (mode === 'single') {
-      updateSinglePageSlots();
-    }
     updateCurrentPage();
   }
 
   function updateSinglePageSlots() {
-    if (!pdf) return;
-    pageNodes.forEach(node => {
-      if (mode === 'single') {
-        const spacer = Math.max(0, surface.clientHeight - node.offsetHeight);
-        node.style.marginTop = `${spacer / 2}px`;
-        node.style.marginBottom = `${spacer / 2}px`;
-      } else {
-        node.style.marginTop = '';
-        node.style.marginBottom = '';
-      }
-    });
+    // Sizing and vertical alignment handled via CSS variables with zero layout thrashing
   }
 
   function updateDocxPageCount() {
@@ -1416,8 +1399,13 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      if (pdf) redrawPdf();
-      else { updateDocxPageCount(); updateCurrentPage(); }
+      if (pdf) {
+        refreshPageBaseDimensions();
+        redrawPdf();
+      } else {
+        updateDocxPageCount();
+        updateCurrentPage();
+      }
     }, 150);
   });
 

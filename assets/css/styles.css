@@ -977,6 +977,7 @@ button:active, a:active {
 
 .paper {
   --paper-brightness: 1;
+  --doc-zoom: 1;
   background: var(--paper-bg);
   filter: brightness(var(--paper-brightness));
   min-height: 100%;
@@ -996,12 +997,6 @@ button:active, a:active {
   padding: 36px 20px;
 }
 
-.pages.pinch-zooming .pdf-page {
-  transform: scale(var(--pinch-scale, 1));
-  transform-origin: center center;
-  transition: none;
-}
-
 .document-page {
   position: relative;
   flex: none;
@@ -1012,14 +1007,20 @@ button:active, a:active {
   contain: layout style paint;
 }
 
+.pdf-page {
+  width: calc(var(--page-w, 600px) * var(--doc-zoom, 1)) !important;
+  height: calc(var(--page-h, 800px) * var(--doc-zoom, 1)) !important;
+  will-change: width, height;
+}
+
 :root[data-resolved-theme="dark"] .document-page {
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
 }
 
 .pdf-page canvas {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   filter: none !important;
 }
 
@@ -1044,7 +1045,8 @@ button:active, a:active {
 .mode-single .document-page {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  margin: 0 auto;
+  margin-inline: auto;
+  margin-block: max(16px, calc((100vh - 36px - (var(--page-h, 800px) * var(--doc-zoom, 1))) / 2));
   max-width: none;
   max-height: none;
 }
@@ -1799,13 +1801,17 @@ button:active, a:active {
 /* Real Text Layer over Canvas */
 .textLayer {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--rendered-w, 100%);
+  height: var(--rendered-h, 100%);
   text-align: initial;
-  inset: 0;
   overflow: hidden;
   line-height: 1;
   text-size-adjust: none;
   forced-color-adjust: none;
   transform-origin: 0 0;
+  transform: scale(calc(var(--doc-zoom, 1) / var(--rendered-scale, 1)));
   z-index: 3;
 }
 
