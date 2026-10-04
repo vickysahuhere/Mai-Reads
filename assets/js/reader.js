@@ -149,19 +149,32 @@
       toggleBtn.title = `Switch to ${dark ? 'light' : 'dark'} mode`;
     }
 
+    const readerThemeIcon = $('reader-theme-icon');
+    if (readerThemeIcon) readerThemeIcon.innerHTML = dark ? SUN_SVG : MOON_SVG;
+    const readerThemeText = $('reader-theme-text');
+    if (readerThemeText) readerThemeText.textContent = dark ? 'Light' : 'Dark';
+    const readerThemeBtn = $('reader-theme-toggle');
+    if (readerThemeBtn) {
+      readerThemeBtn.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} mode`);
+      readerThemeBtn.title = `Switch to ${dark ? 'light' : 'dark'} mode`;
+    }
+
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) metaTheme.content = dark ? '#1c1d1a' : '#f6f3ec';
   }
 
   applyTheme(themePreference);
 
-  $('theme-toggle')?.addEventListener('click', () => {
+  function toggleThemeAction() {
     const isDark = document.documentElement.dataset.resolvedTheme === 'dark';
     const next = isDark ? 'light' : 'dark';
     applyTheme(next);
     saveStore({ theme: next });
     showToast(`${next.charAt(0).toUpperCase() + next.slice(1)} mode enabled`, 1800);
-  });
+  }
+
+  $('theme-toggle')?.addEventListener('click', toggleThemeAction);
+  $('reader-theme-toggle')?.addEventListener('click', toggleThemeAction);
 
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
     if (themePreference === 'system') applyTheme('system');
@@ -803,6 +816,30 @@
       if (historyPanel.classList.contains('open')) closeHistoryPanel();
       else openHistoryPanel();
     }
+
+    if (!inInput && !reader.classList.contains('hidden')) {
+      if (mode === 'single') {
+        const cur = Number($('page-current').textContent) || 1;
+        const tot = Number($('page-total').textContent) || (pdf ? pdf.numPages : docxPageCount) || 1;
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'j') {
+          e.preventDefault();
+          scrollToPage(Math.min(tot, cur + 1));
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'k') {
+          e.preventDefault();
+          scrollToPage(Math.max(1, cur - 1));
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        setLiveZoom(Number(zoomInput.value || 100) + 10);
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        setLiveZoom(Number(zoomInput.value || 100) - 10);
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        setLiveZoom(100);
+      }
+    }
   });
 
   // ── Open & Render Document ────────────────────────────────────────────────
@@ -815,6 +852,10 @@
     reader.classList.remove('hidden');
     $('loading').classList.remove('hidden');
     $('error').classList.add('hidden');
+
+    zoomInput.value = '100';
+    $('zoom-value').textContent = '100%';
+    paper.style.setProperty('--doc-zoom', '1');
 
     if (pdf && typeof pdf.destroy === 'function') { try { pdf.destroy(); } catch (e) {} }
     pages.replaceChildren();
@@ -1487,10 +1528,12 @@
     const tooltip = $('selection-tooltip');
     if (!tooltip) return;
 
+    const isNearTop = rect.top < 52;
     const left = Math.max(80, Math.min(window.innerWidth - 80, rect.left + rect.width / 2));
-    const top = Math.max(12, rect.top - 8);
+    const top = isNearTop ? rect.bottom + 8 : rect.top - 8;
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
+    tooltip.classList.toggle('tooltip-below', isNearTop);
     tooltip.classList.remove('hidden');
   }
 
