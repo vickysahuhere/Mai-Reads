@@ -75,7 +75,9 @@
 html, body {
   margin: 0;
   padding: 0;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none !important;
   font-family: var(--font-sans);
   background: var(--app-bg);
   color: var(--ink);
@@ -959,6 +961,7 @@ button:active, a:active {
   position: fixed;
   inset: 0;
   overflow: hidden;
+  overscroll-behavior: none !important;
   background: var(--reader-bg);
 }
 
@@ -967,7 +970,7 @@ button:active, a:active {
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--muted-light) transparent;
-  overscroll-behavior: contain;
+  overscroll-behavior: none !important;
   touch-action: pan-y pan-x;
   scroll-behavior: auto !important;
 }
