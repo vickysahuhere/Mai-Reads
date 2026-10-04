@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en" class="docs-html">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f2eb" />
+  <meta name="description" content="Documentation and feature guide for Mai-Reads. Learn how the persistent highlighter, instant memory resume, 60fps smooth zoom, and local-first architecture work." />
+  <meta name="keywords" content="mai-reads docs, pdf reader documentation, offline text highlighter, indexeddb document cache, pdf-lib highlight export, distraction-free reading, maithil studios" />
+  <meta name="author" content="Maithil Studios" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://mai-reads.vercel.app/docs.html" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>Documentation &amp; Feature Guide — Mai-Reads</title>
+  
+  <meta property="og:site_name" content="Mai-Reads" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Mai-Reads Documentation &amp; Feature Guide" />
+  <meta property="og:description" content="Comprehensive field guide to Mai-Reads: precision highlighting, instant resume memory, 60fps zoom, and 100% local privacy." />
+  <meta property="og:url" content="https://mai-reads.vercel.app/docs.html" />
+  <meta property="og:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Mai-Reads Documentation & Architecture Field Guide",
+    "description": "In-depth guide to the features, keyboard shortcuts, precision highlighter, and instant memory engine of Mai-Reads.",
+    "author": {
+      "@type": "Organization",
+      "name": "Maithil Studios",
+      "url": "https://maithilstudios.vercel.app/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Maithil Studios"
+    }
+  }
+  </script>
+
+  <!-- Prevent Theme Flash -->
+  <script>
+    (function() {
+      try {
+        var store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
+        var theme = store.theme || 'system';
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = dark ? '#1c1d1a' : '#f6f3ec';
+      } catch(e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/docs.css" />
+</head>
+<body class="docs-page">
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="docs-nav" role="banner">
+    <div class="docs-nav-inner">
+      <div class="docs-nav-left">
+        <a href="index.html" class="docs-back-link" aria-label="Return to Mai-Reads Reader">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Reader</span>
+        </a>
+        <span class="docs-brand-badge" aria-hidden="true">Documentation</span>
+      </div>
+
+      <div class="docs-nav-right">
+        <span class="docs-read-time" aria-label="Estimated reading time">4 min read</span>
+        <button id="docs-theme-toggle" class="docs-theme-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">
+          <span id="docs-theme-icon" aria-hidden="true">
+            <!-- Icon rendered by inline script -->
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="docs-container" role="main">
+
+    <!-- Hero Section -->
+    <header class="docs-hero">
+      <span class="docs-eyebrow">FIELD MANUAL &amp; SPECIFICATION</span>
+      <h1>A Sanctuary for Unhurried Reading</h1>
+      <p class="docs-hero-lead">
+        Mai-Reads is engineered specifically for deep research, prolonged study, and distraction-free comprehension.
+        Built with a local-first architecture, it turns your browser into a calm, private reading environment.
+      </p>
+
+      <!-- Quick Jump Navigation Chips -->
+      <nav class="docs-toc" aria-label="Table of contents">
+        <a href="#instant-memory" class="docs-toc-chip">Instant Memory</a>
+        <a href="#highlighter" class="docs-toc-chip">Precision Highlighter</a>
+        <a href="#smooth-zoom" class="docs-toc-chip">60/120fps Zoom</a>
+        <a href="#paper-brightness" class="docs-toc-chip">Paper Brightness</a>
+        <a href="#reading-modes" class="docs-toc-chip">Modes &amp; Navigation</a>
+        <a href="#shortcuts" class="docs-toc-chip">Shortcuts</a>
+        <a href="#privacy" class="docs-toc-chip">Local-First Privacy</a>
+        <a href="#studio" class="docs-toc-chip">Maithil Studios</a>
+      </nav>
+    </header>
+
+    <!-- SECTION 1: INSTANT MEMORY -->
+    <section id="instant-memory" class="docs-section">
+      <span class="docs-section-tag">01 / PERSISTENCE</span>
+      <h2>Instant Memory: Remembers Where You Left Off</h2>
+      <p class="docs-section-lead">
+        When you reopen Mai-Reads after closing your laptop or shutting down your browser, your reading session is restored down to the exact millimeter.
+      </p>
+
+      <div class="docs-grid">
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <h3>Fractional Viewport Tracking</h3>
+          <p>
+            Rather than simply remembering a page number, Mai-Reads computes your exact scroll ratio (<code>scrollY / totalHeight</code>). When re-rendered at any window size, your reading view aligns precisely where your eyes last rested.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            </svg>
+          </div>
+          <h3>Dual-Tier Offline Storage</h3>
+          <p>
+            Document binaries are held safely in browser <strong>IndexedDB</strong>, while view states, bookmarks, and highlight arrays reside in atomic <strong>localStorage</strong>. Nothing is ever sent to an external server.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+          <h3>1-Click Welcome Resume</h3>
+          <p>
+            Upon launching the app, the welcome card immediately surfaces your last-opened document with page count and progress. One tap launches you straight back into your text without browsing your filesystem.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+              <path d="M12 7v5l4 2"></path>
+            </svg>
+          </div>
+          <h3>Reading History Sidebar</h3>
+          <p>
+            Press <kbd class="docs-kbd">H</kbd> or click the History icon to inspect recent books and papers. Each entry retains its progress percentage, last-read timestamp, and persistent annotations.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: THE PRECISION HIGHLIGHTER -->
+    <section id="highlighter" class="docs-section">
+      <span class="docs-section-tag">02 / ANNOTATION ENGINE</span>
+      <h2>The Precision Highlighter System</h2>
+      <p class="docs-section-lead">
+        Highlighting in Mai-Reads works on both digital documents and scanned PDFs without selectable text layers, with full permanent PDF export.
+      </p>
+
+      <ul class="docs-steps">
+        <li class="docs-step">
+          <div class="docs-step-num">1</div>
+          <div class="docs-step-body">
+            <h4>Text Selection Pill</h4>
+            <p>
+              Select any sentence or paragraph with your cursor or finger. An ergonomic golden tooltip immediately appears above your selection with <strong>Highlight</strong> and <strong>Copy</strong> actions. One click creates a luminous, paper-warm highlight band.
+            </p>
+          </div>
+        </li>
+
+        <li class="docs-step">
+          <div class="docs-step-num">2</div>
+          <div class="docs-step-body">
+            <h4>Freehand Draw Tool (Pen Mode)</h4>
+            <p>
+              Click the Pen icon in the floating dock or press <kbd class="docs-kbd">D</kbd> to enter Draw Mode. Click and drag anywhere across the page to highlight diagrams, mathematical formulas, footnotes, code snippets, or scanned archives where text cannot be selected.
+            </p>
+          </div>
+        </li>
+
+        <li class="docs-step">
+          <div class="docs-step-num">3</div>
+          <div class="docs-step-body">
+            <h4>Resolution-Independent Percentage Anchors</h4>
+            <p>
+              Highlights are mathematically mapped as relative percentages (<code>x%</code>, <code>y%</code>, <code>w%</code>, <code>h%</code>) of each page canvas. Whether you zoom to 60%, 150%, or 200%, or resize your browser window, your highlights stay pinned with absolute fidelity.
+            </p>
+          </div>
+        </li>
+
+        <li class="docs-step">
+          <div class="docs-step-num">4</div>
+          <div class="docs-step-body">
+            <h4>1-Click Quick Erase</h4>
+            <p>
+              Made a mistake or finished a review? Simply click or tap any existing highlight band to erase it immediately.
+            </p>
+          </div>
+        </li>
+
+        <li class="docs-step">
+          <div class="docs-step-num">5</div>
+          <div class="docs-step-body">
+            <h4>Baked-In Client-Side PDF Export</h4>
+            <p>
+              Click <strong>Save &amp; Export</strong> in the reader controls. Mai-Reads uses <code>pdf-lib</code> in-browser to permanently bake vector highlight rectangles into the actual PDF binary. The downloaded file can be opened in Adobe Acrobat, Apple Preview, or Google Drive with all your highlights intact.
+            </p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="docs-callout">
+        <div class="docs-callout-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </div>
+        <div class="docs-callout-content">
+          <strong>Highlight sample:</strong> This is an example of a <mark class="docs-highlight-sample">highlighted passage</mark> in Mai-Reads. The color is calibrated with subtle opacity and multiply blend-modes so text remains legible and clear in both light and dark themes.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: SMOOTH 60/120FPS ZOOM -->
+    <section id="smooth-zoom" class="docs-section">
+      <span class="docs-section-tag">03 / PERFORMANCE</span>
+      <h2>Hardware-Accelerated 60/120fps Smooth Zoom</h2>
+      <p class="docs-section-lead">
+        Traditional web PDF readers lag, jitter, and drop frames when zooming because they force heavy synchronous canvas re-rasterization on every pixel of movement. Mai-Reads solves this with a modern dual-stage graphics pipeline.
+      </p>
+
+      <div class="docs-grid">
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <h3>Stage 1: GPU Visual Scaling</h3>
+          <p>
+            When dragging the slider or pressing <kbd class="docs-kbd">+</kbd> / <kbd class="docs-kbd">−</kbd>, scaling executes directly on your GPU via hardware-accelerated CSS transforms. Frame rates remain rock-solid at 60Hz or 120Hz ProMotion without stutter.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </div>
+          <h3>Stage 2: Debounced Rasterization</h3>
+          <p>
+            Once zoom interaction pauses for 250ms, a lightweight background worker rasterizes sharp, retina-grade 2x resolution canvases for visible pages, giving you crisp vector clarity without scroll interruption.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <h3>Anchor-Stabilized Viewport</h3>
+          <p>
+            During zoom adjustments, Mai-Reads locks onto the center-vertical coordinate of the viewport. This completely eliminates the disorienting "rubbery bounce" effect and prevents unexpected jumping.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <div class="docs-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <h3>Tactile Zoom Controls</h3>
+          <p>
+            Includes quick 10% step buttons (<kbd class="docs-kbd">−</kbd> / <kbd class="docs-kbd">+</kbd>), a 1-click reset to <code>100%</code>, pinch-to-zoom gestures, and a fluid range slider extending up to <strong>200%</strong>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: PAPER BRIGHTNESS & OCULAR ERGONOMICS -->
+    <section id="paper-brightness" class="docs-section">
+      <span class="docs-section-tag">04 / OCULAR ERGONOMICS</span>
+      <h2>Paper Brightness &amp; Sensory Calm</h2>
+      <p class="docs-section-lead">
+        Modern displays output intense white light that strains the eyes during prolonged research sessions. Mai-Reads introduces independent paper attenuation.
+      </p>
+
+      <div class="docs-grid">
+        <div class="docs-card">
+          <h3>Independent Paper Dimming (55% to 100%)</h3>
+          <p>
+            Dim the document page itself without darkening your browser interface, operating system, or secondary monitors. This provides instant relief for readers experiencing asthenopia, photophobia, or migraines.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Cognitive Design for ADHD &amp; Dyslexia</h3>
+          <p>
+            All menus and controls fade into the background while reading, leaving only pure text on paper. Zero flashing banners, zero popups, and generous line-spacing allow uninterrupted hyper-focus.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: MODES & NAVIGATION -->
+    <section id="reading-modes" class="docs-section">
+      <span class="docs-section-tag">05 / MODES &amp; FORMATS</span>
+      <h2>Reading Modes &amp; Document Formats</h2>
+      <p class="docs-section-lead">
+        Customize your reading environment to suit the material at hand, from continuous papers to single-page slide decks.
+      </p>
+
+      <div class="docs-grid">
+        <div class="docs-card">
+          <h3>Continuous vs. Single Page Mode</h3>
+          <p>
+            Toggle between smooth continuous vertical scrolling and single-page presentation snap (<kbd class="docs-kbd">P</kbd>). Ideal for research papers and presentation decks alike.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>In-Document Full-Text Search</h3>
+          <p>
+            Press <kbd class="docs-kbd">Ctrl/Cmd + F</kbd> to search throughout the active document with instant jumping to match occurrences and real-time result counts.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Bookmarks &amp; Nested TOC</h3>
+          <p>
+            Bookmark key pages with a single click and navigate multi-level PDF table of contents trees with seamless section jumping.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Native DOCX Rendering</h3>
+          <p>
+            Drop Microsoft Word <code>.docx</code> documents directly into Mai-Reads. The app uses <code>mammoth.js</code> client-side to convert Word styles into calm typographic pages.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: KEYBOARD SHORTCUTS -->
+    <section id="shortcuts" class="docs-section">
+      <span class="docs-section-tag">06 / CHEAT SHEET</span>
+      <h2>Keyboard Navigation Shortcuts</h2>
+      <p class="docs-section-lead">
+        Keep your hands on the keyboard for an unhurried, uninterrupted reading flow.
+      </p>
+
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Shortcut</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Next Page / Scroll Down</strong></td>
+              <td><kbd class="docs-kbd">J</kbd> or <kbd class="docs-kbd">↓</kbd> or <kbd class="docs-kbd">Space</kbd></td>
+              <td>Advance reading position down smoothly</td>
+            </tr>
+            <tr>
+              <td><strong>Previous Page / Scroll Up</strong></td>
+              <td><kbd class="docs-kbd">K</kbd> or <kbd class="docs-kbd">↑</kbd> or <kbd class="docs-kbd">Shift + Space</kbd></td>
+              <td>Retreat reading position up smoothly</td>
+            </tr>
+            <tr>
+              <td><strong>First / Last Page</strong></td>
+              <td><kbd class="docs-kbd">Home</kbd> / <kbd class="docs-kbd">End</kbd></td>
+              <td>Jump directly to the beginning or end of the document</td>
+            </tr>
+            <tr>
+              <td><strong>Zoom In / Out</strong></td>
+              <td><kbd class="docs-kbd">Ctrl</kbd> + <kbd class="docs-kbd">+</kbd> / <kbd class="docs-kbd">−</kbd></td>
+              <td>Step zoom in or out in 10% increments</td>
+            </tr>
+            <tr>
+              <td><strong>Reset Zoom</strong></td>
+              <td><kbd class="docs-kbd">Ctrl</kbd> + <kbd class="docs-kbd">0</kbd></td>
+              <td>Reset document scale to default 100%</td>
+            </tr>
+            <tr>
+              <td><strong>Toggle Draw Mode</strong></td>
+              <td><kbd class="docs-kbd">D</kbd></td>
+              <td>Turn freehand draw highlighter on or off</td>
+            </tr>
+            <tr>
+              <td><strong>Toggle History</strong></td>
+              <td><kbd class="docs-kbd">H</kbd></td>
+              <td>Open or close the Reading History sidebar</td>
+            </tr>
+            <tr>
+              <td><strong>Full Screen</strong></td>
+              <td><kbd class="docs-kbd">F</kbd></td>
+              <td>Enter distraction-free immersive full screen</td>
+            </tr>
+            <tr>
+              <td><strong>Presentation Mode</strong></td>
+              <td><kbd class="docs-kbd">P</kbd></td>
+              <td>Toggle single-page presentation layout</td>
+            </tr>
+            <tr>
+              <td><strong>Dismiss Dialogs / Panels</strong></td>
+              <td><kbd class="docs-kbd">Esc</kbd></td>
+              <td>Close history sidebar, reading controls, or search dialog</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 7: LOCAL-FIRST PRIVACY -->
+    <section id="privacy" class="docs-section">
+      <span class="docs-section-tag">07 / PRIVACY ARCHITECTURE</span>
+      <h2>100% Local-First Privacy Guarantee</h2>
+      <p class="docs-section-lead">
+        Mai-Reads was built on a fundamental principle: your books, contracts, academic papers, and private notes belong exclusively to you.
+      </p>
+
+      <div class="docs-grid">
+        <div class="docs-card">
+          <h3>Zero Server Uploads</h3>
+          <p>
+            Documents are parsed, decoded, rendered, and highlighted entirely inside your browser sandbox. No bytes are sent over the network.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Complete Offline Availability</h3>
+          <p>
+            Powered by a standalone Service Worker, Mai-Reads runs seamlessly on flights, trains, or off-grid retreats with zero internet connection.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: MAITHIL STUDIOS TRIBUTE -->
+    <section id="studio" class="docs-studio-card">
+      <div class="docs-studio-emblem" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+          <path d="M2 12l10 5 10-5"></path>
+        </svg>
+      </div>
+      <h3>Crafted with care by Maithil Studios</h3>
+      <p class="docs-studio-desc">
+        Maithil Studios is an independent design and software workshop dedicated to creating calm, humane digital tools that honor human attention and deep cognitive focus. We build software that gets out of your way and respects your privacy.
+      </p>
+      <div class="docs-studio-actions">
+        <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer" class="docs-studio-btn-primary">
+          <span>Visit Maithil Studios</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+        <a href="index.html" class="docs-studio-btn-secondary">
+          <span>Open Mai-Reads Reader</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="docs-footer">
+      <p>Mai-Reads · Designed for unhurried study · Built by <a href="https://maithilstudios.vercel.app/" target="_blank" rel="noopener noreferrer">Maithil Studios</a>.</p>
+    </footer>
+
+  </main>
+
+  <!-- Interactive Theme Synchronization Script -->
+  <script>
+    (function() {
+      const SUN_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+      const MOON_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
+
+      const toggleBtn = document.getElementById('docs-theme-toggle');
+      const iconWrap = document.getElementById('docs-theme-icon');
+
+      function syncIcon() {
+        const isDark = document.documentElement.dataset.resolvedTheme === 'dark';
+        if (iconWrap) iconWrap.innerHTML = isDark ? SUN_SVG : MOON_SVG;
+        if (toggleBtn) {
+          toggleBtn.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+          toggleBtn.title = `Switch to ${isDark ? 'light' : 'dark'} mode`;
+        }
+      }
+
+      function toggleTheme() {
+        const isDark = document.documentElement.dataset.resolvedTheme === 'dark';
+        const next = isDark ? 'light' : 'dark';
+        document.documentElement.dataset.resolvedTheme = next;
+        
+        try {
+          const store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
+          store.theme = next;
+          localStorage.setItem('mai-reads-v1', JSON.stringify(store));
+        } catch(e) {}
+
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = next === 'dark' ? '#1c1d1a' : '#f6f3ec';
+
+        syncIcon();
+      }
+
+      toggleBtn?.addEventListener('click', toggleTheme);
+      syncIcon();
+    })();
+  </script>
+
+</body>
+</html>
