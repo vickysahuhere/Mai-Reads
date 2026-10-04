@@ -551,7 +551,7 @@ button:active, a:active {
   pointer-events: auto;
   width: 44px;
   height: 44px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--control-bg);
   backdrop-filter: blur(16px);
@@ -619,7 +619,7 @@ button:active, a:active {
 /* Open Document Card */
 .open-card {
   width: min(100%, 340px);
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: 26px;
   background: var(--control-bg);
   backdrop-filter: blur(20px);
@@ -644,7 +644,7 @@ button:active, a:active {
 .plus-wrap {
   width: 74px;
   height: 74px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: 24px 24px 30px 24px;
   display: grid;
   place-items: center;
@@ -687,7 +687,7 @@ button:active, a:active {
   gap: 12px;
   padding: 12px 16px;
   border-radius: 18px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   background: var(--control-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1110,7 +1110,7 @@ button:active, a:active {
    ========================================================================== */
 
 .floating-btn {
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   background: var(--control-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1177,14 +1177,15 @@ button:active, a:active {
   background: var(--control-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   font-size: 11px;
   display: flex;
   align-items: center;
   gap: 7px;
-  opacity: 0.75;
-  transition: opacity 0.2s;
+  opacity: 0.85;
+  transition: opacity 0.2s, border-color 0.2s;
   pointer-events: auto;
   z-index: 15;
 }
@@ -1259,8 +1260,10 @@ button:active, a:active {
   width: min(350px, calc(100vw - 32px));
   max-height: min(84vh, 740px);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-light) transparent;
   padding: 20px 20px 16px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: 24px;
   background: var(--control-bg);
   backdrop-filter: blur(28px) saturate(180%);
@@ -1670,7 +1673,7 @@ button:active, a:active {
 
 .action-button {
   height: 40px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--button-bg);
   color: var(--button-ink);
@@ -1687,6 +1690,10 @@ button:active, a:active {
   background: var(--button-hover-bg);
   border-color: var(--accent);
   color: var(--ink);
+}
+
+.action-button-wide {
+  grid-column: span 2;
 }
 
 .clear-data {
@@ -1754,6 +1761,10 @@ button:active, a:active {
   z-index: 60;
   animation: popIn 0.18s var(--ease-out);
   pointer-events: auto;
+}
+
+.selection-tooltip.tooltip-below {
+  transform: translate(-50%, 0);
 }
 
 .tooltip-btn {
