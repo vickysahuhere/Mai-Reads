@@ -969,6 +969,7 @@ button:active, a:active {
   scrollbar-color: var(--muted-light) transparent;
   overscroll-behavior: contain;
   touch-action: pan-y pan-x;
+  scroll-behavior: auto !important;
 }
 
 .paper {
@@ -1005,6 +1006,7 @@ button:active, a:active {
   box-shadow: 0 8px 30px rgba(40, 37, 30, 0.1);
   overflow: hidden;
   border-radius: 2px;
+  contain: layout style paint;
 }
 
 :root[data-resolved-theme="dark"] .document-page {
