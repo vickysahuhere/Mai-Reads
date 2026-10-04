@@ -561,8 +561,9 @@
   let rafZoomId = null;
   let pendingZoom = null;
   let pendingAnchor = null;
+  let currentZoomVal = 100;
 
-  function getPdfPageScale(base, zoomVal = Number(zoomInput.value || 100)) {
+  function getPdfPageScale(base, zoomVal = currentZoomVal) {
     const width = Math.min(window.innerWidth - 48, 920);
     const maxHeight = window.innerHeight - 36;
     let scale = Math.min(width / base.width, maxHeight / base.height);
@@ -571,7 +572,7 @@
     return scale;
   }
 
-  function getPageDimensions(base, zoomVal = Number(zoomInput.value || 100)) {
+  function getPageDimensions(base, zoomVal = currentZoomVal) {
     const scale = getPdfPageScale(base, zoomVal);
     return {
       width: Math.floor(base.width * scale),
@@ -597,6 +598,10 @@
   function applyBatchPageDimensions(zoomVal) {
     refreshPageBaseDimensions();
     const clamped = Math.max(60, Math.min(200, Number(zoomVal) || 100));
+    currentZoomVal = clamped;
+    zoomInput.value = String(clamped);
+    const zoomValEl = $('zoom-value');
+    if (zoomValEl) zoomValEl.textContent = `${clamped}%`;
     paper.style.setProperty('--doc-zoom', String(clamped / 100));
     return null;
   }
@@ -604,6 +609,7 @@
   function scheduleZoomRedraw(delay = 140) {
     clearTimeout(zoomDebounceTimer);
     zoomDebounceTimer = setTimeout(() => {
+      reader.classList.remove('is-zooming');
       if (pdf) redrawPdf();
       else { updateDocxPageCount(); updateCurrentPage(); }
     }, delay);
@@ -614,8 +620,11 @@
     const max = Number(zoomInput.max || 200);
     const clamped = Math.max(min, Math.min(max, Math.round(targetVal)));
 
+    if (clamped === currentZoomVal && !anchor) return;
+
     pendingZoom = clamped;
     if (anchor) pendingAnchor = anchor;
+    reader.classList.add('is-zooming');
 
     if (!rafZoomId) {
       rafZoomId = requestAnimationFrame(applyLiveZoomFrame);
@@ -626,21 +635,21 @@
     rafZoomId = null;
     if (pendingZoom === null) return;
 
-    const prevZoom = Number(zoomInput.value || 100);
+    const prevZoom = currentZoomVal;
     const newZoom = pendingZoom;
     const anchor = pendingAnchor;
     pendingZoom = null;
     pendingAnchor = null;
 
-    if (prevZoom === newZoom && !anchor) return;
-
+    currentZoomVal = newZoom;
     zoomInput.value = String(newZoom);
-    $('zoom-value').textContent = `${newZoom}%`;
+    const zoomValEl = $('zoom-value');
+    if (zoomValEl) zoomValEl.textContent = `${newZoom}%`;
 
     const zoomRatio = newZoom / 100;
     paper.style.setProperty('--doc-zoom', String(zoomRatio));
 
-    if (pdf && pageNodes.length) {
+    if (pdf && pageNodes.length && prevZoom !== newZoom) {
       // Fluid geometric anchor preservation without layout thrashing
       const anchorY = anchor?.y !== undefined ? anchor.y : (surface.clientHeight * 0.35);
       const contentPointY = surface.scrollTop + anchorY;
@@ -668,12 +677,28 @@
     scheduleZoomRedraw(30);
   });
 
+  $('zoom-in-btn')?.addEventListener('click', () => {
+    setLiveZoom(currentZoomVal + 10);
+    scheduleZoomRedraw(40);
+  });
+
+  $('zoom-out-btn')?.addEventListener('click', () => {
+    setLiveZoom(currentZoomVal - 10);
+    scheduleZoomRedraw(40);
+  });
+
+  $('zoom-value')?.addEventListener('click', () => {
+    setLiveZoom(100);
+    scheduleZoomRedraw(40);
+    showToast('Zoom reset to 100%');
+  });
+
   // Trackpad pinch (Ctrl + Wheel) with smooth exponential scaling & anchor lock
   surface.addEventListener('wheel', e => {
     if (!e.ctrlKey || reader.classList.contains('hidden')) return;
     e.preventDefault();
     const factor = Math.exp(-e.deltaY * 0.003);
-    const current = pendingZoom !== null ? pendingZoom : Number(zoomInput.value || 100);
+    const current = pendingZoom !== null ? pendingZoom : currentZoomVal;
     const rect = surface.getBoundingClientRect();
     const anchor = {
       x: e.clientX - rect.left,
@@ -813,13 +838,16 @@
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
         e.preventDefault();
-        setLiveZoom(Number(zoomInput.value || 100) + 10);
+        setLiveZoom(currentZoomVal + 10);
+        scheduleZoomRedraw(40);
       } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
         e.preventDefault();
-        setLiveZoom(Number(zoomInput.value || 100) - 10);
+        setLiveZoom(currentZoomVal - 10);
+        scheduleZoomRedraw(40);
       } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
         setLiveZoom(100);
+        scheduleZoomRedraw(40);
       }
     }
   });
@@ -835,8 +863,10 @@
     $('loading').classList.remove('hidden');
     $('error').classList.add('hidden');
 
+    currentZoomVal = 100;
     zoomInput.value = '100';
-    $('zoom-value').textContent = '100%';
+    const zoomValEl = $('zoom-value');
+    if (zoomValEl) zoomValEl.textContent = '100%';
     paper.style.setProperty('--doc-zoom', '1');
 
     if (pdf && typeof pdf.destroy === 'function') { try { pdf.destroy(); } catch (e) {} }
@@ -1123,7 +1153,7 @@
       await drawPdfPage(page, canvas, node, base);
       if (token !== renderToken) return;
       renderPageHighlights(i + 1, node);
-      node.dataset.renderedZoom = String($('zoom').value || 100);
+      node.dataset.renderedZoom = String(currentZoomVal);
     } catch (err) {
       if (err?.name !== 'RenderingCancelledException') {
         console.warn('Page render failed:', err);
@@ -1134,7 +1164,8 @@
   async function redrawPdf() {
     if (!pdf) return;
     const token = ++renderToken;
-    const zoomVal = Number($('zoom').value || 100);
+    const zoomVal = currentZoomVal;
+    paper.style.setProperty('--doc-zoom', String(zoomVal / 100));
 
     // Identify visible pages in viewport to prioritize immediate rendering
     const viewTop = surface.scrollTop;

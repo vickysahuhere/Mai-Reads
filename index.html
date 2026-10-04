@@ -336,10 +336,14 @@
 
       <div class="control-row zoom-row">
         <label for="zoom">Zoom</label>
-        <span id="zoom-value">Fit</span>
+        <div class="zoom-controls-wrap">
+          <button id="zoom-out-btn" class="zoom-step-btn" type="button" aria-label="Zoom out" title="Zoom out (Ctrl -)">−</button>
+          <button id="zoom-value" class="zoom-value-btn" type="button" aria-label="Reset zoom" title="Click to reset to 100% (Ctrl 0)">100%</button>
+          <button id="zoom-in-btn" class="zoom-step-btn" type="button" aria-label="Zoom in" title="Zoom in (Ctrl +)">+</button>
+        </div>
       </div>
       <input id="zoom" class="range" type="range" min="60" max="200" value="100" aria-label="Document zoom" />
-      <span class="zoom-hint">Slider, pinch, or trackpad gesture</span>
+      <span class="zoom-hint">Slider, buttons, pinch, or trackpad</span>
 
       <div class="control-row brightness-row">
         <label for="brightness">Paper brightness</label>

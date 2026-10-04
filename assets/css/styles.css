@@ -1386,6 +1386,58 @@ button:active, a:active {
   margin-top: 4px;
 }
 
+.zoom-controls-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.zoom-step-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--control-border);
+  background: var(--button-bg);
+  color: var(--button-ink);
+  border-radius: 8px;
+  font: 600 13px/1 var(--font-sans);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s var(--ease-spring), background 0.15s, border-color 0.15s;
+}
+
+.zoom-step-btn:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--control-border-hover);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.zoom-step-btn:active {
+  transform: translateY(0);
+}
+
+.zoom-value-btn {
+  border: 1px solid var(--control-border);
+  background: var(--button-bg);
+  color: var(--button-ink);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font: 600 11px/1.2 var(--font-sans);
+  cursor: pointer;
+  min-width: 46px;
+  text-align: center;
+  transition: transform 0.15s var(--ease-spring), background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.zoom-value-btn:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
 .zoom-hint {
   display: block;
   margin-top: 6px;
@@ -1397,8 +1449,7 @@ button:active, a:active {
   margin-top: 16px;
 }
 
-.brightness-row span,
-.zoom-row span {
+.brightness-row span {
   color: var(--muted);
   font-size: 11px;
 }
@@ -1801,18 +1852,18 @@ button:active, a:active {
 /* Real Text Layer over Canvas */
 .textLayer {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--rendered-w, 100%);
-  height: var(--rendered-h, 100%);
+  inset: 0;
   text-align: initial;
   overflow: hidden;
   line-height: 1;
   text-size-adjust: none;
   forced-color-adjust: none;
   transform-origin: 0 0;
-  transform: scale(calc(var(--doc-zoom, 1) / var(--rendered-scale, 1)));
   z-index: 3;
+}
+
+.reader.is-zooming .textLayer {
+  pointer-events: none;
 }
 
 .textLayer :is(span, br) {
