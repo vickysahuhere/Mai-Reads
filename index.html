@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f5f2eb" />
   <meta name="description" content="Mai-Reads is a minimal PDF and DOCX reader for distraction-free reading and study. Open documents from your device and read in a calm, paper-like interface." />
+  <meta name="keywords" content="pdf reader, docx reader, minimal pdf viewer, offline pdf reader, highlight pdf offline, study pdf reader, distraction-free document reader, private pdf viewer, indexeddb pdf cache, dyslexia reading tool, adhd reader, local pdf annotator" />
+  <meta name="author" content="Maithil Studios" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta property="og:site_name" content="Mai-Reads" />
+  <meta property="og:locale" content="en_US" />
   <link rel="canonical" href="https://mai-reads.vercel.app/" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <meta property="og:type" content="website" />
@@ -20,25 +25,29 @@
     [
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
+        "@type": "SoftwareApplication",
         "name": "Mai-Reads",
         "url": "https://mai-reads.vercel.app/",
-        "description": "Mai-Reads is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader. It processes all files directly in your web browser with zero server uploads, offering a distraction-free, minimalist reading experience.",
         "applicationCategory": "UtilitiesApplication",
+        "applicationSubCategory": "Document Reader, Offline Study & PDF Annotation Tool",
         "operatingSystem": "All (Windows, macOS, Linux, iOS, Android)",
         "browserRequirements": "Requires a modern web browser with local storage and IndexedDB",
+        "description": "Mai-Reads is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader with built-in text highlighting and client-side PDF export. It processes all files directly in your web browser with zero server uploads, offering a distraction-free, minimalist reading experience.",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
         "featureList": [
-          "100% Local Processing (Zero server uploads)",
-          "Distraction-free minimalist interface",
+          "100% Local Processing (Zero server uploads, zero telemetry)",
+          "Jitter-free anchor-stabilized continuous zoom (60% to 200%)",
+          "Offline Native Text Highlighter with persistent local storage",
+          "Instant client-side PDF export with baked-in annotations",
+          "Distraction-free minimalist God Mode interface",
           "Instant Resume via IndexedDB offline cache",
-          "Dark mode and brightness controls",
+          "Dark mode, custom themes, and independent paper brightness controls",
           "PDF and DOCX native parsing in-browser",
-          "Local reading history and bookmarks",
+          "Local reading history, bookmarks, and in-document search",
           "Accessibility support for ADHD (distraction-free UI)",
           "Accessibility support for Eye Strain & Migraines (independent brightness, deep dark mode)",
           "Accessibility support for Autism and Dyslexia (unhurried, sensory-friendly design)"
@@ -58,7 +67,31 @@
             "name": "Are my PDFs and documents uploaded to a server?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Mai-Reads is a 100% local web application. Your PDF and DOCX files are processed entirely on your device inside your web browser. No files or data are ever uploaded or saved to any external servers, ensuring absolute privacy."
+              "text": "No. Mai-Reads is a 100% local web application. Your PDF and DOCX files are processed entirely on your device inside your web browser. No files, text, or data are ever uploaded or saved to any external servers, ensuring absolute privacy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I highlight and annotate PDFs in Mai-Reads offline?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. You can select text directly with your mouse or finger to highlight words and sentences, or use the freehand Draw mode for diagrams. All highlights are saved privately in your browser's local storage and persist across visits."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Mai-Reads achieve smooth, jitter-free zooming on large documents?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mai-Reads utilizes an anchor-stabilized layout engine with viewport-prioritized background rendering. Page dimensions scale instantly in batch, locking your reading position firmly in place while rendering pages smoothly without scrolling interference."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export highlighted PDFs from my browser without installing software?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Clicking the Export button burns your highlight annotations directly into the PDF using client-side vector synthesis, downloading the completed file to your device instantly."
             }
           },
           {
@@ -71,10 +104,10 @@
           },
           {
             "@type": "Question",
-            "name": "Is Mai-Reads free to use?",
+            "name": "Is Mai-Reads accessible for readers with ADHD, Dyslexia, or Eye Strain?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, Mai-Reads is completely free and distraction-free, with no ads, tracking, or paywalls."
+              "text": "Yes. Mai-Reads features a distraction-free layout with no ads or popups, independent paper brightness adjustments to prevent ocular fatigue, warm serif typography, and unhurried reading ergonomics."
             }
           }
         ]
