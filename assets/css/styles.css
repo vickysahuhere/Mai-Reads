@@ -32,6 +32,12 @@
   --font-serif: 'Playfair Display', Georgia, serif;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Safe Area Insets for notch, dynamic island, and gesture home indicators */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
 }
 
 :root[data-resolved-theme="dark"] {
@@ -221,7 +227,7 @@ button:active, a:active {
   top: 0;
   left: 0;
   height: 100%;
-  width: min(340px, 86vw);
+  width: min(340px, 88vw);
   background: var(--control-bg);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
@@ -233,6 +239,9 @@ button:active, a:active {
   transform: translateX(-100%);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: var(--shadow-lg);
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
 }
 
 .history-panel.open {
@@ -497,12 +506,13 @@ button:active, a:active {
 }
 
 .history-footer {
-  padding: 14px 20px;
+  padding: 14px 20px calc(14px + var(--sab));
   border-top: 1px solid var(--control-border);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
   text-align: center;
 }
@@ -517,9 +527,10 @@ button:active, a:active {
   text-underline-offset: 3px;
   text-decoration-color: transparent;
   cursor: pointer;
-  padding: 2px 0;
+  padding: 4px 2px;
   transition: color 0.18s, text-decoration-color 0.18s;
   letter-spacing: -0.005em;
+  touch-action: manipulation;
 }
 
 .history-docs-link:hover,
@@ -546,8 +557,9 @@ button:active, a:active {
   align-items: center;
   justify-content: flex-start;
   position: relative;
-  padding: 0 24px 48px;
+  padding: 0 clamp(16px, 4vw, 24px) calc(44px + var(--sab));
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Header Quick Actions Bar */
@@ -559,7 +571,10 @@ button:active, a:active {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(20px, 3.5vw, 36px) clamp(24px, 4vw, 44px);
+  padding-top: calc(clamp(16px, 3.5vw, 36px) + var(--sat));
+  padding-bottom: clamp(12px, 2vw, 20px);
+  padding-left: calc(clamp(16px, 4vw, 44px) + var(--sal));
+  padding-right: calc(clamp(16px, 4vw, 44px) + var(--sar));
   z-index: 10;
   pointer-events: none;
 }
@@ -614,7 +629,7 @@ button:active, a:active {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding-top: 60px;
+  padding-top: calc(clamp(50px, 9vh, 80px) + var(--sat));
 }
 
 .welcome-eyebrow {
@@ -627,9 +642,9 @@ button:active, a:active {
 }
 
 .welcome h1 {
-  font: 500 clamp(40px, 6.5vw, 58px)/1.15 var(--font-serif);
+  font: 500 clamp(36px, 7vw, 58px)/1.15 var(--font-serif);
   letter-spacing: -0.025em;
-  margin: 0 0 44px;
+  margin: 0 0 clamp(24px, 5vw, 44px);
   color: var(--ink);
 }
 
@@ -1125,18 +1140,19 @@ button:active, a:active {
 }
 
 /* ==========================================================================
-   Floating Controls in Reader
+   Floating Controls in Reader (God Mode UI Minimalism)
    ========================================================================== */
 
 .floating-btn {
   border: 1px solid var(--control-border);
   background: var(--control-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   color: var(--button-ink);
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  transition: transform 0.2s var(--ease-spring), border-color 0.2s, background 0.2s, box-shadow 0.2s, opacity 0.2s;
+  transition: transform 0.22s var(--ease-spring), border-color 0.2s, background 0.2s, box-shadow 0.22s, opacity 0.35s var(--ease-out);
+  touch-action: manipulation;
 }
 
 .floating-btn:hover {
@@ -1146,11 +1162,15 @@ button:active, a:active {
   color: var(--ink);
 }
 
+.floating-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
 /* History Floating Button in Reader (Top-Left) */
 .history-toggle-reader {
   position: fixed;
-  top: clamp(16px, 3vh, 24px);
-  left: clamp(16px, 3vw, 24px);
+  top: calc(clamp(14px, 2.5vh, 22px) + var(--sat));
+  left: calc(clamp(14px, 2.5vw, 22px) + var(--sal));
   height: 42px;
   padding: 0 14px;
   border-radius: 14px;
@@ -1164,8 +1184,10 @@ button:active, a:active {
 @media (max-width: 600px) {
   .history-toggle-reader {
     width: 42px;
+    height: 42px;
     padding: 0;
     justify-content: center;
+    border-radius: 13px;
   }
   .btn-label-desktop {
     display: none;
@@ -1175,11 +1197,11 @@ button:active, a:active {
 /* Control Toggle Button (Bottom-Right) */
 .control-toggle {
   position: fixed;
-  right: clamp(16px, 3vw, 24px);
-  bottom: clamp(16px, 3vh, 24px);
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+  right: calc(clamp(14px, 2.5vw, 22px) + var(--sar));
+  bottom: calc(clamp(14px, 2.5vh, 22px) + var(--sab));
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
   display: grid;
   place-items: center;
   z-index: 20;
@@ -1188,14 +1210,14 @@ button:active, a:active {
 /* Document Title Floating Badge (Bottom-Left) */
 .doc-title {
   position: fixed;
-  left: clamp(16px, 3vw, 24px);
-  bottom: clamp(16px, 3vh, 24px);
+  left: calc(clamp(14px, 2.5vw, 22px) + var(--sal));
+  bottom: calc(clamp(14px, 2.5vh, 22px) + var(--sab));
   max-width: min(380px, calc(100vw - 120px));
   padding: 8px 14px;
   border-radius: 12px;
   background: var(--control-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--control-border);
   box-shadow: var(--shadow-sm);
   color: var(--muted);
@@ -1204,13 +1226,37 @@ button:active, a:active {
   align-items: center;
   gap: 7px;
   opacity: 0.85;
-  transition: opacity 0.2s, border-color 0.2s;
+  transition: opacity 0.35s var(--ease-out), border-color 0.2s, transform 0.2s;
   pointer-events: auto;
   z-index: 15;
 }
 
 .doc-title:hover {
   opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .doc-title {
+    max-width: calc(100vw - 84px);
+    font-size: 10.5px;
+    padding: 6px 11px;
+    border-radius: 10px;
+    opacity: 0.75;
+  }
+}
+
+/* God Mode Minimalism: Soften floating controls during reading/scrolling */
+.reader.is-scrolling .floating-btn,
+.reader.is-scrolling .doc-title {
+  opacity: 0.12;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-out);
+}
+
+.reader.is-scrolling .floating-btn:hover,
+.reader.is-scrolling .doc-title:hover {
+  opacity: 1 !important;
+  pointer-events: auto;
 }
 
 .doc-title-icon {
@@ -1274,11 +1320,13 @@ button:active, a:active {
 
 .controls {
   position: fixed;
-  right: clamp(16px, 3vw, 24px);
-  bottom: clamp(74px, 10vh, 84px);
+  right: calc(clamp(16px, 3vw, 24px) + var(--sar));
+  bottom: calc(clamp(72px, 9vh, 84px) + var(--sab));
   width: min(350px, calc(100vw - 32px));
   max-height: min(84vh, 740px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--muted-light) transparent;
   padding: 20px 20px 16px;
@@ -1290,6 +1338,20 @@ button:active, a:active {
   box-shadow: var(--shadow-lg);
   z-index: 25;
   animation: popIn 0.22s var(--ease-out);
+}
+
+@media (max-width: 600px) {
+  .controls {
+    left: calc(10px + var(--sal));
+    right: calc(10px + var(--sar));
+    bottom: calc(68px + var(--sab));
+    width: auto;
+    max-width: 420px;
+    margin: 0 auto;
+    max-height: calc(84vh - var(--sab) - 68px);
+    padding: 16px 16px 14px;
+    border-radius: 22px;
+  }
 }
 
 @keyframes popIn {
@@ -1410,8 +1472,10 @@ button:active, a:active {
 }
 
 .zoom-step-btn {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--control-border);
@@ -1422,6 +1486,7 @@ button:active, a:active {
   cursor: pointer;
   padding: 0;
   transition: transform 0.15s var(--ease-spring), background 0.15s, border-color 0.15s;
+  touch-action: manipulation;
 }
 
 .zoom-step-btn:hover {
@@ -1432,7 +1497,7 @@ button:active, a:active {
 }
 
 .zoom-step-btn:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.94);
 }
 
 .zoom-value-btn {
@@ -1441,11 +1506,13 @@ button:active, a:active {
   color: var(--button-ink);
   border-radius: 8px;
   padding: 3px 8px;
+  min-height: 26px;
   font: 600 11px/1.2 var(--font-sans);
   cursor: pointer;
-  min-width: 46px;
+  min-width: 48px;
   text-align: center;
   transition: transform 0.15s var(--ease-spring), background 0.15s, border-color 0.15s, color 0.15s;
+  touch-action: manipulation;
 }
 
 .zoom-value-btn:hover {
@@ -1453,6 +1520,10 @@ button:active, a:active {
   border-color: var(--accent);
   color: var(--accent);
   transform: translateY(-1px);
+}
+
+.zoom-value-btn:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .zoom-hint {
@@ -1753,13 +1824,18 @@ button:active, a:active {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  touch-action: manipulation;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.15s var(--ease-spring);
 }
 
 .action-button:hover {
   background: var(--button-hover-bg);
   border-color: var(--accent);
   color: var(--ink);
+}
+
+.action-button:active {
+  transform: scale(0.97);
 }
 
 .action-button-wide {
@@ -1821,16 +1897,17 @@ button:active, a:active {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px;
+  padding: 5px;
   background: var(--control-bg);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid var(--control-border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--shadow-lg);
   z-index: 60;
   animation: popIn 0.18s var(--ease-out);
   pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .selection-tooltip.tooltip-below {
@@ -1841,14 +1918,15 @@ button:active, a:active {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 7px 13px;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   background: transparent;
   color: var(--ink);
-  font: 500 12px var(--font-sans);
+  font: 500 12.5px var(--font-sans);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  touch-action: manipulation;
 }
 
 .tooltip-btn:hover {

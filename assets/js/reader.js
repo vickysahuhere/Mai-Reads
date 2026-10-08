@@ -564,10 +564,13 @@
   let currentZoomVal = 100;
 
   function getPdfPageScale(base, zoomVal = currentZoomVal) {
-    const width = Math.min(window.innerWidth - 48, 920);
-    const maxHeight = window.innerHeight - 36;
+    const isMobile = window.innerWidth <= 600;
+    const hPadding = isMobile ? 16 : 48;
+    const vPadding = isMobile ? 24 : 36;
+    const width = Math.min(window.innerWidth - hPadding, 920);
+    const maxHeight = window.innerHeight - vPadding;
     let scale = Math.min(width / base.width, maxHeight / base.height);
-    if (mode === 'single') scale = Math.min(scale, (window.innerHeight - 30) / base.height);
+    if (mode === 'single') scale = Math.min(scale, (window.innerHeight - (isMobile ? 20 : 30)) / base.height);
     scale *= zoomVal / 100;
     return scale;
   }
@@ -794,13 +797,32 @@
     showToast('All local data cleared');
   });
 
+  let scrollIdleTimer = null;
   surface.addEventListener('scroll', () => {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       updateCurrentPage();
       savePosition();
     }, 100);
+
+    // God Mode UI minimalism: gently soften floating controls during reading/scrolling
+    if (controls.classList.contains('hidden')) {
+      reader.classList.add('is-scrolling');
+      clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = setTimeout(() => {
+        reader.classList.remove('is-scrolling');
+      }, 1100);
+    }
   }, { passive: true });
+
+  // Instantly awaken floating controls upon touch or mouse interaction
+  ['mousemove', 'touchstart', 'pointerdown'].forEach(evt => {
+    surface.addEventListener(evt, () => {
+      if (reader.classList.contains('is-scrolling')) {
+        reader.classList.remove('is-scrolling');
+      }
+    }, { passive: true });
+  });
 
   // ── Keyboard Shortcuts ────────────────────────────────────────────────────
   document.addEventListener('keydown', e => {
@@ -1426,8 +1448,7 @@
   }
 
   let resizeTimer;
-
-  window.addEventListener('resize', () => {
+  const onViewportChange = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       if (pdf) {
@@ -1438,7 +1459,10 @@
         updateCurrentPage();
       }
     }, 150);
-  });
+  };
+
+  window.addEventListener('resize', onViewportChange);
+  window.addEventListener('orientationchange', onViewportChange);
 
   
   // --- Professional Text Selection & Highlighter System ---
