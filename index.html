@@ -4,35 +4,62 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f5f2eb" />
-  <meta name="description" content="Mai-Reads is a minimal PDF and DOCX reader for distraction-free reading and study. Open documents from your device and read in a calm, paper-like interface." />
-  <meta name="keywords" content="pdf reader, docx reader, minimal pdf viewer, offline pdf reader, highlight pdf offline, study pdf reader, distraction-free document reader, private pdf viewer, indexeddb pdf cache, dyslexia reading tool, adhd reader, local pdf annotator" />
+  <meta name="description" content="Mai-Reads (also known as My Reads) is a minimal, privacy-first PDF and DOCX reader for distraction-free reading and study. Open documents locally with persistent text highlighting and instant resume." />
+  <meta name="keywords" content="mai reads, my reads, myreads, maireads, mai-reads, my reads pdf, mai reads reader, reads, read pdf, read docx, offline pdf reader, minimal pdf viewer, docx reader, study reader, private document reader, highlight pdf offline, indexeddb pdf cache, dyslexia reading tool, adhd reader" />
   <meta name="author" content="Maithil Studios" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-  <meta property="og:site_name" content="Mai-Reads" />
+  <meta name="google-site-verification" content="fcd8045aea4e71b4" />
+  <meta property="og:site_name" content="Mai-Reads (My Reads)" />
   <meta property="og:locale" content="en_US" />
   <link rel="canonical" href="https://mai-reads.vercel.app/" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Mai-Reads — Distraction-Free PDF &amp; DOCX Reader" />
-  <meta property="og:description" content="Mai-Reads is a minimal PDF and DOCX reader for focused study. Open documents from your device and read without a busy interface." />
+  <meta property="og:title" content="Mai-Reads (My Reads) — Minimalist PDF &amp; DOCX Document Reader" />
+  <meta property="og:description" content="Mai-Reads (also known as My Reads) is a minimal, privacy-first PDF and DOCX document reader. Open documents locally with text highlighting and instant resume." />
   <meta property="og:url" content="https://mai-reads.vercel.app/" />
   <meta property="og:image" content="https://mai-reads.vercel.app/social-preview.svg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Mai-Reads — Distraction-Free PDF &amp; DOCX Reader" />
-  <meta name="twitter:description" content="A minimal PDF and DOCX reader for focused study. Open documents from your device." />
+  <meta name="twitter:title" content="Mai-Reads (My Reads) — Minimalist PDF &amp; DOCX Document Reader" />
+  <meta name="twitter:description" content="Mai-Reads (My Reads) is a distraction-free, privacy-first PDF and DOCX document reader." />
   <meta name="twitter:image" content="https://mai-reads.vercel.app/social-preview.svg" />
   <script type="application/ld+json">
     [
       {
         "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Mai-Reads",
+        "alternateName": [
+          "Mai Reads",
+          "My Reads",
+          "MyReads",
+          "Maireads",
+          "Mai-Read",
+          "My-Read",
+          "MaiRead",
+          "MyRead"
+        ],
+        "url": "https://mai-reads.vercel.app/",
+        "description": "A minimalist, privacy-first PDF and DOCX document reader for focused study and deep work."
+      },
+      {
+        "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Mai-Reads",
+        "alternateName": [
+          "Mai Reads",
+          "My Reads",
+          "MyReads",
+          "Maireads",
+          "Mai-Read",
+          "My-Read"
+        ],
         "url": "https://mai-reads.vercel.app/",
         "applicationCategory": "UtilitiesApplication",
         "applicationSubCategory": "Document Reader, Offline Study & PDF Annotation Tool",
         "operatingSystem": "All (Windows, macOS, Linux, iOS, Android)",
         "browserRequirements": "Requires a modern web browser with local storage and IndexedDB",
-        "description": "Mai-Reads is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader with built-in text highlighting and client-side PDF export. It processes all files directly in your web browser with zero server uploads, offering a distraction-free, minimalist reading experience.",
+        "description": "Mai-Reads (My Reads) is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader with built-in text highlighting and client-side PDF export. It processes all files directly in your web browser with zero server uploads, offering a distraction-free, minimalist reading experience.",
+        "keywords": "mai reads, my reads, pdf reader, docx reader, offline reader, document reader, text highlighter",
         "offers": {
           "@type": "Offer",
           "price": "0",
@@ -62,6 +89,22 @@
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Mai-Reads (also searched as My Reads)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mai-Reads (commonly called My Reads, MyReads, or Mai Reads) is a lightweight, distraction-free web document reader built for reading PDF and Word DOCX files securely on your device with zero server uploads."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I read PDF and Word DOCX documents offline in Mai-Reads for free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Mai-Reads operates 100% in your browser and is fully installable as an offline Progressive Web App (PWA). You can open, read, zoom, and highlight documents even without an internet connection."
+            }
+          },
           {
             "@type": "Question",
             "name": "Are my PDFs and documents uploaded to a server?",
@@ -115,7 +158,7 @@
     ]
   </script>
   <link rel="manifest" href="./manifest.json" />
-  <title>Mai-Reads — Distraction-Free PDF &amp; DOCX Reader</title>
+  <title>Mai-Reads (My Reads) — Minimalist PDF &amp; DOCX Document Reader</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
@@ -228,30 +271,32 @@
   
 
       <section class="seo-data sr-only" aria-labelledby="about-mai-reads">
-      <h2 id="about-mai-reads">About Mai-Reads: The Privacy-First PDF & DOCX Reader</h2>
+      <h2 id="about-mai-reads">About Mai-Reads (My Reads): The Privacy-First PDF &amp; DOCX Document Reader</h2>
       <article>
-        <p>Mai-Reads is a 100% local, lightning-fast, distraction-free document reader. We built it so you can open PDF and DOCX files securely in your browser with zero server uploads.</p>
+        <p>Mai-Reads (also known as My Reads or MyReads) is a 100% local, lightning-fast, distraction-free document reader. We built it so you can open, read, zoom, and highlight PDF and DOCX files securely in your browser with zero server uploads.</p>
         
-        <h3>Accessibility & Medical Use Cases</h3>
-        <p>Mai-Reads is intentionally designed to support readers with specific accessibility needs and medical conditions:</p>
+        <h3>Why Choose Mai-Reads / My Reads for Document Study</h3>
         <ul>
-          <li><strong>ADHD (Attention-Deficit/Hyperactivity Disorder):</strong> A completely distraction-free interface with hidden controls prevents attention loss and hyper-focus disruption.</li>
-          <li><strong>Asthenopia (Digital Eye Strain) & Photophobia (Light Sensitivity):</strong> Independent paper brightness controls and a deep dark mode help readers with migraines, post-concussion syndrome, and severe eye strain.</li>
-          <li><strong>Dyslexia & Processing Disorders:</strong> Clean, unhurried reading layouts (single-page or continuous) without ads or pop-ups reduce cognitive load.</li>
-          <li><strong>Autism Spectrum Disorder (ASD):</strong> The minimalist, calm UI prevents visual sensory overload.</li>
+          <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache remembers your exact page, scroll ratio, and annotations.</li>
+          <li><strong>Zero Data Collection:</strong> 100% private. Your documents and books never leave your device.</li>
+          <li><strong>Precision Text Highlighter:</strong> Select text or freehand draw highlight bands across scanned documents with client-side baked-in PDF export.</li>
+          <li><strong>Silky 60/120fps Smooth Zoom:</strong> Mathematical anchor lock keeps your position stable without jitter or rubbery pulls.</li>
         </ul>
 
-        <h3>Features Designed for Focused Study</h3>
+        <h3>Accessibility &amp; Cognitive Ergonomics</h3>
+        <p>Mai-Reads (My Reads) is intentionally designed to support readers with specific accessibility needs and medical conditions:</p>
         <ul>
-          <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache.</li>
-          <li><strong>Zero Data Collection:</strong> Total privacy. Your files never leave your device.</li>
-          <li><strong>Minimalism:</strong> UI elements fade away, giving you absolute focus.</li>
+          <li><strong>ADHD (Attention-Deficit/Hyperactivity Disorder):</strong> A completely distraction-free interface with hidden controls prevents attention loss and hyper-focus disruption.</li>
+          <li><strong>Asthenopia (Digital Eye Strain) &amp; Photophobia (Light Sensitivity):</strong> Independent paper brightness controls and a deep dark mode help readers with migraines, post-concussion syndrome, and severe eye strain.</li>
+          <li><strong>Dyslexia &amp; Processing Disorders:</strong> Clean, unhurried reading layouts (single-page or continuous) without ads or pop-ups reduce cognitive load.</li>
+          <li><strong>Autism Spectrum Disorder (ASD):</strong> The minimalist, calm UI prevents visual sensory overload.</li>
         </ul>
         
         <h3>Frequently Asked Questions</h3>
-        <details><summary>Is Mai-Reads completely private?</summary><p>Yes, all processing happens locally using browser-native technologies.</p></details>
-        <details><summary>Does it support Word Documents?</summary><p>Yes, DOCX files are natively rendered locally.</p></details>
-        <p>Developed by Maithil Studios.</p>
+        <details><summary>What is Mai-Reads (My Reads)?</summary><p>Mai-Reads (often searched as My Reads or MyReads) is a private, web-based PDF and DOCX reader designed for distraction-free reading, academic study, and research.</p></details>
+        <details><summary>Is Mai-Reads completely private?</summary><p>Yes, all processing happens locally using browser-native technologies with zero telemetry or cloud uploads.</p></details>
+        <details><summary>Does it support Word Documents and PDFs?</summary><p>Yes, both PDF and DOCX files are natively rendered directly inside your browser.</p></details>
+        <p>Crafted with quiet care by Maithil Studios.</p>
       </article>
     </section>
 

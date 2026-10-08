@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mai-reads-v14-offline';
+const CACHE_NAME = 'mai-reads-v15-offline';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const ASSETS = [
   './assets/js/reader.js',
   './manifest.json',
   './favicon.svg',
+  './e88a3b5c4f2e46c7b960b779412f98d7.txt',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',

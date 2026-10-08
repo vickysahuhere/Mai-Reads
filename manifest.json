@@ -1,11 +1,12 @@
-﻿{
-  "name": "Mai-Reads",
+{
+  "name": "Mai-Reads (My Reads)",
   "short_name": "Mai-Reads",
-  "description": "A distraction-free, privacy-first local PDF and DOCX reader.",
+  "description": "A distraction-free, privacy-first local PDF and DOCX reader (also known as My Reads).",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f6f3ec",
   "theme_color": "#f6f3ec",
+  "categories": ["productivity", "utilities", "books"],
   "icons": [
     {
       "src": "favicon.svg",
