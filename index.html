@@ -237,30 +237,32 @@
     <nav class="welcome-dock-container" aria-label="Quick actions">
       <div class="welcome-dock">
         <button id="history-toggle-welcome" class="dock-btn nav-button history-toggle" type="button" aria-label="Reading history" title="Reading history (H)">
-          <svg class="dock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
             <path d="M3 3v5h5"/>
             <path d="M12 7v5l4 2"/>
           </svg>
           <span class="dock-text">History</span>
+          <kbd class="dock-kbd" aria-hidden="true">H</kbd>
           <span id="welcome-history-dot" class="nav-badge hidden"></span>
         </button>
 
         <span class="dock-divider" aria-hidden="true"></span>
 
         <a id="welcome-notebooks-link" href="notebook.html" class="dock-btn nav-button notebooks-link" aria-label="Study Notebooks" title="Study Notebooks (N)">
-          <svg class="dock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
           <span class="dock-text">Notebooks</span>
+          <kbd class="dock-kbd" aria-hidden="true">N</kbd>
           <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
         </a>
 
         <span class="dock-divider" aria-hidden="true"></span>
 
         <button id="feedback-toggle-welcome" class="dock-btn nav-button feedback-toggle" type="button" aria-label="Share Feedback" title="Share feedback &amp; suggestions">
-          <svg class="dock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
           <span class="dock-text">Feedback</span>
@@ -278,54 +280,48 @@
     </nav>
 
     <div class="welcome-inner">
-      <div class="welcome-glow-ambient" aria-hidden="true"></div>
-
       <header class="welcome-header">
-        <div class="welcome-eyebrow">
-          <span class="eyebrow-accent" aria-hidden="true">✦</span> DISTRACTION-FREE DOCUMENT SANCTUARY
-        </div>
+        <div class="welcome-eyebrow">Local Document Reader</div>
         <h1>Mai-Reads</h1>
-        <p class="welcome-subhead">Unhurried reading, multi-file study binders, and instant offline privacy.</p>
+        <p class="welcome-subhead">Quiet, fast reader for PDF and Word documents. Completely offline.</p>
       </header>
 
-      <!-- Balanced Atelier Grid: Single Document + Study Notebooks -->
+      <!-- Balanced Workspace Grid: Single Document + Study Notebooks -->
       <div class="welcome-workspace-grid">
         <!-- Card 1: Read Single Document -->
         <button class="open-card welcome-card" id="welcome-open" aria-label="Open a PDF or Word document" type="button">
-          <div class="card-badge">SINGLE FILE</div>
-          <div class="plus-wrap card-icon-wrap">
-            <svg class="plus-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="card-icon-wrap plus-wrap">
+            <svg class="plus-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"/>
               <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
           </div>
           <span class="open-label card-title">Open Document</span>
-          <span class="file-hint card-desc">PDF or DOCX · 100% private in-browser reader</span>
+          <span class="file-hint card-desc">PDF or DOCX from device</span>
           <span class="card-action-cue">
-            <span>Select or drop file</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>Choose file</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </span>
         </button>
 
         <!-- Card 2: Study Notebooks Binder -->
         <a href="notebook.html" class="welcome-notebook-card welcome-card" aria-label="Open Study Notebooks workspace">
-          <div class="card-badge card-badge-gold">
-            <span>BINDERS</span>
-            <span id="welcome-notebook-count" class="chip-count hidden">0</span>
-          </div>
           <div class="card-icon-wrap notebook-icon-wrap">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
               <line x1="9" y1="7" x2="15" y2="7"/>
               <line x1="9" y1="11" x2="13" y2="11"/>
             </svg>
           </div>
-          <span class="card-title">Study Notebooks</span>
-          <span class="card-desc">Multi-document binders with unified study scratchpad</span>
+          <div class="card-title-row">
+            <span class="card-title">Study Notebooks</span>
+            <span id="welcome-notebook-count" class="chip-count hidden">0</span>
+          </div>
+          <span class="card-desc">Multi-file binders with notes</span>
           <span class="card-action-cue">
             <span>Open workspace</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </span>
         </a>
       </div>
@@ -333,29 +329,24 @@
       <!-- Instant Resume Last Read Document Bookmark Ribbon -->
       <div id="resume-container" class="resume-container hidden">
         <button id="resume-btn" class="resume-card" type="button" aria-label="Resume reading previous document">
-          <div class="resume-ribbon-tag" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
           <div class="resume-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
           </div>
           <div class="resume-info">
             <div class="resume-kicker-row">
-              <span class="resume-kicker">RESUME READING</span>
-              <span class="resume-instant-badge">Instant ⚡</span>
+              <span class="resume-kicker">Resume Reading</span>
+              <span class="resume-instant-badge">Cached</span>
             </div>
             <div id="resume-title" class="resume-title">Document name</div>
-            <div id="resume-meta" class="resume-meta">Page 1 · Ready to continue</div>
+            <div id="resume-meta" class="resume-meta">Page 1</div>
           </div>
           <div class="resume-arrow-wrap">
             <span class="resume-continue-text">Continue</span>
             <div class="resume-arrow" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
             </div>
@@ -710,10 +701,22 @@
           <div class="feedback-field-group">
             <span class="feedback-label">Feedback Type</span>
             <div class="feedback-category-pills">
-              <button type="button" class="feedback-pill selected" data-cat="Feature Request">💡 Feature Request</button>
-              <button type="button" class="feedback-pill" data-cat="Improvement">🎨 Improvement</button>
-              <button type="button" class="feedback-pill" data-cat="Bug Report">🐛 Issue / Bug</button>
-              <button type="button" class="feedback-pill" data-cat="General">💬 General</button>
+              <button type="button" class="feedback-pill selected" data-cat="Feature Request">
+                <svg class="pill-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Feature Request</span>
+              </button>
+              <button type="button" class="feedback-pill" data-cat="Improvement">
+                <svg class="pill-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                <span>Improvement</span>
+              </button>
+              <button type="button" class="feedback-pill" data-cat="Bug Report">
+                <svg class="pill-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="M22 13h-4"/><path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"/></svg>
+                <span>Issue / Bug</span>
+              </button>
+              <button type="button" class="feedback-pill" data-cat="General">
+                <svg class="pill-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>General</span>
+              </button>
             </div>
           </div>
 

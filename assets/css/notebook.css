@@ -57,16 +57,16 @@ body.notebook-page {
   color: var(--ink);
   text-decoration: none;
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: 8px;
   background: var(--button-bg);
   border: 1px solid var(--control-border);
-  transition: background 0.2s, border-color 0.2s, transform 0.2s var(--ease-spring);
+  transition: background 0.15s, border-color 0.15s, transform 0.15s ease;
 }
 
 .nb-back-link:hover {
   background: var(--button-hover-bg);
   border-color: var(--control-border-hover);
-  transform: translateX(-2px);
+  transform: translateX(-1px);
 }
 
 .nb-brand-badge {
@@ -80,7 +80,7 @@ body.notebook-page {
 .nb-nav-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .nb-primary-btn {
@@ -91,10 +91,10 @@ body.notebook-page {
   color: #fff;
   background: var(--ink);
   border: 1px solid transparent;
-  padding: 9px 16px;
-  border-radius: 999px;
+  padding: 8px 15px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s var(--ease-spring), opacity 0.2s, background 0.2s;
+  transition: opacity 0.15s, background 0.15s, transform 0.15s ease;
 }
 
 :root[data-resolved-theme="dark"] .nb-primary-btn {
@@ -109,9 +109,9 @@ body.notebook-page {
 }
 
 .nb-theme-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   border: 1px solid var(--control-border);
   background: var(--button-bg);
   color: var(--ink);
@@ -119,13 +119,12 @@ body.notebook-page {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, transform 0.2s var(--ease-spring);
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .nb-theme-btn:hover {
   background: var(--button-hover-bg);
   border-color: var(--control-border-hover);
-  transform: scale(1.05);
 }
 
 /* ── Main Container & Hero ─────────────────────────────────────────────── */

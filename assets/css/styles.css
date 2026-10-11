@@ -592,41 +592,40 @@ button:active, a:active {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   background: var(--dock-bg);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid var(--dock-border);
   border-radius: 9999px;
-  padding: 5px 8px;
-  box-shadow: var(--dock-shadow);
-  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s, border-color 0.25s, background 0.25s;
+  padding: 4px 6px;
+  box-shadow: 0 4px 16px rgba(40, 37, 30, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+:root[data-resolved-theme="dark"] .welcome-dock {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 .welcome-dock:hover {
-  box-shadow: 0 20px 48px -4px rgba(40, 37, 30, 0.12), 0 4px 12px rgba(40, 37, 30, 0.06);
   border-color: var(--accent);
-}
-
-:root[data-resolved-theme="dark"] .welcome-dock:hover {
-  box-shadow: 0 24px 52px -4px rgba(0, 0, 0, 0.65), 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .welcome-dock .dock-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 36px;
-  padding: 0 12px;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
   border-radius: 9999px;
-  font: 500 13px/1 var(--font-sans);
+  font: 500 12.5px/1 var(--font-sans);
   color: var(--ink-secondary);
   text-decoration: none;
   background: transparent;
   border: none;
   cursor: pointer;
   position: relative;
-  transition: background 0.18s, color 0.18s, transform 0.18s var(--ease-spring);
+  transition: background 0.15s, color 0.15s;
   box-shadow: none;
   width: auto;
 }
@@ -634,28 +633,43 @@ button:active, a:active {
 .welcome-dock .dock-btn:hover {
   background: var(--dock-hover-bg);
   color: var(--ink);
-  transform: translateY(-1px);
 }
 
 .welcome-dock .dock-btn:active {
-  transform: translateY(0) scale(0.96);
+  transform: scale(0.98);
 }
 
 .welcome-dock .dock-btn.theme-toggle {
-  padding: 0 9px;
-  width: 36px;
+  padding: 0 8px;
+  width: 32px;
   justify-content: center;
+}
+
+.dock-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--control-border);
+  background: var(--button-bg);
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-left: 2px;
 }
 
 .welcome-dock .nav-badge {
   position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
+  top: 6px;
+  right: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 2px var(--dock-bg);
 }
 
 .dock-icon {
@@ -670,9 +684,9 @@ button:active, a:active {
 
 .dock-divider {
   width: 1px;
-  height: 16px;
+  height: 14px;
   background: var(--control-border);
-  opacity: 0.7;
+  opacity: 0.6;
   margin: 0 2px;
 }
 
@@ -683,61 +697,36 @@ button:active, a:active {
 
 /* Welcome Inner Hero */
 .welcome-inner {
-  width: min(100%, 720px);
-  min-height: 82vh;
-  min-height: 82svh;
+  width: min(100%, 640px);
+  min-height: 80vh;
+  min-height: 80svh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   position: relative;
-  padding-top: calc(clamp(64px, 10vh, 104px) + var(--sat));
-  padding-bottom: 28px;
-}
-
-/* Atmospheric Library Glow */
-.welcome-glow-ambient {
-  position: absolute;
-  top: 26%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(110vw, 680px);
-  height: 380px;
-  background: radial-gradient(ellipse at center, var(--ambient-glow) 0%, rgba(184, 137, 74, 0.02) 48%, transparent 72%);
-  pointer-events: none;
-  z-index: 0;
+  padding-top: calc(clamp(56px, 9vh, 92px) + var(--sat));
+  padding-bottom: 24px;
 }
 
 .welcome-header {
   position: relative;
-  z-index: 1;
-  margin-bottom: clamp(24px, 4.5vw, 36px);
+  margin-bottom: clamp(24px, 4vw, 32px);
 }
 
 .welcome-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 12px;
-  padding: 4px 13px;
-  background: var(--accent-light);
-  border-radius: 9999px;
-  border: 1px solid rgba(140, 115, 85, 0.14);
-}
-
-.eyebrow-accent {
-  font-size: 9px;
-  opacity: 0.9;
+  color: var(--muted);
+  margin-bottom: 10px;
 }
 
 .welcome h1 {
-  font: 500 clamp(38px, 6.5vw, 62px)/1.12 var(--font-serif);
+  font: 500 clamp(36px, 6vw, 56px)/1.12 var(--font-serif);
   letter-spacing: -0.025em;
   margin: 0 0 10px;
   color: var(--ink);
@@ -745,31 +734,29 @@ button:active, a:active {
 
 .welcome-subhead {
   margin: 0 auto;
-  font-size: clamp(14px, 2vw, 15.5px);
+  font-size: clamp(13.5px, 1.8vw, 15px);
   color: var(--muted);
-  max-width: 480px;
-  line-height: 1.55;
+  max-width: 440px;
+  line-height: 1.5;
   letter-spacing: -0.01em;
 }
 
-/* Balanced Workspace Grid (Dual Atelier Cards) */
+/* Workspace Grid: Disciplined Human Craftsmanship */
 .welcome-workspace-grid {
-  position: relative;
-  z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  width: min(100%, 640px);
+  gap: 14px;
+  width: 100%;
 }
 
 .welcome-card {
   position: relative;
   border: 1px solid var(--control-border);
-  border-radius: 24px;
+  border-radius: 14px;
   background: var(--control-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 26px 20px 22px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 24px 20px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -777,156 +764,143 @@ button:active, a:active {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.28s var(--ease-spring), border-color 0.24s, box-shadow 0.28s, background 0.24s;
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(40, 37, 30, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.01);
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+:root[data-resolved-theme="dark"] .welcome-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .welcome-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--control-border-hover);
   background: var(--button-bg);
 }
 
 .welcome-card:active {
-  transform: translateY(-1px) scale(0.99);
-}
-
-.card-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: rgba(140, 134, 122, 0.1);
-  padding: 3px 8px;
-  border-radius: 9999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.card-badge-gold {
-  color: var(--accent);
-  background: var(--accent-light);
-  border: 1px solid rgba(140, 115, 85, 0.16);
+  transform: translateY(0);
 }
 
 .card-icon-wrap {
-  width: 64px;
-  height: 64px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--control-border);
-  border-radius: 20px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   background: var(--button-bg);
   color: var(--accent);
-  box-shadow: 0 4px 16px rgba(140, 115, 85, 0.08);
-  margin-top: 4px;
-  transition: transform 0.3s var(--ease-spring), border-color 0.24s, background 0.24s;
+  transition: border-color 0.16s, background 0.16s, color 0.16s;
 }
 
 .welcome-card:hover .card-icon-wrap {
-  transform: translateY(-2px) scale(1.05);
   border-color: var(--accent);
   background: var(--accent-light);
+  color: var(--accent);
 }
 
-.welcome-card.open-card:hover .plus-wrap {
-  transform: translateY(-2px) rotate(6deg) scale(1.05);
+.card-title-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
 }
 
 .card-title {
-  margin-top: 16px;
-  font: 600 16px/1.25 var(--font-sans);
+  font: 600 15px/1.3 var(--font-sans);
   color: var(--ink);
   letter-spacing: -0.015em;
+  margin-top: 14px;
+}
+
+.card-title-row .card-title {
+  margin-top: 0;
+}
+
+.chip-count {
+  font: 600 10.5px/1 var(--font-sans);
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(140, 115, 85, 0.16);
 }
 
 .card-desc {
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 12px;
   color: var(--muted);
-  line-height: 1.45;
-  min-height: 34px;
+  line-height: 1.4;
+  min-height: 32px;
 }
 
 .card-action-cue {
-  margin-top: 14px;
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-  transition: gap 0.2s var(--ease-spring);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.15s, gap 0.15s;
 }
 
 .welcome-card:hover .card-action-cue {
-  gap: 7px;
+  color: var(--accent);
+  gap: 6px;
 }
 
 .card-action-cue svg {
-  transition: transform 0.2s var(--ease-spring);
+  transition: transform 0.15s ease;
 }
 
 .welcome-card:hover .card-action-cue svg {
-  transform: translateX(2px);
+  transform: translateX(1px);
 }
 
-/* Instant Resume Last Read Bookmark Ribbon */
+/* Resume Reading Bar */
 .resume-container {
-  position: relative;
-  z-index: 1;
-  width: min(100%, 640px);
-  margin-top: 16px;
-  animation: fadeIn 0.3s var(--ease-out);
+  width: 100%;
+  margin-top: 12px;
+  animation: fadeIn 0.25s ease;
 }
 
 .resume-card {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: 20px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
   border: 1px solid var(--control-border);
   background: var(--control-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  transition: transform 0.22s var(--ease-spring), border-color 0.2s, box-shadow 0.22s, background 0.2s;
+  box-shadow: 0 1px 3px rgba(40, 37, 30, 0.04);
+  transition: border-color 0.16s, background 0.16s, transform 0.16s;
+}
+
+:root[data-resolved-theme="dark"] .resume-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .resume-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--control-border-hover);
   background: var(--button-bg);
 }
 
-.resume-ribbon-tag {
-  position: absolute;
-  top: 0;
-  left: 20px;
-  color: var(--accent);
-  transform: translateY(-40%);
-  opacity: 0.85;
-}
-
 .resume-icon-wrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  background: var(--accent-light);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--control-border);
+  background: var(--button-bg);
   color: var(--accent);
   display: grid;
   place-items: center;
@@ -941,34 +915,35 @@ button:active, a:active {
 .resume-kicker-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .resume-kicker {
   display: block;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
   text-transform: uppercase;
 }
 
 .resume-instant-badge {
   font-size: 9.5px;
-  font-weight: 600;
-  padding: 1px 7px;
-  border-radius: 9999px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 4px;
   background: var(--accent-light);
   color: var(--accent);
+  border: 1px solid rgba(140, 115, 85, 0.14);
 }
 
 .resume-title {
-  font: 600 13.5px/1.3 var(--font-sans);
+  font: 600 13px/1.3 var(--font-sans);
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .resume-meta {
@@ -980,26 +955,29 @@ button:active, a:active {
 .resume-arrow-wrap {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
 .resume-continue-text {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.resume-card:hover .resume-continue-text {
   color: var(--accent);
-  letter-spacing: -0.01em;
 }
 
 .resume-arrow {
   color: var(--muted);
-  transition: transform 0.2s var(--ease-spring), color 0.18s;
   display: grid;
   place-items: center;
+  transition: transform 0.15s ease, color 0.15s ease;
 }
 
 .resume-card:hover .resume-arrow {
-  transform: translateX(3px);
+  transform: translateX(2px);
   color: var(--accent);
 }
 
@@ -2726,14 +2704,23 @@ button:active, a:active {
 }
 
 .feedback-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font: 500 12px/1 var(--font-sans);
   padding: 6px 11px;
-  border-radius: 999px;
+  border-radius: 8px;
   border: 1px solid var(--control-border);
   background: var(--button-bg);
   color: var(--muted);
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.15s ease;
+}
+
+.feedback-pill .pill-icon {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: color 0.15s ease;
 }
 
 .feedback-pill:hover {
@@ -2742,11 +2729,19 @@ button:active, a:active {
   border-color: var(--control-border-hover);
 }
 
+.feedback-pill:hover .pill-icon {
+  color: var(--ink);
+}
+
 .feedback-pill.selected {
   background: var(--accent-light);
-  color: var(--ink);
+  color: var(--accent);
   border-color: var(--accent);
   font-weight: 600;
+}
+
+.feedback-pill.selected .pill-icon {
+  color: var(--accent);
 }
 
 .feedback-textarea,
