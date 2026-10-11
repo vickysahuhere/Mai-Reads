@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f5f2eb" />
-  <meta name="description" content="Mai-Reads (also known as My Reads) is a minimal, privacy-first PDF and DOCX reader for distraction-free reading and study. Open documents locally with persistent text highlighting and instant resume." />
-  <meta name="keywords" content="mai reads, my reads, myreads, maireads, mai-reads, my reads pdf, mai reads reader, reads, read pdf, read docx, offline pdf reader, minimal pdf viewer, docx reader, study reader, private document reader, highlight pdf offline, indexeddb pdf cache, dyslexia reading tool, adhd reader" />
+  <meta name="description" content="Mai-Reads (also known as My Reads) is an ultra-fast, 100% private PDF &amp; DOCX document reader and study notebook workspace. Bundle multiple files into binders, highlight offline, take scratchpad notes, and read distraction-free." />
+  <meta name="keywords" content="mai reads, my reads, myreads, study notebooks, multi pdf reader, bundle pdf files, combine documents reader, study binder app, offline document organizer, indexeddb study notebook, reading scratchpad, notes and pdf reader, distraction free study workspace, maireads, mai-reads, my reads pdf, offline pdf reader, minimal pdf viewer, docx reader, study reader, private document reader, highlight pdf offline, indexeddb pdf cache, dyslexia reading tool, adhd reader" />
   <meta name="author" content="Maithil Studios" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <meta name="google-site-verification" content="fcd8045aea4e71b4" />
@@ -14,13 +14,13 @@
   <link rel="canonical" href="https://mai-reads.vercel.app/" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Mai-Reads (My Reads) — Minimalist PDF &amp; DOCX Document Reader" />
-  <meta property="og:description" content="Mai-Reads (also known as My Reads) is a minimal, privacy-first PDF and DOCX document reader. Open documents locally with text highlighting and instant resume." />
+  <meta property="og:title" content="Mai-Reads (My Reads) — Minimalist Document Reader &amp; Study Notebooks" />
+  <meta property="og:description" content="An ultra-fast, 100% private PDF &amp; DOCX document reader with multi-file Study Notebooks, persistent offline text highlighting, and instant resume." />
   <meta property="og:url" content="https://mai-reads.vercel.app/" />
   <meta property="og:image" content="https://mai-reads.vercel.app/social-preview.svg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Mai-Reads (My Reads) — Minimalist PDF &amp; DOCX Document Reader" />
-  <meta name="twitter:description" content="Mai-Reads (My Reads) is a distraction-free, privacy-first PDF and DOCX document reader." />
+  <meta name="twitter:title" content="Mai-Reads (My Reads) — Minimalist Document Reader &amp; Study Notebooks" />
+  <meta name="twitter:description" content="An ultra-fast, 100% private PDF &amp; DOCX reader with multi-file Study Notebooks, persistent offline highlights, and instant resume." />
   <meta name="twitter:image" content="https://mai-reads.vercel.app/social-preview.svg" />
   <script type="application/ld+json">
     [
@@ -58,14 +58,17 @@
         "applicationSubCategory": "Document Reader, Offline Study & PDF Annotation Tool",
         "operatingSystem": "All (Windows, macOS, Linux, iOS, Android)",
         "browserRequirements": "Requires a modern web browser with local storage and IndexedDB",
-        "description": "Mai-Reads (My Reads) is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader with built-in text highlighting and client-side PDF export. It processes all files directly in your web browser with zero server uploads, offering a distraction-free, minimalist reading experience.",
-        "keywords": "mai reads, my reads, pdf reader, docx reader, offline reader, document reader, text highlighter",
+        "description": "Mai-Reads (My Reads) is a lightning-fast, 100% local, privacy-first PDF and DOCX document reader and study workspace with multi-file Study Notebooks, built-in text highlighting, unified scratchpad notes, and client-side PDF export. It processes all files directly in your web browser with zero server uploads, offering a distraction-free reading experience.",
+        "keywords": "mai reads, my reads, study notebooks, multi pdf reader, bundle pdf files, combine documents reader, study binder app, offline document organizer, indexeddb study notebook, reading scratchpad, notes and pdf reader, distraction free study workspace, pdf reader, docx reader, offline reader, document reader, text highlighter",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
         "featureList": [
+          "Study Notebooks: Multi-file PDF and Word document binders for organized study and research",
+          "1-Click Document Switching: Seamless tab navigation across multiple files with anchor-stabilized zoom and highlight retention",
+          "Unified Study Scratchpad: Real-time auto-saving notes panel alongside your reading binders with local export",
           "100% Local Processing (Zero server uploads, zero telemetry)",
           "Jitter-free anchor-stabilized continuous zoom (60% to 200%)",
           "Offline Native Text Highlighter with persistent local storage",
@@ -94,7 +97,23 @@
             "name": "What is Mai-Reads (also searched as My Reads)?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Mai-Reads (commonly called My Reads, MyReads, or Mai Reads) is a lightweight, distraction-free web document reader built for reading PDF and Word DOCX files securely on your device with zero server uploads."
+              "text": "Mai-Reads (commonly called My Reads, MyReads, or Mai Reads) is an ultra-fast, privacy-first document reader and study notebook workspace engineered for reading PDF and Word DOCX files securely in your web browser with zero server uploads."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do Study Notebooks work in Mai-Reads?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Study Notebooks in Mai-Reads allow you to bundle multiple PDF and Word DOCX documents into organized binders (such as course textbooks, research papers, or study guides). You can flick between documents with a 1-click top tab strip, take unified notes in the built-in scratchpad, and preserve your reading progress and highlights for every file independently with 100% offline privacy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I read multiple PDF and Word documents together without uploading them?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Mai-Reads stores all documents and notebooks exclusively on your device inside your web browser using IndexedDB. You can bundle dozens of files into notebooks, read, annotate, and take notes completely offline without ever uploading a single byte to an external server."
             }
           },
           {
@@ -158,7 +177,7 @@
     ]
   </script>
   <link rel="manifest" href="./manifest.json" />
-  <title>Mai-Reads (My Reads) — Minimalist PDF &amp; DOCX Document Reader</title>
+  <title>Mai-Reads (My Reads) — Minimalist Document Reader &amp; Study Notebooks</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
@@ -214,75 +233,132 @@
 
   <!-- Welcome / Home View -->
   <main id="welcome" class="welcome">
-    <nav class="welcome-nav" aria-label="Quick actions">
-      <button id="history-toggle-welcome" class="nav-button history-toggle" type="button" aria-label="Open reading history" title="Reading history (H)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M12 7v5l4 2"/>
-        </svg>
-        <span id="welcome-history-dot" class="nav-badge hidden"></span>
-      </button>
-
-      <a id="welcome-notebooks-link" href="notebook.html" class="nav-button" aria-label="Study Notebooks" title="Study Notebooks (N)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
-        <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
-      </a>
-
-      <button id="theme-toggle" class="nav-button theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
-        <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true">
-          <!-- Populated by JS with SVG sun/moon -->
-        </span>
-      </button>
-    </nav>
-
-    <div class="welcome-inner">
-      <div class="welcome-eyebrow">DISTRACTION-FREE DOCUMENT READER</div>
-      <h1>Mai-Reads</h1>
-      <button class="open-card" id="welcome-open" aria-label="Open your document" type="button">
-        <div class="plus-wrap">
-          <svg class="plus-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+    <!-- Floating Island Dock -->
+    <nav class="welcome-dock-container" aria-label="Quick actions">
+      <div class="welcome-dock">
+        <button id="history-toggle-welcome" class="dock-btn nav-button history-toggle" type="button" aria-label="Reading history" title="Reading history (H)">
+          <svg class="dock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M12 7v5l4 2"/>
           </svg>
-        </div>
-        <span class="open-label">Open your document</span>
-        <span class="file-hint">PDF or DOCX · Stays private on your device</span>
-      </button>
+          <span class="dock-text">History</span>
+          <span id="welcome-history-dot" class="nav-badge hidden"></span>
+        </button>
 
-      <!-- Study Notebooks Access -->
-      <div class="welcome-notebook-access">
-        <a href="notebook.html" class="welcome-notebook-chip" aria-label="Open Study Notebooks">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <span class="dock-divider" aria-hidden="true"></span>
+
+        <a id="welcome-notebooks-link" href="notebook.html" class="dock-btn nav-button notebooks-link" aria-label="Study Notebooks" title="Study Notebooks (N)">
+          <svg class="dock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
-          <span>Study Notebooks (Multi-File Binders)</span>
-          <span id="welcome-notebook-count" class="chip-count hidden">0</span>
+          <span class="dock-text">Notebooks</span>
+          <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
+        </a>
+
+        <span class="dock-divider" aria-hidden="true"></span>
+
+        <button id="feedback-toggle-welcome" class="dock-btn nav-button feedback-toggle" type="button" aria-label="Share Feedback" title="Share feedback &amp; suggestions">
+          <svg class="dock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="dock-text">Feedback</span>
+        </button>
+
+        <span class="dock-divider" aria-hidden="true"></span>
+
+        <button id="theme-toggle" class="dock-btn nav-button theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true">
+            <!-- Populated by JS with SVG sun/moon -->
+          </span>
+          <span class="dock-text sr-only">Theme</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="welcome-inner">
+      <div class="welcome-glow-ambient" aria-hidden="true"></div>
+
+      <header class="welcome-header">
+        <div class="welcome-eyebrow">
+          <span class="eyebrow-accent" aria-hidden="true">✦</span> DISTRACTION-FREE DOCUMENT SANCTUARY
+        </div>
+        <h1>Mai-Reads</h1>
+        <p class="welcome-subhead">Unhurried reading, multi-file study binders, and instant offline privacy.</p>
+      </header>
+
+      <!-- Balanced Atelier Grid: Single Document + Study Notebooks -->
+      <div class="welcome-workspace-grid">
+        <!-- Card 1: Read Single Document -->
+        <button class="open-card welcome-card" id="welcome-open" aria-label="Open a PDF or Word document" type="button">
+          <div class="card-badge">SINGLE FILE</div>
+          <div class="plus-wrap card-icon-wrap">
+            <svg class="plus-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
+          <span class="open-label card-title">Open Document</span>
+          <span class="file-hint card-desc">PDF or DOCX · 100% private in-browser reader</span>
+          <span class="card-action-cue">
+            <span>Select or drop file</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </span>
+        </button>
+
+        <!-- Card 2: Study Notebooks Binder -->
+        <a href="notebook.html" class="welcome-notebook-card welcome-card" aria-label="Open Study Notebooks workspace">
+          <div class="card-badge card-badge-gold">
+            <span>BINDERS</span>
+            <span id="welcome-notebook-count" class="chip-count hidden">0</span>
+          </div>
+          <div class="card-icon-wrap notebook-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              <line x1="9" y1="7" x2="15" y2="7"/>
+              <line x1="9" y1="11" x2="13" y2="11"/>
+            </svg>
+          </div>
+          <span class="card-title">Study Notebooks</span>
+          <span class="card-desc">Multi-document binders with unified study scratchpad</span>
+          <span class="card-action-cue">
+            <span>Open workspace</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </span>
         </a>
       </div>
 
-      <!-- Instant Resume Last Read Document Card -->
+      <!-- Instant Resume Last Read Document Bookmark Ribbon -->
       <div id="resume-container" class="resume-container hidden">
-        <button id="resume-btn" class="resume-card" type="button" aria-label="Resume reading">
+        <button id="resume-btn" class="resume-card" type="button" aria-label="Resume reading previous document">
+          <div class="resume-ribbon-tag" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
           <div class="resume-icon-wrap">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
           </div>
           <div class="resume-info">
-            <span class="resume-kicker">RESUME READING</span>
+            <div class="resume-kicker-row">
+              <span class="resume-kicker">RESUME READING</span>
+              <span class="resume-instant-badge">Instant ⚡</span>
+            </div>
             <div id="resume-title" class="resume-title">Document name</div>
-            <div id="resume-meta" class="resume-meta">Page 1 · Resumes instantly</div>
+            <div id="resume-meta" class="resume-meta">Page 1 · Ready to continue</div>
           </div>
-          <div class="resume-arrow" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+          <div class="resume-arrow-wrap">
+            <span class="resume-continue-text">Continue</span>
+            <div class="resume-arrow" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
           </div>
         </button>
       </div>
@@ -291,14 +367,16 @@
   
 
       <section class="seo-data sr-only" aria-labelledby="about-mai-reads">
-      <h2 id="about-mai-reads">About Mai-Reads (My Reads): The Privacy-First PDF &amp; DOCX Document Reader</h2>
+      <h2 id="about-mai-reads">About Mai-Reads (My Reads): Privacy-First Document Reader &amp; Study Notebooks</h2>
       <article>
-        <p>Mai-Reads (also known as My Reads or MyReads) is a 100% local, lightning-fast, distraction-free document reader. We built it so you can open, read, zoom, and highlight PDF and DOCX files securely in your browser with zero server uploads.</p>
+        <p>Mai-Reads (also known as My Reads or MyReads) is a 100% local, lightning-fast, distraction-free document reader and multi-file study notebook workspace. We built it so students, researchers, and professionals can bundle, open, read, zoom, and highlight PDF and DOCX files securely in their browser with zero server uploads.</p>
         
-        <h3>Why Choose Mai-Reads / My Reads for Document Study</h3>
+        <h3>Why Choose Mai-Reads / My Reads for Document Study &amp; Research</h3>
         <ul>
-          <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache remembers your exact page, scroll ratio, and annotations.</li>
-          <li><strong>Zero Data Collection:</strong> 100% private. Your documents and books never leave your device.</li>
+          <li><strong>Multi-File Study Notebooks:</strong> Bundle related textbooks, lecture notes, syllabus guides, and research papers into unified binders with 1-click tab switching.</li>
+          <li><strong>Integrated Study Scratchpad:</strong> Jot notes, chapter summaries, and citations directly beside your documents with local real-time auto-saving.</li>
+          <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache remembers your exact page, scroll ratio, and annotations for every document independently.</li>
+          <li><strong>Zero Data Collection &amp; Serverless:</strong> 100% private. Your documents, notebooks, and notes never leave your device.</li>
           <li><strong>Precision Text Highlighter:</strong> Select text or freehand draw highlight bands across scanned documents with client-side baked-in PDF export.</li>
           <li><strong>Silky 60/120fps Smooth Zoom:</strong> Mathematical anchor lock keeps your position stable without jitter or rubbery pulls.</li>
         </ul>
@@ -313,8 +391,9 @@
         </ul>
         
         <h3>Frequently Asked Questions</h3>
-        <details><summary>What is Mai-Reads (My Reads)?</summary><p>Mai-Reads (often searched as My Reads or MyReads) is a private, web-based PDF and DOCX reader designed for distraction-free reading, academic study, and research.</p></details>
-        <details><summary>Is Mai-Reads completely private?</summary><p>Yes, all processing happens locally using browser-native technologies with zero telemetry or cloud uploads.</p></details>
+        <details><summary>What is Mai-Reads (My Reads)?</summary><p>Mai-Reads (often searched as My Reads or MyReads) is a private, web-based PDF and DOCX reader and study notebook workspace designed for distraction-free reading, academic study, and research.</p></details>
+        <details><summary>How do Study Notebooks work in Mai-Reads?</summary><p>Study Notebooks allow you to group multiple documents into organized binders. You can switch between files with a 1-click top tab strip, take unified notes in the built-in scratchpad, and preserve progress for every document with 100% offline privacy.</p></details>
+        <details><summary>Is Mai-Reads completely private and offline?</summary><p>Yes, all processing and document caching happen locally using browser-native technologies (IndexedDB) with zero telemetry or cloud uploads.</p></details>
         <details><summary>Does it support Word Documents and PDFs?</summary><p>Yes, both PDF and DOCX files are natively rendered directly inside your browser.</p></details>
         <p>Crafted with quiet care by Maithil Studios.</p>
       </article>
@@ -324,6 +403,8 @@
       <button id="studio-link-btn" type="button">Made for unhurried reading</button>
       <span class="welcome-foot-sep" aria-hidden="true">·</span>
       <a href="docs.html" class="welcome-docs-link">Documentation &amp; Guide</a>
+      <span class="welcome-foot-sep" aria-hidden="true">·</span>
+      <button id="welcome-feedback-btn" class="welcome-docs-link" type="button" style="background:none;border:none;padding:0;cursor:pointer;">Feedback</button>
     </footer>
   </main>
 
@@ -569,6 +650,12 @@
           </svg>
           <span>Notebooks</span>
         </a>
+        <button id="controls-feedback-btn" class="action-button" type="button" title="Share feedback & suggestions">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>Feedback</span>
+        </button>
         <button id="open-another" class="action-button" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/>
@@ -597,6 +684,74 @@
       <span id="doc-title-text" class="doc-title-text"></span>
     </div>
   </section>
+
+  <!-- Feedback & Suggestions Modal Dialog -->
+  <div id="feedback-modal-backdrop" class="feedback-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+    <div class="feedback-modal">
+      <div class="feedback-modal-header">
+        <div class="feedback-title-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feedback-icon">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <h2 id="feedback-modal-title" class="feedback-modal-title">Share Your Feedback &amp; Ideas</h2>
+        </div>
+        <button id="feedback-close-btn" class="feedback-modal-close" type="button" aria-label="Close feedback dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div id="feedback-form-container">
+        <p class="feedback-modal-subtitle">Have an idea for a feature or something you'd like improved? We read every note with care.</p>
+        
+        <form id="feedback-form">
+          <div class="feedback-field-group">
+            <span class="feedback-label">Feedback Type</span>
+            <div class="feedback-category-pills">
+              <button type="button" class="feedback-pill selected" data-cat="Feature Request">💡 Feature Request</button>
+              <button type="button" class="feedback-pill" data-cat="Improvement">🎨 Improvement</button>
+              <button type="button" class="feedback-pill" data-cat="Bug Report">🐛 Issue / Bug</button>
+              <button type="button" class="feedback-pill" data-cat="General">💬 General</button>
+            </div>
+          </div>
+
+          <div class="feedback-field-group">
+            <label for="feedback-message-input" class="feedback-label">Your message or idea *</label>
+            <textarea id="feedback-message-input" class="feedback-textarea" placeholder="Tell us what you'd like to see, change, or improve in Mai-Reads…" required rows="4"></textarea>
+          </div>
+
+          <div class="feedback-field-group">
+            <label for="feedback-email-input" class="feedback-label">Your email (optional, for follow-up)</label>
+            <input id="feedback-email-input" class="feedback-input" type="email" placeholder="you@example.com" />
+          </div>
+
+          <div class="feedback-modal-footer">
+            <button id="feedback-cancel-btn" class="feedback-secondary-btn" type="button">Cancel</button>
+            <button id="feedback-submit-btn" class="feedback-primary-btn" type="submit">
+              <span>Send Feedback</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="feedback-success-container" class="feedback-success-container hidden">
+        <div class="feedback-success-icon" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+        </div>
+        <h3 class="feedback-success-title">We Appreciate Your Feedback!</h3>
+        <p class="feedback-success-desc">Thank you so much for taking the time to share your thoughts. Your feedback directly shapes Mai-Reads into a better sanctuary for reading and study.</p>
+        <button id="feedback-success-done-btn" class="feedback-primary-btn" type="button">Done</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>

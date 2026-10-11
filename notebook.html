@@ -7,11 +7,88 @@
   <meta name="description" content="Study Notebooks in Mai-Reads (My Reads). Bundle multiple PDF and DOCX files into private, offline study binders with seamless switching and unified notes." />
   <meta name="keywords" content="mai reads notebooks, study binders, offline multi pdf reader, bundle pdf docx, private document binder, mai-reads, my reads" />
   <meta name="author" content="Maithil Studios" />
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <link rel="canonical" href="https://mai-reads.vercel.app/notebook.html" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="manifest" href="./manifest.json" />
   <title>Study Notebooks — Mai-Reads (My Reads)</title>
+
+  <meta property="og:site_name" content="Mai-Reads (My Reads)" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Study Notebooks — Mai-Reads (My Reads)" />
+  <meta property="og:description" content="Bundle multiple PDF and DOCX files into private, offline study binders with seamless switching and unified scratchpad notes." />
+  <meta property="og:url" content="https://mai-reads.vercel.app/notebook.html" />
+  <meta property="og:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Study Notebooks — Mai-Reads (My Reads)" />
+  <meta name="twitter:description" content="Bundle multiple PDF and DOCX files into private, offline study binders with seamless switching and unified scratchpad notes." />
+  <meta name="twitter:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+
+  <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Study Notebooks — Mai-Reads",
+        "url": "https://mai-reads.vercel.app/notebook.html",
+        "description": "Organize multiple PDF and Word documents into private, offline study binders with unified scratchpad notes.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Mai-Reads",
+          "url": "https://mai-reads.vercel.app/"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://mai-reads.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Study Notebooks",
+            "item": "https://mai-reads.vercel.app/notebook.html"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What are Study Notebooks in Mai-Reads?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Study Notebooks allow you to bundle multiple PDF and DOCX documents together in one focused binder. You can flip between documents with top tab controls, take auto-saving scratchpad notes, and keep your reading progress isolated per document."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are documents in Study Notebooks uploaded to cloud servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All documents, binders, and notes are processed and stored exclusively inside your browser using IndexedDB. No files are ever sent to remote servers or third-party cloud services."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I add both PDF and Word DOCX files to the same notebook?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, you can mix and match PDF and Microsoft Word DOCX files in the same binder. Mai-Reads natively renders both formats client-side."
+            }
+          }
+        ]
+      }
+    ]
+  </script>
 
   <!-- Prevent Theme Flash -->
   <script>
@@ -56,6 +133,11 @@
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
           <span>New Notebook</span>
+        </button>
+        <button id="feedback-toggle-nb" class="nb-theme-btn" type="button" aria-label="Share Feedback" title="Share feedback & suggestions">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
         </button>
         <button id="docs-theme-toggle" class="nb-theme-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">
           <span id="docs-theme-icon" aria-hidden="true">
@@ -159,6 +241,22 @@
       </div>
     </section>
 
+    <!-- Semantic Crawlable SEO Section for Search Bots -->
+    <section class="seo-data sr-only" aria-labelledby="about-study-notebooks">
+      <h2 id="about-study-notebooks">About Study Notebooks: Offline Multi-Document Binders for Research &amp; Study</h2>
+      <article>
+        <p>Mai-Reads Study Notebooks provide an distraction-free environment for organizing and reading multiple PDF and DOCX documents simultaneously. Whether studying for college exams, reading scientific papers, or comparing business reports, Study Notebooks allow you to create unified document collections with zero cloud uploads.</p>
+        
+        <h3>Key Features of Study Notebooks</h3>
+        <ul>
+          <li><strong>Multi-Document Bundling:</strong> Group multiple PDF and Microsoft Word files into structured binders.</li>
+          <li><strong>Instant Tab Navigation:</strong> 1-click document switching with full scroll position and highlight retention.</li>
+          <li><strong>Unified Study Notes Scratchpad:</strong> Jot notes directly alongside your documents with auto-saving to local IndexedDB.</li>
+          <li><strong>100% Privacy &amp; Offline PWA:</strong> No accounts required, no telemetry, and zero document uploads.</li>
+        </ul>
+      </article>
+    </section>
+
   </main>
 
   <!-- Create / Edit Notebook Modal -->
@@ -224,6 +322,74 @@
           <button id="modal-save-btn" class="nb-primary-btn" type="submit">Save Notebook</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Feedback & Suggestions Modal Dialog -->
+  <div id="feedback-modal-backdrop" class="feedback-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+    <div class="feedback-modal">
+      <div class="feedback-modal-header">
+        <div class="feedback-title-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feedback-icon">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <h2 id="feedback-modal-title" class="feedback-modal-title">Share Your Feedback &amp; Ideas</h2>
+        </div>
+        <button id="feedback-close-btn" class="feedback-modal-close" type="button" aria-label="Close feedback dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div id="feedback-form-container">
+        <p class="feedback-modal-subtitle">Have an idea for a feature or something you'd like improved? We read every note with care.</p>
+        
+        <form id="feedback-form">
+          <div class="feedback-field-group">
+            <span class="feedback-label">Feedback Type</span>
+            <div class="feedback-category-pills">
+              <button type="button" class="feedback-pill selected" data-cat="Feature Request">💡 Feature Request</button>
+              <button type="button" class="feedback-pill" data-cat="Improvement">🎨 Improvement</button>
+              <button type="button" class="feedback-pill" data-cat="Bug Report">🐛 Issue / Bug</button>
+              <button type="button" class="feedback-pill" data-cat="General">💬 General</button>
+            </div>
+          </div>
+
+          <div class="feedback-field-group">
+            <label for="feedback-message-input" class="feedback-label">Your message or idea *</label>
+            <textarea id="feedback-message-input" class="feedback-textarea" placeholder="Tell us what you'd like to see, change, or improve in Mai-Reads…" required rows="4"></textarea>
+          </div>
+
+          <div class="feedback-field-group">
+            <label for="feedback-email-input" class="feedback-label">Your email (optional, for follow-up)</label>
+            <input id="feedback-email-input" class="feedback-input" type="email" placeholder="you@example.com" />
+          </div>
+
+          <div class="feedback-modal-footer">
+            <button id="feedback-cancel-btn" class="feedback-secondary-btn" type="button">Cancel</button>
+            <button id="feedback-submit-btn" class="feedback-primary-btn" type="submit">
+              <span>Send Feedback</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="feedback-success-container" class="feedback-success-container hidden">
+        <div class="feedback-success-icon" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+        </div>
+        <h3 class="feedback-success-title">We Appreciate Your Feedback!</h3>
+        <p class="feedback-success-desc">Thank you so much for taking the time to share your thoughts. Your feedback directly shapes Mai-Reads into a better sanctuary for reading and study.</p>
+        <button id="feedback-success-done-btn" class="feedback-primary-btn" type="button">Done</button>
+      </div>
     </div>
   </div>
 

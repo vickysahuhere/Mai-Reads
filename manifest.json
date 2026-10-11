@@ -1,17 +1,31 @@
 {
-  "name": "Mai-Reads (My Reads)",
+  "name": "Mai-Reads (My Reads) — Document Reader & Study Notebooks",
   "short_name": "Mai-Reads",
-  "description": "A distraction-free, privacy-first local PDF and DOCX reader (also known as My Reads).",
+  "description": "A distraction-free, privacy-first local PDF and DOCX document reader with multi-file Study Notebooks, persistent highlights, and instant resume.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f6f3ec",
   "theme_color": "#f6f3ec",
-  "categories": ["productivity", "utilities", "books"],
+  "categories": ["productivity", "utilities", "books", "education"],
   "icons": [
     {
       "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Document Reader",
+      "short_name": "Reader",
+      "description": "Read PDF and DOCX documents with distraction-free layout",
+      "url": "./index.html"
+    },
+    {
+      "name": "Study Notebooks",
+      "short_name": "Notebooks",
+      "description": "Organize multi-file binders and take study notes",
+      "url": "./notebook.html"
     }
   ]
 }

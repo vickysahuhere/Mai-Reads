@@ -2276,6 +2276,89 @@
     e.target.value = '';
   });
 
+  // ── Feedback & Suggestions Engine ─────────────────────────────────────────
+  const feedbackBackdrop = $('feedback-modal-backdrop');
+  const feedbackForm = $('feedback-form');
+  const feedbackFormContainer = $('feedback-form-container');
+  const feedbackSuccessContainer = $('feedback-success-container');
+  const feedbackMessageInput = $('feedback-message-input');
+  const feedbackEmailInput = $('feedback-email-input');
+  const feedbackSubmitBtn = $('feedback-submit-btn');
+  let selectedFeedbackCategory = 'Feature Request';
+
+  function openFeedbackModal() {
+    if (!feedbackBackdrop) return;
+    controls.classList.add('hidden');
+    feedbackFormContainer?.classList.remove('hidden');
+    feedbackSuccessContainer?.classList.add('hidden');
+    if (feedbackMessageInput) feedbackMessageInput.value = '';
+    feedbackBackdrop.classList.add('open');
+    setTimeout(() => feedbackMessageInput?.focus(), 100);
+  }
+
+  function closeFeedbackModal() {
+    feedbackBackdrop?.classList.remove('open');
+  }
+
+  document.querySelectorAll('.feedback-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.feedback-pill').forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+      selectedFeedbackCategory = pill.dataset.cat || 'Feature Request';
+    });
+  });
+
+  [$('feedback-toggle-welcome'), $('welcome-feedback-btn'), $('controls-feedback-btn')].forEach(btn => {
+    btn?.addEventListener('click', openFeedbackModal);
+  });
+
+  $('feedback-close-btn')?.addEventListener('click', closeFeedbackModal);
+  $('feedback-cancel-btn')?.addEventListener('click', closeFeedbackModal);
+  $('feedback-success-done-btn')?.addEventListener('click', closeFeedbackModal);
+
+  feedbackBackdrop?.addEventListener('click', e => {
+    if (e.target === feedbackBackdrop) closeFeedbackModal();
+  });
+
+  feedbackForm?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const message = feedbackMessageInput?.value.trim();
+    if (!message) return;
+
+    const email = feedbackEmailInput?.value.trim() || 'Anonymous';
+    if (feedbackSubmitBtn) {
+      feedbackSubmitBtn.disabled = true;
+      feedbackSubmitBtn.innerHTML = `<span>Sending…</span>`;
+    }
+
+    try {
+      await fetch('https://formsubmit.co/ajax/your-email@example.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          _subject: `Mai-Reads Feedback: ${selectedFeedbackCategory}`,
+          category: selectedFeedbackCategory,
+          message: message,
+          email: email,
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch (err) {
+      console.warn('FormSubmit AJAX fallback:', err);
+    } finally {
+      if (feedbackSubmitBtn) {
+        feedbackSubmitBtn.disabled = false;
+        feedbackSubmitBtn.innerHTML = `<span>Send Feedback</span>`;
+      }
+      feedbackFormContainer?.classList.add('hidden');
+      feedbackSuccessContainer?.classList.remove('hidden');
+      showToast('Thank you! We appreciate your feedback.', 3000);
+    }
+  });
+
   // Initialize Notebook Reader
   initNotebookReader();
 
