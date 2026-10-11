@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en" class="notebook-html">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f2eb" />
+  <meta name="description" content="Study Notebooks in Mai-Reads (My Reads). Bundle multiple PDF and DOCX files into private, offline study binders with seamless switching and unified notes." />
+  <meta name="keywords" content="mai reads notebooks, study binders, offline multi pdf reader, bundle pdf docx, private document binder, mai-reads, my reads" />
+  <meta name="author" content="Maithil Studios" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://mai-reads.vercel.app/notebook.html" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>Study Notebooks — Mai-Reads (My Reads)</title>
+
+  <!-- Prevent Theme Flash -->
+  <script>
+    (function() {
+      try {
+        var store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
+        var theme = store.theme || 'system';
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = dark ? '#1c1d1a' : '#f6f3ec';
+      } catch(e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/notebook.css" />
+</head>
+<body class="notebook-page">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="nb-nav" role="banner">
+    <div class="nb-nav-inner">
+      <div class="nb-nav-left">
+        <a href="index.html" class="nb-back-link" aria-label="Return to Mai-Reads Reader">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Reader</span>
+        </a>
+        <span class="nb-brand-badge" aria-hidden="true">Study Notebooks</span>
+      </div>
+
+      <div class="nb-nav-right">
+        <button id="create-notebook-btn" class="nb-primary-btn" type="button" aria-label="Create new notebook">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New Notebook</span>
+        </button>
+        <button id="docs-theme-toggle" class="nb-theme-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">
+          <span id="docs-theme-icon" aria-hidden="true">
+            <!-- Icon populated by JS -->
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="nb-container" role="main">
+
+    <!-- Hero Section -->
+    <header class="nb-hero">
+      <span class="nb-eyebrow">MULTI-DOCUMENT STUDY WORKSPACES</span>
+      <h1>Study Notebooks</h1>
+      <p>Organize multiple textbooks, research papers, and lecture notes into unified binders. Flip between documents seamlessly, jot cross-file notes, and read with 100% local privacy.</p>
+    </header>
+
+    <!-- Toolbar & Stats -->
+    <div class="nb-toolbar">
+      <div id="notebook-stats" class="nb-stats">
+        <span class="nb-stat-pill">Loading notebooks…</span>
+      </div>
+    </div>
+
+    <!-- Notebooks Grid -->
+    <div id="notebook-grid" class="nb-grid">
+      <!-- Notebook cards dynamically rendered here by notebook.js -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="notebook-empty" class="nb-empty hidden">
+      <div class="nb-empty-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      <h3>No notebooks created yet</h3>
+      <p>Create your first notebook to bundle multiple PDFs and Word documents into a cohesive reading binder.</p>
+      <button id="empty-create-btn" class="nb-primary-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Create your first notebook</span>
+      </button>
+    </div>
+
+    <!-- Feature Showcase / Guide -->
+    <section class="nb-showcase" aria-labelledby="showcase-title">
+      <h2 id="showcase-title" class="nb-showcase-title">Why Use Study Notebooks?</h2>
+      <div class="nb-feature-grid">
+        <article class="nb-feature-card">
+          <div class="nb-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h4>Multi-Document Binders</h4>
+          <p>Bundle related chapters, research papers, syllabus PDFs, and lecture notes into a single cohesive project without file clutter.</p>
+        </article>
+
+        <article class="nb-feature-card">
+          <div class="nb-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+            </svg>
+          </div>
+          <h4>1-Click Document Switching</h4>
+          <p>Flick between files with top document tabs or the collapsible binder sidebar. Each document preserves its exact zoom, page, and highlights.</p>
+        </article>
+
+        <article class="nb-feature-card">
+          <div class="nb-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+          </div>
+          <h4>Unified Scratchpad</h4>
+          <p>Jot cross-file study notes, literature reviews, or quick questions directly beside your documents. Notes automatically save locally.</p>
+        </article>
+
+        <article class="nb-feature-card">
+          <div class="nb-feature-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h4>100% Private &amp; Offline</h4>
+          <p>Zero cloud accounts, zero analytics, zero server uploads. All notebook contents and notes remain encrypted and stored locally in IndexedDB.</p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Create / Edit Notebook Modal -->
+  <div id="notebook-modal-backdrop" class="nb-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="nb-modal">
+      <div class="nb-modal-header">
+        <h2 id="modal-title" class="nb-modal-title">Create Study Notebook</h2>
+        <button id="modal-close-btn" class="nb-modal-close" type="button" aria-label="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="nb-form">
+        <div class="nb-form-group">
+          <label for="nb-title-input" class="nb-form-label">Notebook Name</label>
+          <input id="nb-title-input" class="nb-input" type="text" placeholder="e.g. Molecular Biology 101, Q3 Financials…" required />
+        </div>
+
+        <div class="nb-form-group">
+          <label for="nb-desc-input" class="nb-form-label">Description (Optional)</label>
+          <input id="nb-desc-input" class="nb-input" type="text" placeholder="e.g. Textbook chapters, exam notes, and research papers" />
+        </div>
+
+        <div class="nb-form-group">
+          <span class="nb-form-label">Color Accent</span>
+          <div class="nb-color-options">
+            <button type="button" class="nb-color-choice choice-amber selected" data-color="amber" title="Warm Amber"></button>
+            <button type="button" class="nb-color-choice choice-emerald" data-color="emerald" title="Emerald"></button>
+            <button type="button" class="nb-color-choice choice-indigo" data-color="indigo" title="Indigo"></button>
+            <button type="button" class="nb-color-choice choice-rose" data-color="rose" title="Rose"></button>
+            <button type="button" class="nb-color-choice choice-slate" data-color="slate" title="Slate"></button>
+          </div>
+        </div>
+
+        <div class="nb-form-group">
+          <span class="nb-form-label">Add Documents (PDF or DOCX)</span>
+          <input id="nb-file-picker" type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+          <div id="nb-dropzone" class="nb-dropzone">
+            <div class="nb-dropzone-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="nb-dropzone-title">Click to browse or drop multiple files here</div>
+            <div class="nb-dropzone-hint">Select multiple PDF or DOCX files to include in this binder</div>
+          </div>
+        </div>
+
+        <div class="nb-form-group">
+          <span class="nb-form-label">Queued Documents</span>
+          <div id="nb-queued-files" class="nb-queued-files">
+            <!-- Queued files appear here -->
+          </div>
+        </div>
+
+        <div class="nb-modal-footer">
+          <button id="modal-cancel-btn" class="nb-secondary-btn" type="button">Cancel</button>
+          <button id="modal-save-btn" class="nb-primary-btn" type="submit">Save Notebook</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/notebook.js"></script>
+</body>
+</html>

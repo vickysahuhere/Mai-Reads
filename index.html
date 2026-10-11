@@ -224,6 +224,14 @@
         <span id="welcome-history-dot" class="nav-badge hidden"></span>
       </button>
 
+      <a id="welcome-notebooks-link" href="notebook.html" class="nav-button" aria-label="Study Notebooks" title="Study Notebooks (N)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
+      </a>
+
       <button id="theme-toggle" class="nav-button theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
         <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true">
           <!-- Populated by JS with SVG sun/moon -->
@@ -244,6 +252,18 @@
         <span class="open-label">Open your document</span>
         <span class="file-hint">PDF or DOCX · Stays private on your device</span>
       </button>
+
+      <!-- Study Notebooks Access -->
+      <div class="welcome-notebook-access">
+        <a href="notebook.html" class="welcome-notebook-chip" aria-label="Open Study Notebooks">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span>Study Notebooks (Multi-File Binders)</span>
+          <span id="welcome-notebook-count" class="chip-count hidden">0</span>
+        </a>
+      </div>
 
       <!-- Instant Resume Last Read Document Card -->
       <div id="resume-container" class="resume-container hidden">
@@ -343,6 +363,76 @@
       <span class="highlight-bar-text">Highlighter Active — Drag across page to highlight</span>
       <button id="highlight-bar-done" type="button">Done</button>
     </div>
+
+    <!-- Floating Top Document Tab Strip for Notebooks -->
+    <div id="notebook-tabs-bar" class="notebook-tabs-bar hidden" role="tablist" aria-label="Notebook document tabs">
+      <div id="notebook-tab-items" class="notebook-tab-items"></div>
+      <button id="notebook-add-file-btn" class="notebook-tab-action-btn" type="button" title="Add document to notebook" aria-label="Add document to notebook">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <button id="notebook-binder-toggle-btn" class="notebook-tab-action-btn" type="button" title="Open Binder & Notes" aria-label="Open Binder & Notes">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <span class="binder-btn-text">Binder</span>
+      </button>
+    </div>
+
+    <!-- Hidden Multi-File Picker for Notebook inside Reader -->
+    <input id="notebook-file-picker" type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+
+    <!-- Collapsible Binder & Notes Sidebar for Notebook Mode -->
+    <aside id="notebook-binder-panel" class="notebook-binder-panel" aria-label="Notebook binder and scratchpad" aria-hidden="true">
+      <div class="binder-header">
+        <div class="binder-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span id="binder-notebook-title" class="binder-title">Study Notebook</span>
+        </div>
+        <button id="binder-close-btn" class="history-close-btn" type="button" aria-label="Close binder">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="binder-view-switcher">
+        <button id="binder-view-docs" class="binder-view-btn active" type="button">Documents (<span id="binder-docs-count">0</span>)</button>
+        <button id="binder-view-notes" class="binder-view-btn" type="button">Scratchpad Notes</button>
+      </div>
+
+      <div id="binder-docs-section" class="binder-section">
+        <div id="binder-file-list" class="binder-file-list"></div>
+        <div class="binder-add-zone">
+          <button id="binder-add-file-btn" class="binder-add-btn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Add Document to Notebook</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="binder-notes-section" class="binder-section hidden">
+        <div class="binder-notes-wrap">
+          <textarea id="binder-notes-area" class="binder-notes-area" placeholder="Jot notes, chapter summaries, key citations, or study thoughts here… Auto-saves locally."></textarea>
+          <div class="binder-notes-footer">
+            <span class="binder-notes-status" id="binder-notes-status">Saved</span>
+            <button id="binder-export-notes-btn" class="text-button" type="button">Download Notes</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="binder-footer">
+        <a href="notebook.html" class="history-docs-link">Manage All Notebooks</a>
+      </div>
+    </aside>
+    <div id="binder-backdrop" class="history-backdrop hidden"></div>
 
     <!-- Floating Top-Left History Button in Reader -->
     <button id="history-toggle-reader" class="floating-btn history-toggle-reader" type="button" aria-label="Open reading history" title="Reading history (H)">
@@ -472,6 +562,13 @@
           </svg>
           <span>History</span>
         </button>
+        <a href="notebook.html" class="action-button" title="Study Notebooks" style="text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span>Notebooks</span>
+        </a>
         <button id="open-another" class="action-button" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/>

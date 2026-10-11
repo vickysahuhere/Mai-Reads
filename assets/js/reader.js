@@ -6,8 +6,9 @@
   const historyPanel = $('history-panel'), historyBackdrop = $('history-backdrop');
   const STORE = 'mai-reads-v1';
   const DB_NAME = 'mai-reads-store';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const STORE_DOCS = 'documents';
+  const STORE_NOTEBOOKS = 'notebooks';
 
   let pdf = null, pageNodes = [], pdfTexts = [], pdfPageBases = [], mode = 'continuous', currentFile = null;
   let fileKey = '', docxMode = false, docxPageCount = 1, outlineItems = [];
@@ -17,7 +18,7 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
 
-  // ── IndexedDB Engine for Storing Local Documents ──────────────────────────
+  // ── IndexedDB Engine for Storing Local Documents & Notebooks ──────────────
   function getDB() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -25,6 +26,9 @@
         const db = e.target.result;
         if (!db.objectStoreNames.contains(STORE_DOCS)) {
           db.createObjectStore(STORE_DOCS, { keyPath: 'key' });
+        }
+        if (!db.objectStoreNames.contains(STORE_NOTEBOOKS)) {
+          db.createObjectStore(STORE_NOTEBOOKS, { keyPath: 'id' });
         }
       };
       request.onsuccess = () => resolve(request.result);
@@ -87,17 +91,82 @@
     } catch (err) {}
   }
 
+  async function getNotebookFromDB(id) {
+    try {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NOTEBOOKS, 'readonly');
+        const store = tx.objectStore(STORE_NOTEBOOKS);
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function saveNotebookToDB(notebook) {
+    try {
+      const db = await getDB();
+      const tx = db.transaction(STORE_NOTEBOOKS, 'readwrite');
+      const store = tx.objectStore(STORE_NOTEBOOKS);
+      store.put(notebook);
+      return new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      return false;
+    }
+  }
+
+  async function getAllNotebooksFromDB() {
+    try {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NOTEBOOKS, 'readonly');
+        const store = tx.objectStore(STORE_NOTEBOOKS);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (err) {
+      return [];
+    }
+  }
+
   async function pruneOldDocs() {
     try {
       const db = await getDB();
+      // Collect notebook files so they are never pruned
+      let protectedKeys = new Set();
+      try {
+        const nbTx = db.transaction(STORE_NOTEBOOKS, 'readonly');
+        const nbReq = nbTx.objectStore(STORE_NOTEBOOKS).getAll();
+        await new Promise(res => {
+          nbReq.onsuccess = () => {
+            (nbReq.result || []).forEach(nb => {
+              (nb.files || []).forEach(f => protectedKeys.add(f.key));
+            });
+            res();
+          };
+          nbReq.onerror = res;
+        });
+      } catch (e) {}
+
       const tx = db.transaction(STORE_DOCS, 'readwrite');
       const store = tx.objectStore(STORE_DOCS);
       const req = store.getAll();
       req.onsuccess = () => {
         const docs = req.result || [];
-        if (docs.length > 20) {
+        if (docs.length > 30) {
           docs.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-          docs.slice(20).forEach(d => store.delete(d.key));
+          docs.slice(30).forEach(d => {
+            if (!protectedKeys.has(d.key)) {
+              store.delete(d.key);
+            }
+          });
         }
       };
     } catch (err) {}
@@ -1866,6 +1935,349 @@
       updateHighlightUi();
     }
   });
+
+  // ── Study Notebooks Reader Engine ─────────────────────────────────────────
+  let currentNotebook = null;
+  let notebookNotesDebounce = null;
+
+  async function initNotebookReader() {
+    // 1. Update notebook indicators on welcome screen
+    try {
+      const allNotebooks = await getAllNotebooksFromDB();
+      const nbCount = allNotebooks.length;
+      const countBadge = $('welcome-notebook-dot');
+      const chipCount = $('welcome-notebook-count');
+      if (countBadge) countBadge.classList.toggle('hidden', nbCount === 0);
+      if (chipCount) {
+        chipCount.textContent = String(nbCount);
+        chipCount.classList.toggle('hidden', nbCount === 0);
+      }
+    } catch (e) {}
+
+    // 2. Check if notebook is requested in query params
+    const params = new URLSearchParams(window.location.search);
+    const nbId = params.get('notebook');
+    if (!nbId) return;
+
+    const nb = await getNotebookFromDB(nbId);
+    if (!nb) {
+      showToast('Notebook not found.', 2500);
+      return;
+    }
+
+    currentNotebook = nb;
+    activateNotebookMode();
+  }
+
+  function activateNotebookMode() {
+    if (!currentNotebook) return;
+
+    // Show top tabs bar in reader
+    const tabsBar = $('notebook-tabs-bar');
+    if (tabsBar) tabsBar.classList.remove('hidden');
+
+    // Populate binder panel details
+    const titleEl = $('binder-notebook-title');
+    if (titleEl) titleEl.textContent = currentNotebook.title;
+
+    const notesArea = $('binder-notes-area');
+    if (notesArea) notesArea.value = currentNotebook.notes || '';
+
+    renderNotebookTabs();
+    renderBinderDocsList();
+
+    // Open active file or first file
+    const files = currentNotebook.files || [];
+    if (files.length > 0) {
+      const activeKey = currentNotebook.activeFileKey || files[0].key;
+      switchNotebookDocument(activeKey, false);
+    } else {
+      showToast(`Notebook "${currentNotebook.title}" has no files yet. Click Binder to add files!`, 3500);
+      openBinderPanel();
+    }
+  }
+
+  function renderNotebookTabs() {
+    const tabItems = $('notebook-tab-items');
+    if (!tabItems || !currentNotebook) return;
+    tabItems.replaceChildren();
+
+    const files = currentNotebook.files || [];
+    files.forEach(f => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'notebook-tab' + (f.key === currentNotebook.activeFileKey ? ' active' : '');
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', f.key === currentNotebook.activeFileKey ? 'true' : 'false');
+      tab.title = f.name;
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'notebook-tab-name';
+      nameSpan.textContent = f.name;
+
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'notebook-tab-close';
+      closeBtn.title = `Remove ${f.name} from notebook`;
+      closeBtn.setAttribute('aria-label', `Remove ${f.name} from notebook`);
+      closeBtn.innerHTML = `&times;`;
+      closeBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        removeFileFromNotebook(f.key);
+      });
+
+      tab.append(nameSpan, closeBtn);
+
+      tab.addEventListener('click', () => {
+        if (f.key !== currentNotebook.activeFileKey) {
+          switchNotebookDocument(f.key);
+        }
+      });
+
+      tabItems.append(tab);
+    });
+  }
+
+  async function switchNotebookDocument(key, showToastMsg = true) {
+    if (!currentNotebook) return;
+    const fileEntry = (currentNotebook.files || []).find(f => f.key === key);
+    if (!fileEntry) return;
+
+    currentNotebook.activeFileKey = key;
+    currentNotebook.updatedAt = Date.now();
+    await saveNotebookToDB(currentNotebook);
+
+    renderNotebookTabs();
+    renderBinderDocsList();
+
+    if (showToastMsg) {
+      showToast(`Switching to "${fileEntry.name}"…`, 1200);
+    }
+
+    const cached = await getDocFromDB(key);
+    if (cached && cached.file) {
+      let fileObj = cached.file;
+      if (!(fileObj instanceof File)) {
+        fileObj = new File([cached.file], cached.name, {
+          type: cached.type,
+          lastModified: cached.savedAt
+        });
+      }
+      await openFile(fileObj, key);
+    } else {
+      showToast(`Please select "${fileEntry.name}" to cache it in this browser`, 3500);
+      picker.click();
+    }
+  }
+
+  function renderBinderDocsList() {
+    const list = $('binder-file-list');
+    const countEl = $('binder-docs-count');
+    if (!list || !currentNotebook) return;
+    list.replaceChildren();
+
+    const files = currentNotebook.files || [];
+    if (countEl) countEl.textContent = String(files.length);
+
+    if (files.length === 0) {
+      list.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px 0;font-style:italic;">No documents in this binder yet</div>`;
+      return;
+    }
+
+    const positions = readStore().positions || {};
+
+    files.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'binder-file-item' + (f.key === currentNotebook.activeFileKey ? ' active' : '');
+
+      const pos = positions[f.key];
+      const page = pos?.page || 1;
+      const total = pos?.total || 1;
+      const progressText = total > 1 ? `Page ${page} of ${total}` : `Page ${page}`;
+
+      item.innerHTML = `
+        <div class="binder-file-info">
+          <div class="binder-file-name">${f.name}</div>
+          <div class="binder-file-meta">${progressText}</div>
+        </div>
+        <button class="binder-file-del-btn" type="button" title="Remove from notebook" aria-label="Remove from notebook">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      `;
+
+      item.addEventListener('click', e => {
+        if (e.target.closest('.binder-file-del-btn')) return;
+        closeBinderPanel();
+        if (f.key !== currentNotebook.activeFileKey) {
+          switchNotebookDocument(f.key);
+        }
+      });
+
+      item.querySelector('.binder-file-del-btn')?.addEventListener('click', e => {
+        e.stopPropagation();
+        removeFileFromNotebook(f.key);
+      });
+
+      list.append(item);
+    });
+  }
+
+  async function removeFileFromNotebook(key) {
+    if (!currentNotebook) return;
+    const fileEntry = (currentNotebook.files || []).find(f => f.key === key);
+    if (!fileEntry) return;
+
+    if (!confirm(`Remove "${fileEntry.name}" from this notebook? (The file remains in your cache)`)) return;
+
+    currentNotebook.files = (currentNotebook.files || []).filter(f => f.key !== key);
+    if (currentNotebook.activeFileKey === key) {
+      currentNotebook.activeFileKey = currentNotebook.files.length > 0 ? currentNotebook.files[0].key : '';
+    }
+    currentNotebook.updatedAt = Date.now();
+    await saveNotebookToDB(currentNotebook);
+
+    showToast(`Removed "${fileEntry.name}" from notebook`);
+    renderNotebookTabs();
+    renderBinderDocsList();
+
+    if (currentNotebook.activeFileKey) {
+      switchNotebookDocument(currentNotebook.activeFileKey);
+    }
+  }
+
+  async function addFilesToCurrentNotebook(fileList) {
+    if (!currentNotebook) return;
+    const valid = Array.from(fileList).filter(f => {
+      return /\.(pdf|docx)$/i.test(f.name) || f.type.includes('pdf') || f.type.includes('wordprocessingml');
+    });
+
+    if (valid.length === 0) {
+      showToast('Please select PDF or DOCX files.');
+      return;
+    }
+
+    for (const file of valid) {
+      const key = `${file.name.toLowerCase()}|${file.size}|${file.lastModified || 0}`;
+      const isPdf = /\.pdf$/i.test(file.name) || file.type.includes('pdf');
+      const type = isPdf ? 'pdf' : 'docx';
+
+      await saveDocToDB(key, file, file.name, type);
+
+      const exists = (currentNotebook.files || []).some(f => f.key === key);
+      if (!exists) {
+        currentNotebook.files.push({
+          key,
+          name: file.name,
+          type,
+          size: file.size,
+          addedAt: Date.now()
+        });
+      }
+    }
+
+    if (!currentNotebook.activeFileKey && currentNotebook.files.length > 0) {
+      currentNotebook.activeFileKey = currentNotebook.files[0].key;
+    }
+
+    currentNotebook.updatedAt = Date.now();
+    await saveNotebookToDB(currentNotebook);
+
+    showToast(`Added ${valid.length} file${valid.length === 1 ? '' : 's'} to notebook!`);
+    renderNotebookTabs();
+    renderBinderDocsList();
+
+    if (currentNotebook.activeFileKey) {
+      switchNotebookDocument(currentNotebook.activeFileKey);
+    }
+  }
+
+  function openBinderPanel() {
+    const panel = $('notebook-binder-panel');
+    const backdrop = $('binder-backdrop');
+    if (!panel) return;
+    renderBinderDocsList();
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    backdrop?.classList.remove('hidden');
+    requestAnimationFrame(() => backdrop?.classList.add('visible'));
+  }
+
+  function closeBinderPanel() {
+    const panel = $('notebook-binder-panel');
+    const backdrop = $('binder-backdrop');
+    if (!panel) return;
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    backdrop?.classList.remove('visible');
+    setTimeout(() => backdrop?.classList.add('hidden'), 280);
+  }
+
+  // Hook up binder events
+  $('notebook-binder-toggle-btn')?.addEventListener('click', () => {
+    const isOpen = $('notebook-binder-panel')?.classList.contains('open');
+    if (isOpen) closeBinderPanel();
+    else openBinderPanel();
+  });
+
+  $('binder-close-btn')?.addEventListener('click', closeBinderPanel);
+  $('binder-backdrop')?.addEventListener('click', closeBinderPanel);
+
+  $('binder-view-docs')?.addEventListener('click', () => {
+    $('binder-view-docs')?.classList.add('active');
+    $('binder-view-notes')?.classList.remove('active');
+    $('binder-docs-section')?.classList.remove('hidden');
+    $('binder-notes-section')?.classList.add('hidden');
+  });
+
+  $('binder-view-notes')?.addEventListener('click', () => {
+    $('binder-view-notes')?.classList.add('active');
+    $('binder-view-docs')?.classList.remove('active');
+    $('binder-notes-section')?.classList.remove('hidden');
+    $('binder-docs-section')?.classList.add('hidden');
+  });
+
+  // Scratchpad notes
+  const binderNotesArea = $('binder-notes-area');
+  const binderNotesStatus = $('binder-notes-status');
+  binderNotesArea?.addEventListener('input', () => {
+    if (!currentNotebook) return;
+    if (binderNotesStatus) binderNotesStatus.textContent = 'Saving…';
+    clearTimeout(notebookNotesDebounce);
+    notebookNotesDebounce = setTimeout(async () => {
+      currentNotebook.notes = binderNotesArea.value;
+      currentNotebook.updatedAt = Date.now();
+      await saveNotebookToDB(currentNotebook);
+      if (binderNotesStatus) binderNotesStatus.textContent = 'Saved';
+    }, 500);
+  });
+
+  $('binder-export-notes-btn')?.addEventListener('click', () => {
+    if (!currentNotebook) return;
+    const text = currentNotebook.notes || '';
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentNotebook.title.replace(/[^a-z0-9]/gi, '_')}_Notes.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    showToast('Notes downloaded!');
+  });
+
+  // Adding files inside reader
+  const nbFilePicker = $('notebook-file-picker');
+  $('notebook-add-file-btn')?.addEventListener('click', () => nbFilePicker?.click());
+  $('binder-add-file-btn')?.addEventListener('click', () => nbFilePicker?.click());
+  nbFilePicker?.addEventListener('change', e => {
+    if (e.target.files) addFilesToCurrentNotebook(e.target.files);
+    e.target.value = '';
+  });
+
+  // Initialize Notebook Reader
+  initNotebookReader();
 
 })();
 

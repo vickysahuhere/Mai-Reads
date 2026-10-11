@@ -1,11 +1,14 @@
-const CACHE_NAME = 'mai-reads-v16-offline';
+const CACHE_NAME = 'mai-reads-v17-offline';
 const ASSETS = [
   './',
   './index.html',
   './docs.html',
+  './notebook.html',
   './assets/css/styles.css',
   './assets/css/docs.css',
+  './assets/css/notebook.css',
   './assets/js/reader.js',
+  './assets/js/notebook.js',
   './manifest.json',
   './favicon.svg',
   './e88a3b5c4f2e46c7b960b779412f98d7.txt',
