@@ -26,6 +26,8 @@
   --font-serif: 'Newsreader', Georgia, serif;
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
 :root[data-resolved-theme="dark"] {
@@ -59,6 +61,8 @@ body.notebook-page {
   background-color: var(--bg);
   border-bottom: 1px solid var(--line);
   padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
 }
 
 .nb-nav-inner {
@@ -162,7 +166,7 @@ body.notebook-page {
 /* ── 2-Column Notebook Grid ───────────────────────────────────────────────── */
 .nb-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -435,7 +439,7 @@ body.notebook-page {
   border: 1px solid var(--line-strong);
   color: var(--ink);
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: 16px; /* 16px prevents iOS Safari automatic viewport zoom */
   outline: none;
   transition: border-color 160ms;
 }
@@ -513,24 +517,89 @@ body.notebook-page {
 }
 
 @media (max-width: 640px) {
+  .nb-nav-inner {
+    padding: 12px 16px;
+  }
+
   .nb-container {
     padding: 20px 16px calc(var(--sab) + 40px);
   }
 
   .nb-title-text h1 {
-    font-size: 34px;
+    font-size: clamp(28px, 7.5vw, 36px);
   }
 
   .nb-title-block {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
   }
 
   .nb-title-actions {
     width: 100%;
+    flex-direction: column;
   }
 
-  .nb-title-actions .btn-primary {
+  .nb-title-actions .btn-primary,
+  .nb-title-actions .btn-secondary {
     width: 100%;
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  .nb-modal {
+    padding: 20px;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Ultra-Compact (< 380px) */
+@media (max-width: 380px) {
+  .nb-container {
+    padding: 16px 12px calc(var(--sab) + 32px);
+  }
+
+  .nb-title-text h1 {
+    font-size: 26px;
+  }
+
+  .nb-card {
+    padding: 16px;
+    min-height: 140px;
+  }
+
+  .nb-card-title {
+    font-size: 17px;
+  }
+}
+
+/* Mobile Landscape (< 520px Height) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .nb-nav-inner {
+    padding: 8px 24px;
+  }
+
+  .nb-container {
+    padding: 16px calc(20px + var(--sar)) calc(var(--sab) + 24px) calc(20px + var(--sal));
+  }
+
+  .nb-title-block {
+    margin-bottom: 20px;
+  }
+
+  .nb-title-text h1 {
+    font-size: 28px;
+  }
+}
+
+/* Hover Guard: Prevent sticky hover on mobile touchscreens */
+@media (hover: hover) and (pointer: fine) {
+  .nb-card:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-1px);
+  }
+
+  .nb-swatch-btn:hover {
+    transform: scale(1.15);
   }
 }

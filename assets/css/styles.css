@@ -519,15 +519,18 @@ input[type="range"].range::-moz-range-thumb {
 
 .welcome-display-title {
   font-family: var(--font-serif);
-  font-size: 60px;
+  font-size: clamp(34px, 7vw, 60px);
   font-weight: 400;
-  line-height: 1.04;
+  line-height: 1.05;
   letter-spacing: -0.025em;
   color: var(--ink);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .welcome-subtitle {
-  font-size: 17px;
+  font-size: clamp(15px, 2.2vw, 17px);
+  line-height: 1.5;
   color: var(--ink-2);
   margin-bottom: 12px;
 }
@@ -779,7 +782,7 @@ input[type="range"].range::-moz-range-thumb {
   box-shadow: var(--shadow-subtle);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  max-width: 90vw;
+  max-width: min(560px, calc(100vw - 28px - var(--sal) - var(--sar)));
 }
 
 :root[data-resolved-theme="dark"] .doc-title,
@@ -789,7 +792,9 @@ input[type="range"].range::-moz-range-thumb {
 }
 
 .doc-title-text {
-  max-width: 480px;
+  flex: 1;
+  min-width: 0;
+  max-width: clamp(140px, 60vw, 480px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -992,6 +997,7 @@ input[type="range"].range::-moz-range-thumb {
   gap: 4px;
   box-shadow: var(--shadow-float);
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: min(560px, calc(100vw - 20px - var(--sal) - var(--sar)));
 }
 
 .reader-dock.dock-hidden {
@@ -1713,10 +1719,69 @@ input[type="range"].range::-moz-range-thumb {
 
 /* ── 9. Responsive Rules & Breakpoints ────────────────────────────────────── */
 
-/* Mobile (<= 640px) */
+/* Ultra-Compact (< 380px, e.g. Foldable Cover Screens) */
+@media (max-width: 380px) {
+  .welcome-inner {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .welcome-display-title {
+    font-size: 30px;
+  }
+
+  .welcome-subtitle {
+    font-size: 14px;
+  }
+
+  .continue-reading-row {
+    padding: 10px 12px;
+    min-height: 54px;
+    gap: 10px;
+  }
+
+  .continue-row-title {
+    font-size: 13.5px;
+  }
+
+  .continue-row-meta {
+    font-size: 11.5px;
+  }
+
+  .reader-dock {
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .reader-dock .dock-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .doc-title, #doc-title {
+    padding: 0 10px;
+    gap: 6px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .docx-body {
+    padding: 24px 14px;
+    font-size: 15px;
+  }
+}
+
+/* Mobile Portrait (<= 640px) */
 @media (max-width: 640px) {
   .welcome-topbar {
     padding: calc(var(--sat) + 12px) 0 8px;
+  }
+
+  /* Bottom nav handles History & Notebooks cleanly on mobile */
+  #history-toggle-welcome,
+  #welcome-notebooks-link {
+    display: none !important;
   }
 
   .topbar-btn span,
@@ -1727,22 +1792,25 @@ input[type="range"].range::-moz-range-thumb {
   .welcome-hero {
     align-items: flex-start;
     text-align: left;
-  }
-
-  .welcome-display-title {
-    font-size: 44px;
+    padding: 16px 0 8px;
   }
 
   .welcome-hero-actions {
     width: 100%;
     flex-direction: column;
+    gap: 10px;
   }
 
   .btn-primary,
   .btn-secondary {
     width: 100%;
-    min-height: 56px;
+    min-height: 52px;
     border-radius: 16px;
+    font-size: 15px;
+  }
+
+  .welcome-drop-hint {
+    display: none; /* No drag-and-drop on mobile touchscreens */
   }
 
   .mobile-bottom-nav {
@@ -1750,25 +1818,39 @@ input[type="range"].range::-moz-range-thumb {
   }
 
   .welcome {
-    padding-bottom: calc(var(--sab) + 80px);
+    padding-bottom: calc(var(--sab) + 88px);
   }
 
-  /* Mobile Reader & Bottom Sheet */
+  /* Mobile Reader Surface */
   .reading-surface {
-    padding: 72px 12px calc(var(--sab) + 84px);
+    padding: 68px calc(12px + var(--sar)) calc(var(--sab) + 84px) calc(12px + var(--sal));
   }
 
   .paper {
     padding: 0;
     margin: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .docx-body {
-    padding: 36px 20px;
+    padding: 28px 16px;
     font-size: 16px;
     line-height: 1.65;
   }
 
+  /* In-Document Search Box on Mobile */
+  .search-box {
+    bottom: calc(var(--sab) + 76px);
+    width: calc(100vw - 24px);
+    border-radius: var(--radius-md);
+  }
+
+  .search-input-wrap input {
+    font-size: 16px; /* Prevents unwanted iOS Safari auto-zoom */
+  }
+
+  /* Bottom Sheet Reading Controls */
   .controls {
     position: fixed;
     bottom: 0;
@@ -1777,35 +1859,219 @@ input[type="range"].range::-moz-range-thumb {
     top: auto;
     width: 100%;
     height: auto;
-    max-height: 62vh;
+    max-height: 68vh;
     border-left: none;
     border-top: 1px solid var(--line);
     border-radius: 24px 24px 0 0;
-    padding: 16px 20px calc(var(--sab) + 14px);
+    padding: 16px 20px calc(var(--sab) + 16px);
     box-shadow: var(--shadow-float);
+    transform: translateY(0);
+    z-index: 95;
+  }
+
+  .controls.hidden {
+    display: none !important;
     transform: translateY(100%);
   }
 
-  .controls.sheet-open {
-    transform: translateY(0);
-  }
-
-  .sheet-handle {
+  .sheet-drag-handle {
     width: 36px;
     height: 4px;
     border-radius: 999px;
     background-color: var(--line-strong);
     margin: 0 auto 12px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* Notebook Binder Drawer on Mobile */
+  .notebook-binder-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 75vh;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0;
+    padding: 18px 20px calc(var(--sab) + 16px);
+    box-shadow: var(--shadow-float);
+    z-index: 96;
   }
 }
 
-/* Desktop Docked Panel Breakpoint (>= 1100px) */
-@media (min-width: 1100px) {
-  .controls.docked-open {
-    display: flex;
+/* Tablet & Folded Screen Viewports (641px - 1099px) */
+@media (min-width: 641px) and (max-width: 1099px) {
+  .reading-surface {
+    padding: 76px calc(24px + var(--sar)) calc(var(--sab) + 88px) calc(24px + var(--sal));
   }
 
-  .controls.docked-closed {
+  /* Bottom sheet drawer prevents squishing paper on tablets */
+  .controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    max-width: 580px;
+    margin: 0 auto;
+    max-height: 62vh;
+    border-radius: 24px 24px 0 0;
+    border: 1px solid var(--line);
+    border-bottom: none;
+    padding: 20px 24px calc(var(--sab) + 20px);
+    box-shadow: var(--shadow-float);
+    z-index: 95;
+    transform: translateY(0);
+  }
+
+  .controls.hidden {
+    display: none !important;
+    transform: translateY(100%);
+  }
+
+  .sheet-drag-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background-color: var(--line-strong);
+    margin: 0 auto 12px;
+    display: block;
+  }
+
+  .notebook-binder-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(380px, 80vw);
+    box-shadow: var(--shadow-float);
+    z-index: 96;
+  }
+}
+
+/* Desktop Docked Panel Layout (>= 1100px) */
+@media (min-width: 1100px) {
+  .controls {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    width: 344px;
+    height: 100dvh;
+    border-radius: 0;
+    border-top: none;
+    border-left: 1px solid var(--line);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .controls.hidden {
+    display: none !important;
+  }
+
+  .sheet-drag-handle {
     display: none;
+  }
+}
+
+/* Mobile Landscape Ergonomics (< 520px Height) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .welcome-topbar {
+    padding: calc(var(--sat) + 8px) 0 8px;
+  }
+
+  .welcome-hero {
+    padding: 12px 0 6px;
+    gap: 8px;
+  }
+
+  .welcome-display-title {
+    font-size: 30px;
+  }
+
+  .welcome-hero-actions {
+    flex-direction: row;
+  }
+
+  .btn-primary, .btn-secondary {
+    min-height: 44px;
+    width: auto;
+  }
+
+  .welcome-drop-hint {
+    display: none;
+  }
+
+  .doc-title, #doc-title {
+    top: calc(var(--sat) + 8px);
+    height: 34px;
+    font-size: 12.5px;
+  }
+
+  .reader-dock {
+    bottom: calc(var(--sab) + 8px);
+    padding: 4px;
+  }
+
+  .reader-dock .dock-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .reading-surface {
+    padding: 50px calc(24px + var(--sar)) calc(var(--sab) + 52px) calc(24px + var(--sal));
+  }
+
+  /* Side overlay panel on landscape preserves vertical reading height */
+  .controls {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(320px, 85vw);
+    height: 100dvh;
+    border-radius: 20px 0 0 20px;
+    border-top: none;
+    border-left: 1px solid var(--line);
+    padding: calc(var(--sat) + 14px) calc(var(--sar) + 14px) calc(var(--sab) + 14px) 16px;
+    max-height: 100dvh;
+    z-index: 95;
+    transform: translateX(0);
+  }
+
+  .controls.hidden {
+    display: none !important;
+    transform: translateX(100%);
+  }
+
+  .sheet-drag-handle {
+    display: none;
+  }
+}
+
+/* Hover Guard: Prevent sticky hover on mobile touchscreens */
+@media (hover: hover) and (pointer: fine) {
+  .topbar-btn:hover {
+    background-color: var(--surface-2);
+  }
+
+  .continue-reading-row:hover {
+    background-color: var(--surface-2);
+  }
+
+  .reader-dock .dock-btn:hover {
+    background-color: var(--surface-2);
+  }
+
+  .doc-title-back-btn:hover {
+    background: var(--surface-2);
+    color: var(--ink);
   }
 }
