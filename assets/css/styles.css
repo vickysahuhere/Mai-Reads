@@ -1028,6 +1028,194 @@ input[type="range"].range::-moz-range-thumb {
   color: var(--bg);
 }
 
+/* In-Document Search Box */
+.search-box {
+  position: fixed;
+  bottom: calc(var(--sab) + 80px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100vw - 32px));
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float);
+  padding: 12px;
+  z-index: 85;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease;
+}
+
+.search-box.hidden {
+  display: none;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: 42px;
+  border: 1px solid transparent;
+}
+
+.search-input-wrap:focus-within {
+  border-color: var(--ink);
+}
+
+.search-input-wrap input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-family: var(--font-ui);
+  outline: none;
+}
+
+.search-icon {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.search-results {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.search-result-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  text-align: left;
+  border: none;
+  font-family: var(--font-ui);
+  transition: background 120ms ease;
+}
+
+.search-result-item:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.search-meta-msg {
+  padding: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Live Zoom Percentage Indicator Pill */
+.zoom-indicator-pill {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(21, 20, 15, 0.88);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-float);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 250ms ease;
+}
+
+:root[data-resolved-theme="dark"] .zoom-indicator-pill {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111111;
+}
+
+.zoom-indicator-pill.fading {
+  opacity: 0;
+}
+
+/* Password Unlock Form */
+.pdf-password-card {
+  max-width: 420px;
+  margin: 40px auto;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.pdf-password-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+
+.pdf-password-desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pdf-password-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pdf-password-input {
+  flex: 1;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 14px;
+  outline: none;
+}
+
+.pdf-password-input:focus {
+  border-color: var(--ink);
+}
+
+.pdf-password-error {
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+/* Page Render Error Slot */
+.page-render-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
 /* ── 6. Controls Panel (#controls) ────────────────────────────────────────── */
 .controls {
   width: 344px;

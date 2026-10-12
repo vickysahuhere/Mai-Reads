@@ -1080,6 +1080,14 @@
     }
   });
 
+  // Network Online / Offline notifications
+  window.addEventListener('offline', () => {
+    showToast("You're offline. Study Notebooks continue to work 100% locally.", 4000);
+  });
+  window.addEventListener('online', () => {
+    showToast("Connected to internet.", 2500);
+  });
+
   // Initialize
   initPwaInstall();
   loadAndRenderNotebooks();

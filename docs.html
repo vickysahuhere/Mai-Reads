@@ -131,6 +131,7 @@
         <a href="#smooth-zoom" class="docs-toc-chip">60/120fps Zoom</a>
         <a href="#paper-brightness" class="docs-toc-chip">Paper Brightness</a>
         <a href="#reading-modes" class="docs-toc-chip">Modes &amp; Navigation</a>
+        <a href="#edge-cases" class="docs-toc-chip">Edge Cases &amp; Formats</a>
         <a href="#shortcuts" class="docs-toc-chip">Shortcuts</a>
         <a href="#privacy" class="docs-toc-chip">Local-First Privacy</a>
         <a href="#studio" class="docs-toc-chip">Maithil Studios</a>
@@ -464,9 +465,62 @@
       </div>
     </section>
 
-    <!-- SECTION 6: KEYBOARD SHORTCUTS -->
+    <!-- SECTION 6: EDGE CASES, ROBUSTNESS & FORMATS -->
+    <section id="edge-cases" class="docs-section">
+      <span class="docs-section-tag">06 / RESILIENCE &amp; FORMATS</span>
+      <h2>Robust Format Handling &amp; Edge Cases</h2>
+      <p class="docs-section-lead">
+        Designed to handle real-world document variations without crashes, silent failures, or data loss.
+      </p>
+
+      <div class="docs-grid">
+        <div class="docs-card">
+          <h3>Password-Protected Documents</h3>
+          <p>
+            Encrypted PDFs are detected automatically and present an in-memory unlock field. Passwords are used solely for ephemeral client decryption and are never persisted to storage.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Scanned PDF Detection</h3>
+          <p>
+            When a document has no text layer, in-document search and selection inform you gently. Freehand highlight drawing remains fully operational across scanned pages.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Isolated Page Recovery</h3>
+          <p>
+            If an individual page encounters rendering corruption, Mai-Reads isolates that slot with a "Try page again" retry trigger without freezing or interrupting reading across the rest of the document.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Word (.docx) Dynamic Reflow</h3>
+          <p>
+            Microsoft Word documents reflow into responsive reading typography with estimated page counters. Highlights stay preserved in your local session.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Quota-Aware Storage</h3>
+          <p>
+            If browser storage reaches system quotas, non-blocking notifications alert you while reading remains 100% functional.
+          </p>
+        </div>
+
+        <div class="docs-card">
+          <h3>Pinch Zoom Feedback</h3>
+          <p>
+            Trackpad and touchscreen pinch gestures display live visual percentage chips that fade away cleanly 600ms after release.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: KEYBOARD SHORTCUTS -->
     <section id="shortcuts" class="docs-section">
-      <span class="docs-section-tag">06 / CHEAT SHEET</span>
+      <span class="docs-section-tag">07 / CHEAT SHEET</span>
       <h2>Keyboard Navigation Shortcuts</h2>
       <p class="docs-section-lead">
         Keep your hands on the keyboard for an unhurried, uninterrupted reading flow.
@@ -498,6 +552,21 @@
               <td>Jump directly to the beginning or end of the document</td>
             </tr>
             <tr>
+              <td><strong>Find in Document</strong></td>
+              <td><kbd class="docs-kbd">Ctrl/Cmd</kbd> + <kbd class="docs-kbd">F</kbd></td>
+              <td>Open in-document search with keyboard pinning</td>
+            </tr>
+            <tr>
+              <td><strong>Study Notebooks</strong></td>
+              <td><kbd class="docs-kbd">N</kbd></td>
+              <td>Open Study Notebooks library from home screen</td>
+            </tr>
+            <tr>
+              <td><strong>Toggle History</strong></td>
+              <td><kbd class="docs-kbd">H</kbd></td>
+              <td>Open or close the Reading History sidebar</td>
+            </tr>
+            <tr>
               <td><strong>Zoom In / Out</strong></td>
               <td><kbd class="docs-kbd">Ctrl</kbd> + <kbd class="docs-kbd">+</kbd> / <kbd class="docs-kbd">−</kbd></td>
               <td>Step zoom in or out in 10% increments</td>
@@ -511,11 +580,6 @@
               <td><strong>Toggle Draw Mode</strong></td>
               <td><kbd class="docs-kbd">D</kbd></td>
               <td>Turn freehand draw highlighter on or off</td>
-            </tr>
-            <tr>
-              <td><strong>Toggle History</strong></td>
-              <td><kbd class="docs-kbd">H</kbd></td>
-              <td>Open or close the Reading History sidebar</td>
             </tr>
             <tr>
               <td><strong>Full Screen</strong></td>
@@ -537,9 +601,9 @@
       </div>
     </section>
 
-    <!-- SECTION 7: LOCAL-FIRST PRIVACY -->
+    <!-- SECTION 8: LOCAL-FIRST PRIVACY -->
     <section id="privacy" class="docs-section">
-      <span class="docs-section-tag">07 / PRIVACY ARCHITECTURE</span>
+      <span class="docs-section-tag">08 / PRIVACY ARCHITECTURE</span>
       <h2>100% Local-First Privacy Guarantee</h2>
       <p class="docs-section-lead">
         Mai-Reads was built on a fundamental principle: your books, contracts, academic papers, and private notes belong exclusively to you.
@@ -562,7 +626,7 @@
       </div>
     </section>
 
-    <!-- SECTION 8: MAITHIL STUDIOS TRIBUTE -->
+    <!-- SECTION 9: MAITHIL STUDIOS TRIBUTE -->
     <section id="studio" class="docs-studio-card">
       <div class="docs-studio-emblem" aria-hidden="true">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

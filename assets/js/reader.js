@@ -56,6 +56,9 @@
       pruneOldDocs();
     } catch (err) {
       console.warn('Could not cache document in IndexedDB:', err);
+      if (err?.name === 'QuotaExceededError') {
+        showToast("Browser storage full: couldn't save for instant resume. Reading remains fully usable.", 4000);
+      }
     }
   }
 
@@ -946,6 +949,30 @@
   $('zoom-fit-width')?.addEventListener('click', zoomFitWidth);
   $('zoom-fit-page')?.addEventListener('click', zoomFitPage);
 
+  let zoomPillEl = null;
+  let zoomPillTimer = null;
+
+  function showLiveZoomPill(percent) {
+    if (!zoomPillEl) {
+      zoomPillEl = document.createElement('div');
+      zoomPillEl.className = 'zoom-indicator-pill';
+      document.body.appendChild(zoomPillEl);
+    }
+    zoomPillEl.textContent = `${Math.round(percent)}%`;
+    zoomPillEl.classList.remove('fading');
+    zoomPillEl.style.display = 'block';
+
+    clearTimeout(zoomPillTimer);
+    zoomPillTimer = setTimeout(() => {
+      if (zoomPillEl) {
+        zoomPillEl.classList.add('fading');
+        setTimeout(() => {
+          if (zoomPillEl) zoomPillEl.style.display = 'none';
+        }, 250);
+      }
+    }, 600);
+  }
+
   // Trackpad pinch (Ctrl + Wheel) with smooth exponential scaling & anchor lock
   surface.addEventListener('wheel', e => {
     if (!e.ctrlKey || reader.classList.contains('hidden')) return;
@@ -957,7 +984,9 @@
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
-    setLiveZoom(current * factor, anchor);
+    const nextZoom = current * factor;
+    setLiveZoom(nextZoom, anchor);
+    showLiveZoomPill(nextZoom);
   }, { passive: false });
 
   // Two-finger touch pinch
@@ -984,7 +1013,9 @@
           x: ((a.x + b.x) / 2) - rect.left,
           y: ((a.y + b.y) / 2) - rect.top
         };
-        setLiveZoom(touchStartZoom * (dist / touchStartDist), anchor);
+        const nextZoom = touchStartZoom * (dist / touchStartDist);
+        setLiveZoom(nextZoom, anchor);
+        showLiveZoomPill(nextZoom);
       }
     }
   }, { passive: false });
@@ -1014,7 +1045,9 @@
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
-    setLiveZoom(safariGestureZoom * e.scale, anchor);
+    const nextZoom = safariGestureZoom * e.scale;
+    setLiveZoom(nextZoom, anchor);
+    showLiveZoomPill(nextZoom);
   }, { passive: false });
 
   surface.addEventListener('gestureend', e => {
@@ -1209,14 +1242,62 @@
   let documentHighlights = [];
   let isHighlighting = false;
   
+  let activePasswordCallback = null;
+
+  function promptPdfPassword(callback, reason) {
+    activePasswordCallback = callback;
+    $('loading')?.classList.add('hidden');
+    const errorEl = $('error');
+    if (!errorEl) return;
+    errorEl.replaceChildren();
+    errorEl.classList.remove('hidden');
+
+    const card = document.createElement('div');
+    card.className = 'pdf-password-card';
+    card.innerHTML = `
+      <h3 class="pdf-password-title">Password Protected Document</h3>
+      <p class="pdf-password-desc">This document requires a password to open. Used on this device only. Never saved.</p>
+      ${reason === 2 ? '<div class="pdf-password-error">Incorrect password. Please try again.</div>' : ''}
+      <form class="pdf-password-row" id="pdf-pw-form">
+        <input type="password" class="pdf-password-input" id="pdf-pw-input" placeholder="Enter password…" required autocomplete="off" />
+        <button type="submit" class="btn-primary" style="height:44px;padding:0 18px;">Unlock</button>
+      </form>
+    `;
+
+    card.querySelector('#pdf-pw-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pw = card.querySelector('#pdf-pw-input').value;
+      if (activePasswordCallback) {
+        $('loading')?.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        activePasswordCallback(pw);
+      }
+    });
+
+    errorEl.append(card);
+    setTimeout(() => card.querySelector('#pdf-pw-input')?.focus(), 50);
+  }
+
   async function renderPdf(bytes, token) {
     globalPdfBytes = bytes;
     documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
-    if (documentHighlights.length > 0) $('download-pdf')?.classList.remove('hidden');
-    else $('download-pdf')?.classList.add('hidden');
+    const downloadBtn = $('download-pdf');
+    if (downloadBtn) {
+      downloadBtn.removeAttribute('disabled');
+      downloadBtn.style.opacity = '';
+      downloadBtn.style.cursor = '';
+      downloadBtn.title = '';
+      if (documentHighlights.length > 0) downloadBtn.classList.remove('hidden');
+      else downloadBtn.classList.add('hidden');
+    }
 
     if (!window.pdfjsLib) throw new Error('PDF support could not load. Check your internet connection and reload this page.');
-    pdf = await pdfjsLib.getDocument({ data: new Uint8Array(bytes) }).promise;
+    pdf = await pdfjsLib.getDocument({
+      data: new Uint8Array(bytes),
+      onPassword: (callback, reason) => {
+        promptPdfPassword(callback, reason);
+      }
+    }).promise;
     $('page-total').textContent = pdf.numPages;
 
     for (let n = 1; n <= pdf.numPages; n++) {
@@ -1295,7 +1376,22 @@
       await renderTask.promise;
     } catch (err) {
       if (err?.name === 'RenderingCancelledException') return;
-      throw err;
+      const n = node.dataset.page || '?';
+      let errSlot = node.querySelector('.page-render-error');
+      if (!errSlot) {
+        errSlot = document.createElement('div');
+        errSlot.className = 'page-render-error';
+        errSlot.innerHTML = `
+          <span>Page ${n} couldn't be drawn</span>
+          <button type="button" class="btn-secondary" style="height:36px;font-size:12.5px;padding:0 14px;">Try page again</button>
+        `;
+        errSlot.querySelector('button')?.addEventListener('click', () => {
+          errSlot.remove();
+          renderSinglePage(Number(n) - 1, renderToken);
+        });
+        node.appendChild(errSlot);
+      }
+      return;
     } finally {
       if (node._renderTask === renderTask) node._renderTask = null;
     }
@@ -1348,6 +1444,19 @@
     pages.append(article);
     pageNodes.push(article);
     docxMode = true;
+    const downloadBtn = $('download-pdf');
+    if (downloadBtn) {
+      downloadBtn.classList.remove('hidden');
+      downloadBtn.setAttribute('disabled', 'true');
+      downloadBtn.style.opacity = '0.5';
+      downloadBtn.style.cursor = 'not-allowed';
+      downloadBtn.title = 'Export works for PDF files. Highlights on Word files stay in the reader.';
+    }
+    const pageChip = $('doc-page-chip');
+    if (pageChip) {
+      pageChip.title = 'Reflowed from Word. Page numbers are estimates.';
+    }
+    showToast('Reflowed from Word. Page numbers are estimates.', 2500);
     documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
     updateHighlightUi();
     renderPageHighlights(1, article);
@@ -1644,6 +1753,15 @@
     resultBox.replaceChildren();
     if (!query) return;
 
+    // Section 7 Edge Case 6: Scanned PDF detection
+    if (pdf && pdfTexts.length > 0 && pdfTexts.every(t => !t || t.trim().length === 0)) {
+      const msg = document.createElement('div');
+      msg.className = 'search-meta-msg';
+      msg.textContent = "No text found. This PDF looks scanned, so Find and select-to-highlight can't read it. Freehand Draw still works.";
+      resultBox.append(msg);
+      return;
+    }
+
     let matches = [];
     if (pdf) {
       pdfTexts.forEach((text, i) => {
@@ -1670,20 +1788,51 @@
       }
     }
 
+    if (matches.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'search-meta-msg';
+      empty.textContent = 'No matching text found.';
+      resultBox.append(empty);
+      return;
+    }
+
     const summary = document.createElement('div');
-    summary.className = 'search-summary';
+    summary.className = 'search-meta-msg';
+    summary.style.fontWeight = '500';
     summary.textContent = `${matches.length}${matches.length === 200 ? '+' : ''} match${matches.length === 1 ? '' : 'es'}`;
     resultBox.append(summary);
 
-    matches.slice(0, 25).forEach(match => {
+    matches.slice(0, 30).forEach(match => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'search-result';
+      btn.className = 'search-result-item';
       btn.textContent = `Page ${match.page} · ${match.snippet}`;
       btn.addEventListener('click', () => scrollToPage(match.page));
       resultBox.append(btn);
     });
   }
+
+  // Section 7 Edge Case 10: Pin Find bar above on-screen keyboard on mobile
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const box = $('search-box');
+      if (!box || box.classList.contains('hidden')) return;
+      const offset = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+      if (offset > 0) {
+        box.style.bottom = `${offset + 12}px`;
+      } else {
+        box.style.bottom = '';
+      }
+    });
+  }
+
+  // Section 7 Edge Case 7: Network Online / Offline notifications
+  window.addEventListener('offline', () => {
+    showToast("You're offline. Reading, notebooks, and highlights still work.", 4000);
+  });
+  window.addEventListener('online', () => {
+    showToast("Connected to internet.", 2500);
+  });
 
 
   const studioBtn = document.getElementById('studio-link-btn');
