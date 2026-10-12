@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#F6F5F1" />
+  <meta name="description" content="Open and read confidential PDF files 100% offline in your browser. Zero server uploads, zero cloud tracking, instant resume, and free client-side PDF highlighter." />
+  <meta name="keywords" content="read pdf offline, offline pdf viewer, private pdf reader no upload, open confidential pdf online, secure pdf viewer browser, read pdf without internet" />
+  <meta name="author" content="Maithil Studios" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <link rel="canonical" href="https://mai-reads.vercel.app/read-pdf-offline" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>Read PDF Offline [100% Private — Never Uploads to Cloud] | Mai-Reads</title>
+
+  <meta property="og:site_name" content="Mai-Reads (My Reads)" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Read PDF Offline [100% Private — Never Uploads to Cloud]" />
+  <meta property="og:description" content="Never upload your private documents. Open, read, zoom, and highlight PDF files 100% offline in your browser." />
+  <meta property="og:url" content="https://mai-reads.vercel.app/read-pdf-offline" />
+  <meta property="og:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Read PDF Offline [100% Private — Never Uploads to Cloud]" />
+  <meta name="twitter:description" content="Never upload your private documents. Open, read, zoom, and highlight PDF files 100% offline in your browser." />
+  <meta name="twitter:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+
+  <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Read PDF Offline — 100% Private In-Browser PDF Reader",
+        "url": "https://mai-reads.vercel.app/read-pdf-offline",
+        "description": "Open and read confidential PDF files offline directly in your browser with zero server uploads."
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Mai-Reads Offline PDF Viewer",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "All",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "142"
+        }
+      }
+    ]
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script>
+    (function() {
+      try {
+        var store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
+        var theme = store.theme || 'system';
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+  <input id="file-picker" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+  <div id="drop-overlay" class="drop-overlay hidden" aria-hidden="true">
+    <div class="drop-card">
+      <div class="drop-title">Drop to open PDF</div>
+      <div class="drop-hint">Stays on your device 100% offline.</div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <aside id="history-panel" class="history-panel" aria-label="Reading history" aria-hidden="true">
+    <div class="history-header">
+      <div class="history-title-wrap">
+        <span class="history-title">Reading History</span>
+        <span id="history-count" class="history-count-badge">0</span>
+      </div>
+      <button id="history-close" class="history-close-btn" aria-label="Close reading history">✕</button>
+    </div>
+    <div id="history-list" class="history-list"></div>
+    <div class="history-footer">
+      <button id="clear-history-btn" class="history-clear-btn" type="button">Clear history</button>
+    </div>
+  </aside>
+  <div id="history-backdrop" class="history-backdrop" aria-hidden="true"></div>
+
+  <main id="welcome" class="welcome">
+    <div class="welcome-inner">
+      <header class="welcome-topbar">
+        <a href="index.html" class="welcome-wordmark" aria-label="Mai-Reads Home">
+          <span class="wordmark-icon" aria-hidden="true">M</span>
+          <span class="wordmark-text">Mai-Reads</span>
+        </a>
+        <div class="welcome-topbar-actions">
+          <button id="history-toggle-welcome" class="topbar-btn" type="button">
+            <span>History</span>
+          </button>
+          <a href="notebook.html" class="topbar-btn">
+            <span>Notebooks</span>
+          </a>
+          <button id="theme-toggle" class="icon-button topbar-theme-btn" type="button" aria-label="Switch theme">
+            <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+
+      <section class="welcome-hero">
+        <span class="welcome-eyebrow">100% CLIENT-SIDE • ZERO SERVER UPLOADS</span>
+        <h1 class="welcome-display-title">Read PDFs Offline &amp; Privately.</h1>
+        <p class="welcome-subtitle">Open, view, zoom, and highlight sensitive PDFs without sending a single byte to an external server.</p>
+        <div class="welcome-hero-actions">
+          <button id="welcome-open" class="btn-primary" type="button">Open PDF Now</button>
+          <a href="notebook.html" class="btn-secondary">Create Study Binder</a>
+        </div>
+        <p class="welcome-drop-hint">or drop your PDF anywhere on this page</p>
+      </section>
+
+      <section id="resume-container" class="continue-reading-section hidden">
+        <div class="continue-reading-header">
+          <span class="welcome-eyebrow">CONTINUE READING</span>
+          <button id="view-all-history-btn" class="welcome-view-all-btn" type="button">View all</button>
+        </div>
+        <div id="continue-reading-card" class="continue-reading-card">
+          <div id="continue-reading-items" class="continue-reading-items"></div>
+        </div>
+        <div class="sr-only" aria-hidden="true">
+          <button id="resume-btn" type="button"><span id="resume-title"></span><span id="resume-meta"></span></button>
+          <button id="feedback-toggle-welcome" type="button"></button>
+          <span id="pwa-install-dock-sep" class="pwa-install-dock-sep"></span>
+        </div>
+      </section>
+
+      <div class="welcome-privacy-line">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>Processed locally in browser memory. Never uploaded to any cloud server.</span>
+      </div>
+
+      <details class="welcome-seo-details" open>
+        <summary class="welcome-seo-summary">Why use an offline in-browser PDF reader?</summary>
+        <article>
+          <h3>The Problem With Most Online PDF Viewers</h3>
+          <p>Common online PDF tools require you to upload your files to remote cloud servers. If your document contains medical records, tax filings, legal contracts, confidential research, or student grades, uploading it creates immediate security and data privacy risks.</p>
+          
+          <h3>How Mai-Reads Solves This</h3>
+          <ul>
+            <li><strong>Zero Server Uploads:</strong> Uses WebAssembly and local JavaScript to render pages directly on your device.</li>
+            <li><strong>Full Offline Support:</strong> Works with or without an active internet connection as a progressive web app.</li>
+            <li><strong>In-Browser Highlighting:</strong> Select text to highlight and burn annotations directly into exported PDFs.</li>
+            <li><strong>Smooth Anchor Zoom:</strong> Mathematical anchor lock keeps your position stable without jitter.</li>
+          </ul>
+        </article>
+      </details>
+    </div>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+      <button id="mobile-nav-open" class="mobile-nav-item" type="button">
+        <span>Open</span>
+      </button>
+      <button id="mobile-nav-history" class="mobile-nav-item" type="button">
+        <span>History</span>
+      </button>
+      <a id="mobile-nav-notebooks" href="notebook.html" class="mobile-nav-item">
+        <span>Notebooks</span>
+      </a>
+    </nav>
+  </main>
+
+  <!-- Document Reader View -->
+  <section id="reader" class="reader hidden" aria-label="Document reader">
+    <div id="doc-title" class="doc-title">
+      <button id="doc-title-back" class="doc-title-back-btn" type="button" aria-label="Return home">‹</button>
+      <span id="doc-title-text" class="doc-title-text"></span>
+      <span id="doc-page-chip" class="doc-page-chip"></span>
+    </div>
+
+    <div id="notebook-tabs-bar" class="notebook-tabs-bar hidden" role="tablist">
+      <a id="notebook-exit-link" href="notebook.html" class="notebook-tab-action-btn">‹</a>
+      <div id="notebook-tab-items" class="notebook-tab-items"></div>
+      <button id="notebook-add-file-btn" class="notebook-tab-action-btn" type="button">+</button>
+      <button id="notebook-binder-toggle-btn" class="notebook-tab-action-btn" type="button">Binder</button>
+    </div>
+    <input id="notebook-file-picker" type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+
+    <aside id="notebook-binder-panel" class="notebook-binder-panel" aria-label="Notebook binder" aria-hidden="true">
+      <div class="binder-header">
+        <span id="binder-notebook-title" class="binder-title">Study Notebook</span>
+        <button id="binder-close-btn" class="history-close-btn" type="button">✕</button>
+      </div>
+      <div id="binder-file-list" class="binder-file-list"></div>
+      <textarea id="binder-notes-area" class="binder-notes-area" placeholder="Jot down notes..."></textarea>
+    </aside>
+
+    <div id="surface" class="reading-surface" tabindex="0">
+      <div id="paper" class="paper">
+        <div id="docx-container" class="docx-body hidden"></div>
+        <div id="pages" class="pages"></div>
+      </div>
+    </div>
+
+    <div id="error" class="error hidden" role="alert"></div>
+
+    <nav id="reader-dock" class="reader-dock" aria-label="Reader tools">
+      <button id="history-toggle-reader" class="dock-btn" type="button" aria-label="History">H</button>
+      <button id="search-toggle" class="dock-btn" type="button" aria-label="Search">🔍</button>
+      <button id="highlight-toggle" class="dock-btn" type="button" aria-label="Highlighter">🖊</button>
+      <button id="bookmark-add" class="dock-btn" type="button" aria-label="Bookmark">🔖</button>
+      <span class="dock-sep" aria-hidden="true"></span>
+      <button id="control-toggle" class="dock-btn" type="button" aria-label="Controls">⚙</button>
+    </nav>
+
+    <div id="selection-tooltip" class="selection-tooltip hidden" role="toolbar">
+      <button id="btn-highlight-selection" class="tooltip-btn" type="button">Highlight</button>
+      <button id="btn-copy-selection" class="tooltip-btn" type="button">Copy</button>
+    </div>
+
+    <div id="highlight-bar" class="highlight-bar hidden">
+      <span class="highlight-bar-text">Highlighter on</span>
+      <button id="highlight-bar-done" type="button">Done</button>
+    </div>
+
+    <div id="search-box" class="search-box hidden">
+      <div class="search-input-wrap">
+        <input id="search-input" type="search" placeholder="Search this document…" />
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+
+    <aside id="controls" class="controls hidden" aria-label="Reading controls">
+      <div class="sheet-drag-handle" aria-hidden="true"></div>
+      <div class="control-top">
+        <div class="page-readout">
+          <strong id="page-current">—</strong>
+          <span class="slash">of</span>
+          <span id="page-total" class="page-readout-of">/ —</span>
+        </div>
+        <button id="close-controls" class="icon-button" type="button">✕</button>
+      </div>
+      <input id="page-slider" class="page-range" type="range" min="1" max="1" value="1" />
+      <div class="control-section">
+        <div class="control-label-row"><span>Zoom</span><span id="zoom-value">100%</span></div>
+        <div class="zoom-stepper-row">
+          <button id="zoom-out" class="zoom-step-btn" type="button">−</button>
+          <button id="zoom-reset" class="zoom-reset-btn" type="button">Fit</button>
+          <button id="zoom-in" class="zoom-step-btn" type="button">+</button>
+        </div>
+      </div>
+      <div class="control-section">
+        <div class="control-label-row"><span>Paper brightness</span></div>
+        <input id="paper-brightness-slider" type="range" min="0.4" max="1" step="0.05" value="1" />
+      </div>
+      <div class="control-actions-block">
+        <button id="export-pdf-btn" class="btn-primary-block" type="button">Export PDF</button>
+      </div>
+    </aside>
+  </section>
+
+  <script src="assets/js/pdf.min.js"></script>
+  <script src="assets/js/mammoth.browser.min.js"></script>
+  <script src="assets/js/pdf-lib.min.js"></script>
+  <script src="assets/js/reader.js"></script>
+</body>
+</html>

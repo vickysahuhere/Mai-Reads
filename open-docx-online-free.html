@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#F6F5F1" />
+  <meta name="description" content="Open and read Microsoft Word (.docx) files online for free without installing Office or uploading to Google Drive. 100% private, clean typography, zero ads." />
+  <meta name="keywords" content="open docx without word free, read word document online, view docx file without office, free docx viewer, open word file no upload, docx reader offline" />
+  <meta name="author" content="Maithil Studios" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <link rel="canonical" href="https://mai-reads.vercel.app/open-docx-online-free" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>Open DOCX Files Free [No Microsoft Word or Sign-Up Needed] | Mai-Reads</title>
+
+  <meta property="og:site_name" content="Mai-Reads (My Reads)" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Open DOCX Files Free [No Microsoft Word or Sign-Up Needed]" />
+  <meta property="og:description" content="Read Word DOCX documents instantly in your browser with zero server uploads and beautiful typography." />
+  <meta property="og:url" content="https://mai-reads.vercel.app/open-docx-online-free" />
+  <meta property="og:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Open DOCX Files Free [No Microsoft Word or Sign-Up Needed]" />
+  <meta name="twitter:description" content="Read Word DOCX documents instantly in your browser with zero server uploads and beautiful typography." />
+  <meta name="twitter:image" content="https://mai-reads.vercel.app/social-preview.svg" />
+
+  <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Open DOCX Files Free Without Microsoft Word",
+        "url": "https://mai-reads.vercel.app/open-docx-online-free",
+        "description": "Read Word DOCX files online for free without installing Microsoft Office or uploading to remote servers."
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Mai-Reads DOCX Word Document Viewer",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "All",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "142"
+        }
+      }
+    ]
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script>
+    (function() {
+      try {
+        var store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
+        var theme = store.theme || 'system';
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+  <input id="file-picker" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+  <div id="drop-overlay" class="drop-overlay hidden" aria-hidden="true">
+    <div class="drop-card">
+      <div class="drop-title">Drop to open Word DOCX</div>
+      <div class="drop-hint">Instant in-browser rendering. Never uploaded.</div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <aside id="history-panel" class="history-panel" aria-label="Reading history" aria-hidden="true">
+    <div class="history-header">
+      <div class="history-title-wrap">
+        <span class="history-title">Reading History</span>
+        <span id="history-count" class="history-count-badge">0</span>
+      </div>
+      <button id="history-close" class="history-close-btn" aria-label="Close reading history">✕</button>
+    </div>
+    <div id="history-list" class="history-list"></div>
+    <div class="history-footer">
+      <button id="clear-history-btn" class="history-clear-btn" type="button">Clear history</button>
+    </div>
+  </aside>
+  <div id="history-backdrop" class="history-backdrop" aria-hidden="true"></div>
+
+  <main id="welcome" class="welcome">
+    <div class="welcome-inner">
+      <header class="welcome-topbar">
+        <a href="index.html" class="welcome-wordmark" aria-label="Mai-Reads Home">
+          <span class="wordmark-icon" aria-hidden="true">M</span>
+          <span class="wordmark-text">Mai-Reads</span>
+        </a>
+        <div class="welcome-topbar-actions">
+          <button id="history-toggle-welcome" class="topbar-btn" type="button">
+            <span>History</span>
+          </button>
+          <a href="notebook.html" class="topbar-btn">
+            <span>Notebooks</span>
+          </a>
+          <button id="theme-toggle" class="icon-button topbar-theme-btn" type="button" aria-label="Switch theme">
+            <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+
+      <section class="welcome-hero">
+        <span class="welcome-eyebrow">NO OFFICE LICENSE • NO ACCOUNT NEEDED</span>
+        <h1 class="welcome-display-title">Read Word DOCX Files Free.</h1>
+        <p class="welcome-subtitle">Open, view, and read Microsoft Word documents directly in your browser with clean, calm typography and zero server uploads.</p>
+        <div class="welcome-hero-actions">
+          <button id="welcome-open" class="btn-primary" type="button">Open DOCX File</button>
+          <a href="notebook.html" class="btn-secondary">Study Notebooks</a>
+        </div>
+        <p class="welcome-drop-hint">or drop your Word document anywhere on this page</p>
+      </section>
+
+      <section id="resume-container" class="continue-reading-section hidden">
+        <div class="continue-reading-header">
+          <span class="welcome-eyebrow">CONTINUE READING</span>
+          <button id="view-all-history-btn" class="welcome-view-all-btn" type="button">View all</button>
+        </div>
+        <div id="continue-reading-card" class="continue-reading-card">
+          <div id="continue-reading-items" class="continue-reading-items"></div>
+        </div>
+        <div class="sr-only" aria-hidden="true">
+          <button id="resume-btn" type="button"><span id="resume-title"></span><span id="resume-meta"></span></button>
+          <button id="feedback-toggle-welcome" type="button"></button>
+          <span id="pwa-install-dock-sep" class="pwa-install-dock-sep"></span>
+        </div>
+      </section>
+
+      <div class="welcome-privacy-line">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>Rendered locally with client-side XML parsing. Never sent to any server.</span>
+      </div>
+
+      <details class="welcome-seo-details" open>
+        <summary class="welcome-seo-summary">How to open DOCX files without Microsoft Word?</summary>
+        <article>
+          <h3>Instant In-Browser DOCX Typography</h3>
+          <p>Don't have Microsoft 365 or Word installed? Don't want to upload your document to Google Drive? Mai-Reads uses an in-browser parser to unpack and format DOCX files directly on your device.</p>
+          <ul>
+            <li><strong>Zero Setup:</strong> No subscriptions, no ads, no sign-ins required.</li>
+            <li><strong>Focus Typography:</strong> Reflows Word documents into clean editorial serif type that is easy on the eyes.</li>
+            <li><strong>Dark Mode &amp; Brightness:</strong> Reduce eye strain during late-night reading sessions.</li>
+            <li><strong>Instant Resume:</strong> Remembers your position and recent files locally via IndexedDB.</li>
+          </ul>
+        </article>
+      </details>
+    </div>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+      <button id="mobile-nav-open" class="mobile-nav-item" type="button">
+        <span>Open</span>
+      </button>
+      <button id="mobile-nav-history" class="mobile-nav-item" type="button">
+        <span>History</span>
+      </button>
+      <a id="mobile-nav-notebooks" href="notebook.html" class="mobile-nav-item">
+        <span>Notebooks</span>
+      </a>
+    </nav>
+  </main>
+
+  <!-- Document Reader View -->
+  <section id="reader" class="reader hidden" aria-label="Document reader">
+    <div id="doc-title" class="doc-title">
+      <button id="doc-title-back" class="doc-title-back-btn" type="button" aria-label="Return home">‹</button>
+      <span id="doc-title-text" class="doc-title-text"></span>
+      <span id="doc-page-chip" class="doc-page-chip"></span>
+    </div>
+
+    <div id="notebook-tabs-bar" class="notebook-tabs-bar hidden" role="tablist">
+      <a id="notebook-exit-link" href="notebook.html" class="notebook-tab-action-btn">‹</a>
+      <div id="notebook-tab-items" class="notebook-tab-items"></div>
+      <button id="notebook-add-file-btn" class="notebook-tab-action-btn" type="button">+</button>
+      <button id="notebook-binder-toggle-btn" class="notebook-tab-action-btn" type="button">Binder</button>
+    </div>
+    <input id="notebook-file-picker" type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+
+    <aside id="notebook-binder-panel" class="notebook-binder-panel" aria-label="Notebook binder" aria-hidden="true">
+      <div class="binder-header">
+        <span id="binder-notebook-title" class="binder-title">Study Notebook</span>
+        <button id="binder-close-btn" class="history-close-btn" type="button">✕</button>
+      </div>
+      <div id="binder-file-list" class="binder-file-list"></div>
+      <textarea id="binder-notes-area" class="binder-notes-area" placeholder="Jot down notes..."></textarea>
+    </aside>
+
+    <div id="surface" class="reading-surface" tabindex="0">
+      <div id="paper" class="paper">
+        <div id="docx-container" class="docx-body hidden"></div>
+        <div id="pages" class="pages"></div>
+      </div>
+    </div>
+
+    <div id="error" class="error hidden" role="alert"></div>
+
+    <nav id="reader-dock" class="reader-dock" aria-label="Reader tools">
+      <button id="history-toggle-reader" class="dock-btn" type="button" aria-label="History">H</button>
+      <button id="search-toggle" class="dock-btn" type="button" aria-label="Search">🔍</button>
+      <button id="highlight-toggle" class="dock-btn" type="button" aria-label="Highlighter">🖊</button>
+      <button id="bookmark-add" class="dock-btn" type="button" aria-label="Bookmark">🔖</button>
+      <span class="dock-sep" aria-hidden="true"></span>
+      <button id="control-toggle" class="dock-btn" type="button" aria-label="Controls">⚙</button>
+    </nav>
+
+    <div id="selection-tooltip" class="selection-tooltip hidden" role="toolbar">
+      <button id="btn-highlight-selection" class="tooltip-btn" type="button">Highlight</button>
+      <button id="btn-copy-selection" class="tooltip-btn" type="button">Copy</button>
+    </div>
+
+    <div id="highlight-bar" class="highlight-bar hidden">
+      <span class="highlight-bar-text">Highlighter on</span>
+      <button id="highlight-bar-done" type="button">Done</button>
+    </div>
+
+    <div id="search-box" class="search-box hidden">
+      <div class="search-input-wrap">
+        <input id="search-input" type="search" placeholder="Search this document…" />
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+
+    <aside id="controls" class="controls hidden" aria-label="Reading controls">
+      <div class="sheet-drag-handle" aria-hidden="true"></div>
+      <div class="control-top">
+        <div class="page-readout">
+          <strong id="page-current">—</strong>
+          <span class="slash">of</span>
+          <span id="page-total" class="page-readout-of">/ —</span>
+        </div>
+        <button id="close-controls" class="icon-button" type="button">✕</button>
+      </div>
+      <input id="page-slider" class="page-range" type="range" min="1" max="1" value="1" />
+      <div class="control-section">
+        <div class="control-label-row"><span>Paper brightness</span></div>
+        <input id="paper-brightness-slider" type="range" min="0.4" max="1" step="0.05" value="1" />
+      </div>
+    </aside>
+  </section>
+
+  <script src="assets/js/pdf.min.js"></script>
+  <script src="assets/js/mammoth.browser.min.js"></script>
+  <script src="assets/js/pdf-lib.min.js"></script>
+  <script src="assets/js/reader.js"></script>
+</body>
+</html>

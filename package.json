@@ -1,0 +1,13 @@
+{
+  "name": "mai-reads",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimalist offline document reader and multi-file study notebook workspace.",
+  "type": "module",
+  "scripts": {
+    "ping-indexnow": "node scripts/ping-indexnow.mjs",
+    "index": "node scripts/ping-indexnow.mjs"
+  },
+  "author": "Maithil Studios",
+  "license": "MIT"
+}
