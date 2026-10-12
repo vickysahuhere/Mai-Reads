@@ -90,10 +90,17 @@
     ]
   </script>
 
-  <!-- Prevent Theme Flash -->
+  <!-- Instant PWA & Theme State Check (Prevents any flash of install buttons if installed) -->
   <script>
     (function() {
       try {
+        var isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+                          window.navigator.standalone === true ||
+                          document.referrer.includes('android-app://') ||
+                          localStorage.getItem('mai_reads_pwa_installed') === 'true';
+        if (isInstalled) {
+          document.documentElement.classList.add('pwa-installed');
+        }
         var store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
         var theme = store.theme || 'system';
         var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);

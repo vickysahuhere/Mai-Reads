@@ -2954,3 +2954,25 @@ button:active, a:active {
   color: var(--ink);
   font-weight: 600;
 }
+
+/* ==========================================================================
+   PWA App Installed Suppression (Zero-Button when running or installed)
+   ========================================================================== */
+
+html.pwa-installed .pwa-install-btn,
+html.pwa-installed #pwa-install-dock-sep,
+html.pwa-installed .pwa-install-dock-sep,
+html.pwa-installed .pwa-install-foot-sep,
+html.pwa-installed #pwa-install-modal-backdrop {
+  display: none !important;
+}
+
+@media all and (display-mode: standalone) {
+  .pwa-install-btn,
+  #pwa-install-dock-sep,
+  .pwa-install-dock-sep,
+  .pwa-install-foot-sep,
+  #pwa-install-modal-backdrop {
+    display: none !important;
+  }
+}

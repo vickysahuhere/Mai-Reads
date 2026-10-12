@@ -579,12 +579,28 @@
   });
 
   // ── PWA Desktop/Mobile App Installation ──────────────────────────────────
+  const PWA_INSTALLED_KEY = 'mai_reads_pwa_installed';
   let deferredInstallPrompt = null;
 
-  function isRunningStandalone() {
+  function isAppInstalled() {
     return window.matchMedia('(display-mode: standalone)').matches ||
            window.navigator.standalone === true ||
-           document.referrer.includes('android-app://');
+           document.referrer.includes('android-app://') ||
+           localStorage.getItem(PWA_INSTALLED_KEY) === 'true';
+  }
+
+  function hideAllInstallTriggers() {
+    document.documentElement.classList.add('pwa-installed');
+    document.querySelectorAll('.pwa-install-btn').forEach(btn => btn.classList.add('hidden'));
+    const modalBackdrop = $('pwa-install-modal-backdrop');
+    if (modalBackdrop) modalBackdrop.classList.remove('open');
+  }
+
+  function markAppAsInstalled() {
+    try {
+      localStorage.setItem(PWA_INSTALLED_KEY, 'true');
+    } catch (e) {}
+    hideAllInstallTriggers();
   }
 
   function initPwaInstall() {
@@ -601,8 +617,8 @@
     const closeBtn = $('pwa-install-close-btn');
     const dismissBtn = $('pwa-install-dismiss-btn');
 
-    if (isRunningStandalone()) {
-      installButtons.forEach(btn => btn.classList.add('hidden'));
+    if (isAppInstalled()) {
+      markAppAsInstalled();
       return;
     }
 
@@ -614,9 +630,8 @@
 
     window.addEventListener('appinstalled', () => {
       deferredInstallPrompt = null;
-      installButtons.forEach(btn => btn.classList.add('hidden'));
-      if (modalBackdrop) modalBackdrop.classList.remove('open');
-      showToast('Mai-Reads installed to your system', 3000);
+      markAppAsInstalled();
+      showToast('Mai-Reads installed to your system', 3200);
     });
 
     async function handleInstallAction() {
@@ -626,8 +641,8 @@
           const choice = await deferredInstallPrompt.userChoice;
           if (choice && choice.outcome === 'accepted') {
             deferredInstallPrompt = null;
-            installButtons.forEach(btn => btn.classList.add('hidden'));
-            if (modalBackdrop) modalBackdrop.classList.remove('open');
+            markAppAsInstalled();
+            showToast('Mai-Reads installed to your system', 3200);
           }
         } catch (err) {
           openInstallModal();

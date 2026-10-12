@@ -178,6 +178,27 @@
   </script>
   <link rel="manifest" href="./manifest.json" />
   <title>Mai-Reads (My Reads) — Minimalist Document Reader &amp; Study Notebooks</title>
+
+  <!-- Instant PWA & Theme State Check (Prevents any flash of install buttons if installed) -->
+  <script>
+    (function() {
+      try {
+        var isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+                          window.navigator.standalone === true ||
+                          document.referrer.includes('android-app://') ||
+                          localStorage.getItem('mai_reads_pwa_installed') === 'true';
+        if (isInstalled) {
+          document.documentElement.classList.add('pwa-installed');
+        }
+        var store = JSON.parse(localStorage.getItem('mai-reads-v1') || '{}');
+        var theme = store.theme || 'system';
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = dark ? '#1c1d1a' : '#f6f3ec';
+      } catch(e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
@@ -268,7 +289,7 @@
           <span class="dock-text">Feedback</span>
         </button>
 
-        <span class="dock-divider" aria-hidden="true"></span>
+        <span id="pwa-install-dock-sep" class="dock-divider pwa-install-dock-sep" aria-hidden="true"></span>
 
         <button id="pwa-install-dock-btn" class="dock-btn nav-button pwa-install-btn" type="button" aria-label="Install Mai-Reads as app" title="Install as app">
           <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
