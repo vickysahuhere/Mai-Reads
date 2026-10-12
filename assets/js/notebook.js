@@ -119,6 +119,21 @@
     }
   }
 
+  async function getDocFromDB(key) {
+    try {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_DOCS, 'readonly');
+        const store = tx.objectStore(STORE_DOCS);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
   // ── Storage & Preferences ─────────────────────────────────────────────────
   function readStore() {
     try { return JSON.parse(localStorage.getItem(STORE) || '{}'); }
@@ -268,21 +283,37 @@
 
         <div class="nb-card-footer">
           <span class="nb-card-meta">Updated ${relativeDate(nb.updatedAt)}</span>
-          <a href="index.html?notebook=${encodeURIComponent(nb.id)}" class="nb-card-open-btn" aria-label="Open ${nb.title} in Reader">
-            <span>Open in Reader</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </a>
+          <div class="nb-card-actions">
+            <button class="nb-card-share-btn" type="button" aria-label="Share ${nb.title}" title="Share notebook">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              <span>Share</span>
+            </button>
+            <a href="index.html?notebook=${encodeURIComponent(nb.id)}" class="nb-card-open-btn" aria-label="Open ${nb.title} in Reader">
+              <span>Open in Reader</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </div>
         </div>
       `;
 
-      // Menu button interactions (Edit / Delete / Add files)
+      // Share button interaction
+      const shareBtn = card.querySelector('.nb-card-share-btn');
+      shareBtn?.addEventListener('click', e => {
+        e.stopPropagation();
+        openShareModal(nb);
+      });
+
+      // Menu button interactions (Edit / Delete / Share / Notes)
       const menuBtn = card.querySelector('.nb-card-menu-btn');
       menuBtn?.addEventListener('click', e => {
         e.stopPropagation();
-        const action = prompt(`Notebook "${nb.title}":\nType "edit" to rename/add files\nType "delete" to remove\nType "notes" to view scratchpad`);
+        const action = prompt(`Notebook "${nb.title}":\nType "share" to share or export\nType "edit" to rename/add files\nType "delete" to remove\nType "notes" to view scratchpad`);
         if (action === 'delete') {
           if (confirm(`Are you sure you want to delete "${nb.title}"? Your documents will remain safe in storage.`)) {
             deleteNotebookFromDB(nb.id).then(() => {
@@ -290,6 +321,8 @@
               loadAndRenderNotebooks();
             });
           }
+        } else if (action === 'share') {
+          openShareModal(nb);
         } else if (action === 'edit') {
           openEditModal(nb);
         } else if (action === 'notes') {
@@ -677,7 +710,400 @@
     });
   }
 
+  // ── Compression & Codec Utilities (Zero-Server) ───────────────────────────
+  async function compressStringToBase64Url(str) {
+    const cs = new CompressionStream('gzip');
+    const writer = cs.writable.getWriter();
+    writer.write(new TextEncoder().encode(str));
+    writer.close();
+    const blob = await new Response(cs.readable).blob();
+    const buffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+    }
+    const b64 = btoa(binary);
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  async function decompressBase64UrlToString(b64url) {
+    let stdB64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+    while (stdB64.length % 4) stdB64 += '=';
+    const binary = atob(stdB64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    const ds = new DecompressionStream('gzip');
+    const writer = ds.writable.getWriter();
+    writer.write(bytes);
+    writer.close();
+    return new Response(ds.readable).text();
+  }
+
+  function dataURLtoFile(dataurl, filename) {
+    const arr = dataurl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  // ── Serverless Sharing Engine ──────────────────────────────────────────────
+  let activeSharingNotebook = null;
+  const shareModalBackdrop = $('share-modal-backdrop');
+  const shareLinkInput = $('share-link-input');
+  const shareCopyLinkBtn = $('share-copy-link-btn');
+  const shareExportBundleBtn = $('share-export-bundle-btn');
+  const shareExportBundleText = $('share-export-bundle-text');
+  const shareModalCloseBtn = $('share-modal-close-btn');
+  const shareModalDismissBtn = $('share-modal-dismiss-btn');
+
+  async function openShareModal(nb) {
+    activeSharingNotebook = nb;
+    if (!shareModalBackdrop) return;
+
+    if (shareCopyLinkBtn) shareCopyLinkBtn.textContent = 'Copy Link';
+    if (shareExportBundleText) shareExportBundleText.textContent = 'Download .mainotebook File';
+    if (shareExportBundleBtn) shareExportBundleBtn.disabled = false;
+
+    // Generate compact URL payload
+    const sharePayload = {
+      v: 1,
+      type: 'mai-notebook-share',
+      title: nb.title,
+      description: nb.description || '',
+      color: nb.color || 'amber',
+      notes: nb.notes || '',
+      files: (nb.files || []).map(f => ({ name: f.name, type: f.type, size: f.size }))
+    };
+
+    try {
+      const b64url = await compressStringToBase64Url(JSON.stringify(sharePayload));
+      const shareUrl = `${window.location.origin}${window.location.pathname}#share=${b64url}`;
+      if (shareLinkInput) shareLinkInput.value = shareUrl;
+    } catch (err) {
+      console.warn('Could not compress share payload:', err);
+      if (shareLinkInput) shareLinkInput.value = window.location.href;
+    }
+
+    shareModalBackdrop.classList.add('open');
+  }
+
+  function closeShareModal() {
+    shareModalBackdrop?.classList.remove('open');
+    activeSharingNotebook = null;
+  }
+
+  shareModalCloseBtn?.addEventListener('click', closeShareModal);
+  shareModalDismissBtn?.addEventListener('click', closeShareModal);
+  shareModalBackdrop?.addEventListener('click', e => {
+    if (e.target === shareModalBackdrop) closeShareModal();
+  });
+
+  shareCopyLinkBtn?.addEventListener('click', async () => {
+    if (!shareLinkInput?.value) return;
+    try {
+      await navigator.clipboard.writeText(shareLinkInput.value);
+      shareCopyLinkBtn.textContent = 'Copied!';
+      showToast('Shareable link copied to clipboard', 2200);
+      setTimeout(() => {
+        if (shareCopyLinkBtn) shareCopyLinkBtn.textContent = 'Copy Link';
+      }, 2000);
+    } catch (e) {
+      shareLinkInput.select();
+      document.execCommand('copy');
+      shareCopyLinkBtn.textContent = 'Copied!';
+      showToast('Link copied to clipboard', 2200);
+      setTimeout(() => {
+        if (shareCopyLinkBtn) shareCopyLinkBtn.textContent = 'Copy Link';
+      }, 2000);
+    }
+  });
+
+  shareExportBundleBtn?.addEventListener('click', async () => {
+    if (!activeSharingNotebook) return;
+    if (shareExportBundleBtn) shareExportBundleBtn.disabled = true;
+    if (shareExportBundleText) shareExportBundleText.textContent = 'Packing bundle…';
+
+    try {
+      await exportNotebookBundle(activeSharingNotebook);
+      showToast(`Exported "${activeSharingNotebook.title}.mainotebook"`, 3000);
+    } catch (err) {
+      console.error('Failed to export bundle:', err);
+      showToast('Export failed. Please try again.', 2600);
+    } finally {
+      if (shareExportBundleBtn) shareExportBundleBtn.disabled = false;
+      if (shareExportBundleText) shareExportBundleText.textContent = 'Download .mainotebook File';
+    }
+  });
+
+  async function exportNotebookBundle(nb) {
+    const embeddedDocs = [];
+    for (const f of (nb.files || [])) {
+      const docRecord = await getDocFromDB(f.key);
+      if (docRecord && docRecord.file) {
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(docRecord.file);
+        });
+        embeddedDocs.push({
+          key: f.key,
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          dataUrl
+        });
+      }
+    }
+
+    const bundle = {
+      format: 'mai-notebook-bundle',
+      version: 1,
+      exportedAt: Date.now(),
+      notebook: {
+        id: nb.id,
+        title: nb.title,
+        description: nb.description || '',
+        color: nb.color || 'amber',
+        notes: nb.notes || '',
+        activeFileKey: nb.activeFileKey || '',
+        files: nb.files || []
+      },
+      documents: embeddedDocs
+    };
+
+    const jsonStr = JSON.stringify(bundle);
+    const cs = new CompressionStream('gzip');
+    const writer = cs.writable.getWriter();
+    writer.write(new TextEncoder().encode(jsonStr));
+    writer.close();
+    const compressedBlob = await new Response(cs.readable).blob();
+
+    const cleanName = (nb.title || 'study-notebook').toLowerCase().replace(/[^a-z0-9_-]+/g, '_');
+    const blob = new Blob([compressedBlob], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${cleanName}.mainotebook`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // ── Import Confirmation & Processing Engine ───────────────────────────────
+  let pendingImportData = null;
+  const importModalBackdrop = $('import-modal-backdrop');
+  const importModalCloseBtn = $('import-modal-close-btn');
+  const importModalCancelBtn = $('import-modal-cancel-btn');
+  const importModalConfirmBtn = $('import-modal-confirm-btn');
+  const importPreviewTitle = $('import-preview-title');
+  const importPreviewDesc = $('import-preview-desc');
+  const importPreviewBadge = $('import-preview-badge');
+  const importPreviewMeta = $('import-preview-meta');
+  const importPreviewNotesWrap = $('import-preview-notes-wrap');
+  const importPreviewNotes = $('import-preview-notes');
+  const importNotebookBtn = $('import-notebook-btn');
+  const importBundlePicker = $('import-bundle-picker');
+
+  function openImportModal(data) {
+    pendingImportData = data;
+    if (!importModalBackdrop) return;
+
+    const isBundle = data.mode === 'bundle';
+    const nbInfo = isBundle ? data.payload.notebook : data.payload;
+    const fileList = isBundle ? (data.payload.notebook.files || []) : (data.payload.files || []);
+
+    if (importPreviewTitle) importPreviewTitle.textContent = nbInfo.title || 'Untitled Notebook';
+    if (importPreviewDesc) {
+      importPreviewDesc.textContent = nbInfo.description || 'No description provided';
+      importPreviewDesc.style.display = nbInfo.description ? 'block' : 'none';
+    }
+    if (importPreviewBadge) {
+      importPreviewBadge.textContent = isBundle ? 'Portable Archive' : 'Serverless Link';
+    }
+
+    if (importPreviewMeta) {
+      let metaHtml = `<div style="font-weight:600;margin-bottom:4px;">${fileList.length} Document${fileList.length === 1 ? '' : 's'} included${isBundle ? ' (full binaries ready)' : ''}</div>`;
+      if (fileList.length > 0) {
+        metaHtml += fileList.map(f => `
+          <div class="nb-import-file-row">
+            <span class="nb-file-badge nb-file-badge-${f.type || 'pdf'}">${(f.type || 'pdf').toUpperCase()}</span>
+            <span style="font-weight:500;">${f.name}</span>
+            <span class="nb-card-meta">${formatBytes(f.size)}</span>
+          </div>
+        `).join('');
+      } else {
+        metaHtml += `<div style="color:var(--muted);font-style:italic;">No attached documents</div>`;
+      }
+      importPreviewMeta.innerHTML = metaHtml;
+    }
+
+    if (nbInfo.notes && nbInfo.notes.trim()) {
+      if (importPreviewNotesWrap) importPreviewNotesWrap.classList.remove('hidden');
+      if (importPreviewNotes) importPreviewNotes.textContent = nbInfo.notes;
+    } else {
+      if (importPreviewNotesWrap) importPreviewNotesWrap.classList.add('hidden');
+    }
+
+    importModalBackdrop.classList.add('open');
+  }
+
+  function closeImportModal() {
+    importModalBackdrop?.classList.remove('open');
+    pendingImportData = null;
+  }
+
+  importModalCloseBtn?.addEventListener('click', closeImportModal);
+  importModalCancelBtn?.addEventListener('click', closeImportModal);
+  importModalBackdrop?.addEventListener('click', e => {
+    if (e.target === importModalBackdrop) closeImportModal();
+  });
+
+  importModalConfirmBtn?.addEventListener('click', async () => {
+    if (!pendingImportData) return;
+    if (importModalConfirmBtn) {
+      importModalConfirmBtn.disabled = true;
+      importModalConfirmBtn.innerHTML = `<span>Importing…</span>`;
+    }
+
+    try {
+      if (pendingImportData.mode === 'bundle') {
+        const bundle = pendingImportData.payload;
+        for (const doc of (bundle.documents || [])) {
+          if (doc.dataUrl) {
+            const fileObj = dataURLtoFile(doc.dataUrl, doc.name);
+            await saveDocToDB(doc.key, fileObj, doc.name, doc.type);
+          }
+        }
+        const targetNb = {
+          ...bundle.notebook,
+          id: 'nb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          updatedAt: Date.now()
+        };
+        await saveNotebookToDB(targetNb);
+        showToast(`Imported "${targetNb.title}" with ${(bundle.documents || []).length} document(s)`, 3000);
+      } else if (pendingImportData.mode === 'hash') {
+        const payload = pendingImportData.payload;
+        const targetNb = {
+          id: 'nb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          title: payload.title,
+          description: payload.description || '',
+          color: payload.color || 'amber',
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          notes: payload.notes || '',
+          activeFileKey: '',
+          files: (payload.files || []).map(f => ({
+            key: `${f.name.toLowerCase()}|${f.size}|0`,
+            name: f.name,
+            type: f.type || 'pdf',
+            size: f.size || 0,
+            addedAt: Date.now()
+          }))
+        };
+        await saveNotebookToDB(targetNb);
+        showToast(`Imported "${targetNb.title}" to your notebooks`, 3000);
+        if (window.location.hash) {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+
+      closeImportModal();
+      await loadAndRenderNotebooks();
+    } catch (err) {
+      console.error('Import confirmation failed:', err);
+      showToast('Import failed. Please check the file.', 2800);
+    } finally {
+      if (importModalConfirmBtn) {
+        importModalConfirmBtn.disabled = false;
+        importModalConfirmBtn.innerHTML = `<span>Import to My Notebooks</span>`;
+      }
+    }
+  });
+
+  importNotebookBtn?.addEventListener('click', () => {
+    importBundlePicker?.click();
+  });
+
+  async function handleBundleFile(file) {
+    if (!file) return;
+    try {
+      let jsonText = '';
+      try {
+        const ds = new DecompressionStream('gzip');
+        const decompressedStream = file.stream().pipeThrough(ds);
+        jsonText = await new Response(decompressedStream).text();
+      } catch (gzipErr) {
+        jsonText = await file.text();
+      }
+      const bundle = JSON.parse(jsonText);
+      if (!bundle || (!bundle.notebook && !bundle.title)) {
+        throw new Error('Not a valid notebook bundle');
+      }
+      openImportModal({ mode: 'bundle', payload: bundle });
+    } catch (err) {
+      console.error('Could not parse imported bundle:', err);
+      showToast('Invalid .mainotebook bundle file', 2600);
+    }
+  }
+
+  importBundlePicker?.addEventListener('change', async e => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await handleBundleFile(file);
+    }
+    if (importBundlePicker) importBundlePicker.value = '';
+  });
+
+  // Enable drag and drop of .mainotebook files anywhere on the page
+  window.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+
+  window.addEventListener('drop', async e => {
+    e.preventDefault();
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const bundleFile = Array.from(files).find(f => f.name.endsWith('.mainotebook') || f.name.endsWith('.json'));
+      if (bundleFile) {
+        await handleBundleFile(bundleFile);
+      }
+    }
+  });
+
+  async function checkShareHash() {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#share=')) {
+      const b64url = hash.slice('#share='.length);
+      if (!b64url) return;
+      try {
+        const jsonText = await decompressBase64UrlToString(b64url);
+        const payload = JSON.parse(jsonText);
+        if (payload && payload.title) {
+          openImportModal({ mode: 'hash', payload });
+        }
+      } catch (err) {
+        console.warn('Could not unpack share link from hash:', err);
+        showToast('Invalid or corrupted notebook share link', 2800);
+      }
+    }
+  }
+
+  window.addEventListener('hashchange', checkShareHash);
+
   // Initialize
   initPwaInstall();
   loadAndRenderNotebooks();
+  checkShareHash();
 })();

@@ -194,6 +194,20 @@ body.notebook-page {
   color: var(--ink);
 }
 
+.nb-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nb-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+}
+
 /* ── Notebook Grid ──────────────────────────────────────────────────────── */
 .nb-grid {
   display: grid;
@@ -361,6 +375,32 @@ body.notebook-page {
 .nb-card-meta {
   font: 400 11px/1 var(--font-sans);
   color: var(--muted);
+}
+
+.nb-card-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nb-card-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 500 12.5px/1 var(--font-sans);
+  color: var(--ink-secondary);
+  background: var(--button-bg);
+  border: 1px solid var(--control-border);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.nb-card-share-btn:hover {
+  background: var(--button-hover-bg);
+  color: var(--ink);
+  border-color: var(--control-border-hover);
 }
 
 .nb-card-open-btn {
@@ -699,6 +739,187 @@ body.notebook-page {
   background: var(--button-hover-bg);
 }
 
+/* ── Serverless Sharing & Importing Modals ── */
+.nb-share-modal,
+.nb-import-modal {
+  max-width: 520px;
+}
+
+.nb-share-body,
+.nb-import-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nb-share-method-card {
+  background: var(--button-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s;
+}
+
+.nb-share-method-card:hover {
+  border-color: var(--control-border-hover);
+}
+
+.nb-share-method-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nb-share-method-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 14px/1.3 var(--font-sans);
+  color: var(--ink);
+}
+
+.nb-share-method-title svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.nb-share-badge {
+  font: 600 10.5px/1 var(--font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  white-space: nowrap;
+}
+
+.nb-share-method-desc {
+  font: 400 12.5px/1.5 var(--font-sans);
+  color: var(--ink-secondary);
+  margin: 0;
+}
+
+.nb-share-link-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.nb-share-input {
+  flex: 1;
+  min-width: 0;
+  font: 400 12px/1.4 var(--font-mono, monospace);
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--app-bg);
+  border: 1px solid var(--control-border);
+  color: var(--ink);
+  outline: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nb-share-input:focus {
+  border-color: var(--accent);
+}
+
+.nb-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+/* Import Modal Preview */
+.nb-import-preview-card {
+  background: var(--button-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nb-import-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nb-import-title {
+  font: 600 16px/1.3 var(--font-sans);
+  color: var(--ink);
+  margin: 0;
+}
+
+.nb-import-desc {
+  font: 400 13px/1.5 var(--font-sans);
+  color: var(--ink-secondary);
+  margin: 0;
+}
+
+.nb-import-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 400 12px/1.4 var(--font-sans);
+  color: var(--ink-secondary);
+}
+
+.nb-import-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.nb-import-notes-preview {
+  border-top: 1px solid var(--control-border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nb-import-notes-label {
+  font: 600 11px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-secondary);
+}
+
+.nb-import-notes-text {
+  font: 400 12.5px/1.5 var(--font-sans);
+  color: var(--ink);
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  background: var(--app-bg);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--control-border);
+}
+
+.nb-import-notice {
+  font: 400 12px/1.45 var(--font-sans);
+  color: var(--muted);
+  margin: 0;
+}
+
 .nb-back-text-mobile,
 .nb-btn-text-mobile {
   display: none;
@@ -798,6 +1019,44 @@ body.notebook-page {
     margin-bottom: 20px;
     padding-bottom: 14px;
     gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nb-toolbar-actions {
+    width: 100%;
+  }
+
+  .nb-toolbar-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nb-card-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .nb-card-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .nb-share-link-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nb-share-link-box .nb-primary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nb-export-btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .nb-stats {
