@@ -2359,7 +2359,95 @@
     }
   });
 
-  // Initialize Notebook Reader
+  // ── PWA Desktop/Mobile App Installation ──────────────────────────────────
+  let deferredInstallPrompt = null;
+
+  function isRunningStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true ||
+           document.referrer.includes('android-app://');
+  }
+
+  function initPwaInstall() {
+    const installButtons = document.querySelectorAll('.pwa-install-btn');
+    const modalBackdrop = $('pwa-install-modal-backdrop');
+    const nativeSection = $('pwa-native-prompt-section');
+    const triggerBtn = $('pwa-trigger-install-btn');
+    const closeBtn = $('pwa-install-close-btn');
+    const dismissBtn = $('pwa-install-dismiss-btn');
+
+    // If already running standalone, hide all install triggers
+    if (isRunningStandalone()) {
+      installButtons.forEach(btn => btn.classList.add('hidden'));
+      const dockSep = $('pwa-install-dock-sep');
+      if (dockSep) dockSep.classList.add('hidden');
+      const footSep = document.querySelector('.pwa-install-foot-sep');
+      if (footSep) footSep.classList.add('hidden');
+      return;
+    }
+
+    // Capture native install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if (nativeSection) nativeSection.classList.remove('hidden');
+    });
+
+    // Handle completed installation
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      installButtons.forEach(btn => btn.classList.add('hidden'));
+      const dockSep = $('pwa-install-dock-sep');
+      if (dockSep) dockSep.classList.add('hidden');
+      if (modalBackdrop) modalBackdrop.classList.remove('open');
+      showToast('Mai-Reads installed to your system', 3000);
+    });
+
+    async function handleInstallAction() {
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          if (choice && choice.outcome === 'accepted') {
+            deferredInstallPrompt = null;
+            installButtons.forEach(btn => btn.classList.add('hidden'));
+            if (modalBackdrop) modalBackdrop.classList.remove('open');
+          }
+        } catch (err) {
+          openInstallModal();
+        }
+      } else {
+        openInstallModal();
+      }
+    }
+
+    function openInstallModal() {
+      if (!modalBackdrop) return;
+      if (deferredInstallPrompt && nativeSection) {
+        nativeSection.classList.remove('hidden');
+      }
+      modalBackdrop.classList.add('open');
+    }
+
+    function closeInstallModal() {
+      if (!modalBackdrop) return;
+      modalBackdrop.classList.remove('open');
+    }
+
+    installButtons.forEach(btn => {
+      btn.addEventListener('click', handleInstallAction);
+    });
+
+    triggerBtn?.addEventListener('click', handleInstallAction);
+    closeBtn?.addEventListener('click', closeInstallModal);
+    dismissBtn?.addEventListener('click', closeInstallModal);
+    modalBackdrop?.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) closeInstallModal();
+    });
+  }
+
+  // Initialize PWA Installation & Notebook Reader
+  initPwaInstall();
   initNotebookReader();
 
 })();

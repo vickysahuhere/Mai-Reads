@@ -2849,3 +2849,108 @@ button:active, a:active {
   max-width: 380px;
   margin: 0 0 12px;
 }
+
+/* ==========================================================================
+   PWA Install Modal & Platform Guide Styles
+   ========================================================================== */
+
+.pwa-install-modal {
+  max-width: 480px;
+}
+
+.pwa-install-body {
+  margin-bottom: 16px;
+}
+
+.pwa-prompt-section {
+  background: var(--button-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.pwa-feature-badge {
+  display: inline-block;
+  font: 600 11px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(140, 115, 85, 0.16);
+}
+
+.pwa-prompt-desc {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+
+.pwa-hero-install-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+:root[data-resolved-theme="dark"] .pwa-hero-install-btn {
+  background: var(--accent);
+  color: #1a1a17;
+}
+
+.pwa-hero-install-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.pwa-guide-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pwa-guide-card {
+  background: var(--button-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.pwa-guide-header {
+  margin-bottom: 3px;
+}
+
+.pwa-guide-platform {
+  font: 600 11.5px/1 var(--font-sans);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.pwa-guide-step {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 0;
+}
+
+.pwa-guide-step strong {
+  color: var(--ink);
+  font-weight: 600;
+}
