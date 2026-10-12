@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mai-reads-v23-offline';
+const CACHE_NAME = 'mai-reads-v24-offline';
 const ASSETS = [
   './',
   './index.html',
@@ -44,7 +44,22 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      return response || fetch(event.request).then(fetchRes => {
+      if (response) return response;
+
+      // Clean URL support for offline PWA navigation
+      try {
+        const url = new URL(event.request.url);
+        if (url.origin === location.origin) {
+          if (url.pathname === '/notebook' || url.pathname === '/notebook/') {
+            return caches.match('./notebook.html');
+          }
+          if (url.pathname === '/docs' || url.pathname === '/docs/') {
+            return caches.match('./docs.html');
+          }
+        }
+      } catch (_) {}
+
+      return fetch(event.request).then(fetchRes => {
         return caches.open(CACHE_NAME).then(cache => {
           // Cache dynamic fonts or external requests if needed, but return fetchRes
           if (event.request.url.startsWith('https://fonts.gstatic.com')) {
@@ -54,7 +69,17 @@ self.addEventListener('fetch', event => {
         });
       });
     }).catch(() => {
-      // Offline fallback if needed, but cache match handles it for pre-cached assets
+      // Offline fallback for navigation requests
+      if (event.request && event.request.mode === 'navigate') {
+        try {
+          const url = new URL(event.request.url);
+          if (url.pathname.includes('notebook')) return caches.match('./notebook.html');
+          if (url.pathname.includes('docs')) return caches.match('./docs.html');
+          return caches.match('./index.html');
+        } catch (_) {
+          return caches.match('./index.html');
+        }
+      }
     })
   );
 });

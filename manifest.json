@@ -4,8 +4,8 @@
   "description": "A distraction-free, privacy-first local PDF and DOCX document reader with multi-file Study Notebooks, persistent highlights, and instant resume.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f6f3ec",
-  "theme_color": "#f6f3ec",
+  "background_color": "#F6F5F1",
+  "theme_color": "#F6F5F1",
   "categories": ["productivity", "utilities", "books", "education"],
   "icons": [
     {
