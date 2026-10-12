@@ -207,6 +207,75 @@
   }
 
   // ── UI Rendering ──────────────────────────────────────────────────────────
+  let selectedNotebookId = null;
+
+  function updateDetailPane(nb) {
+    const pane = $('nb-detail-pane');
+    if (!pane || !nb) return;
+
+    const dot = $('nb-detail-dot');
+    const colorName = $('nb-detail-color-name');
+    const title = $('nb-detail-title');
+    const desc = $('nb-detail-desc');
+    const tabDocs = $('nb-tab-docs');
+    const docRows = $('nb-detail-doc-rows');
+    const notesText = $('nb-detail-notes-text');
+    const openBtn = $('nb-detail-open-btn');
+    const addBtn = $('nb-detail-add-btn');
+    const shareBtn = $('nb-detail-share-btn');
+
+    const accent = nb.color || 'amber';
+    if (dot) dot.className = `nb-color-dot dot-${accent}`;
+    if (colorName) colorName.textContent = accent.charAt(0).toUpperCase() + accent.slice(1);
+    if (title) title.textContent = nb.title || 'Untitled Notebook';
+
+    if (desc) {
+      if (nb.description) {
+        desc.textContent = nb.description;
+        desc.style.display = '-webkit-box';
+      } else {
+        desc.style.display = 'none';
+      }
+    }
+
+    const files = nb.files || [];
+    if (tabDocs) tabDocs.textContent = `Documents · ${files.length}`;
+
+    if (docRows) {
+      if (files.length > 0) {
+        docRows.innerHTML = files.map(f => {
+          const ext = f.type || (f.name.endsWith('.docx') ? 'docx' : 'pdf');
+          return `
+            <div class="nb-doc-row" title="${f.name}">
+              <span class="nb-file-badge nb-file-badge-${ext}">${ext.toUpperCase()}</span>
+              <span class="nb-doc-row-name">${f.name}</span>
+              <span class="nb-doc-row-progress">${formatBytes(f.size)}</span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        docRows.innerHTML = `<div class="nb-doc-row" style="color:var(--muted);font-style:italic;">No documents in this binder</div>`;
+      }
+    }
+
+    if (notesText) {
+      notesText.textContent = nb.notes || 'No scratchpad notes yet. Open in reader to write notes.';
+    }
+
+    if (openBtn) {
+      openBtn.href = `index.html?notebook=${encodeURIComponent(nb.id)}`;
+    }
+
+    if (addBtn) {
+      addBtn.onclick = () => openEditModal(nb);
+    }
+
+    if (shareBtn) {
+      shareBtn.onclick = () => openShareModal(nb);
+    }
+  }
+
+  // ── UI Rendering ──────────────────────────────────────────────────────────
   async function loadAndRenderNotebooks() {
     const notebooks = await getAllNotebooks();
     const grid = $('notebook-grid');
@@ -232,88 +301,73 @@
 
     if (totalCount === 0) {
       if (empty) empty.classList.remove('hidden');
+      const detailCol = $('nb-detail-column');
+      if (detailCol) detailCol.style.display = 'none';
       return;
     }
 
     if (empty) empty.classList.add('hidden');
+    const detailCol = $('nb-detail-column');
+    if (detailCol) detailCol.style.display = '';
+
+    // If no notebook is currently selected or selected one no longer exists, default to first
+    if (!selectedNotebookId || !notebooks.some(n => n.id === selectedNotebookId)) {
+      selectedNotebookId = notebooks[0].id;
+    }
 
     notebooks.forEach(nb => {
       const card = document.createElement('div');
-      card.className = 'nb-card';
+      card.className = `nb-card${nb.id === selectedNotebookId ? ' selected' : ''}`;
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
 
       const fileCount = (nb.files || []).length;
       const accentColor = nb.color || 'amber';
 
-      let filesHtml = '';
-      if (fileCount > 0) {
-        filesHtml = (nb.files || []).map(f => {
-          const ext = f.type || (f.name.endsWith('.docx') ? 'docx' : 'pdf');
-          return `
-            <div class="nb-card-file-item" title="${f.name}">
-              <span class="nb-file-badge nb-file-badge-${ext}">${ext.toUpperCase()}</span>
-              <span class="nb-card-file-name">${f.name}</span>
-              <span class="nb-card-meta">${formatBytes(f.size)}</span>
-            </div>
-          `;
-        }).join('');
-      } else {
-        filesHtml = `<div class="nb-card-file-item" style="color:var(--muted);font-style:italic;">No documents yet</div>`;
-      }
-
       card.innerHTML = `
-        <div class="nb-card-accent color-${accentColor}"></div>
         <div class="nb-card-header">
-          <div class="nb-card-title-group">
-            <h3 class="nb-card-title">${nb.title}</h3>
-            ${nb.description ? `<p class="nb-card-desc">${nb.description}</p>` : ''}
+          <div class="nb-card-dot-row">
+            <span class="nb-color-dot dot-${accentColor}"></span>
+            <span class="nb-card-dot-name">${accentColor}</span>
           </div>
-          <button class="nb-card-menu-btn" type="button" aria-label="Notebook options" title="Notebook options">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="icon-button nb-card-menu-btn" type="button" aria-label="Notebook options" title="Notebook options" style="width:32px;height:32px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>
             </svg>
           </button>
         </div>
 
-        <div class="nb-card-files-section">
-          <div class="nb-card-files-label">${fileCount} Document${fileCount === 1 ? '' : 's'}</div>
-          <div class="nb-card-file-list">
-            ${filesHtml}
-          </div>
+        <div>
+          <h3 class="nb-card-title">${nb.title}</h3>
+          ${nb.description ? `<p class="nb-card-desc">${nb.description}</p>` : ''}
         </div>
 
         <div class="nb-card-footer">
-          <span class="nb-card-meta">Updated ${relativeDate(nb.updatedAt)}</span>
-          <div class="nb-card-actions">
-            <button class="nb-card-share-btn" type="button" aria-label="Share ${nb.title}" title="Share notebook">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
-              <span>Share</span>
-            </button>
-            <a href="index.html?notebook=${encodeURIComponent(nb.id)}" class="nb-card-open-btn" aria-label="Open ${nb.title} in Reader">
-              <span>Open in Reader</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-          </div>
+          <span>${fileCount} document${fileCount === 1 ? '' : 's'}</span>
+          <span>Opened ${relativeDate(nb.updatedAt)}</span>
         </div>
       `;
 
-      // Share button interaction
-      const shareBtn = card.querySelector('.nb-card-share-btn');
-      shareBtn?.addEventListener('click', e => {
-        e.stopPropagation();
-        openShareModal(nb);
+      card.addEventListener('click', e => {
+        if (e.target.closest('.nb-card-menu-btn')) return;
+        selectedNotebookId = nb.id;
+        document.querySelectorAll('.nb-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        updateDetailPane(nb);
+      });
+
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.click();
+        }
       });
 
       // Menu button interactions (Edit / Delete / Share / Notes)
       const menuBtn = card.querySelector('.nb-card-menu-btn');
       menuBtn?.addEventListener('click', e => {
         e.stopPropagation();
-        const action = prompt(`Notebook "${nb.title}":\nType "share" to share or export\nType "edit" to rename/add files\nType "delete" to remove\nType "notes" to view scratchpad`);
+        const action = prompt(`Notebook "${nb.title}":\nType "share" to export archive\nType "edit" to rename/add files\nType "delete" to remove\nType "notes" to view scratchpad`);
         if (action === 'delete') {
           if (confirm(`Are you sure you want to delete "${nb.title}"? Your documents will remain safe in storage.`)) {
             deleteNotebookFromDB(nb.id).then(() => {
@@ -332,7 +386,40 @@
 
       grid.append(card);
     });
+
+    // Final tile: dashed 1.5px border "Create notebook" per Section 5
+    const createTile = document.createElement('button');
+    createTile.className = 'nb-create-tile';
+    createTile.type = 'button';
+    createTile.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span class="nb-create-tile-text">Create notebook</span>
+    `;
+    createTile.addEventListener('click', openCreateModal);
+    grid.append(createTile);
+
+    // Initial detail pane population
+    const activeNb = notebooks.find(n => n.id === selectedNotebookId) || notebooks[0];
+    if (activeNb) updateDetailPane(activeNb);
   }
+
+  // Detail pane tab switcher
+  $('nb-tab-docs')?.addEventListener('click', () => {
+    $('nb-tab-docs')?.classList.add('selected');
+    $('nb-tab-notes')?.classList.remove('selected');
+    $('nb-detail-docs-panel')?.classList.remove('hidden');
+    $('nb-detail-notes-panel')?.classList.add('hidden');
+  });
+
+  $('nb-tab-notes')?.addEventListener('click', () => {
+    $('nb-tab-notes')?.classList.add('selected');
+    $('nb-tab-docs')?.classList.remove('selected');
+    $('nb-detail-notes-panel')?.classList.remove('hidden');
+    $('nb-detail-docs-panel')?.classList.add('hidden');
+  });
 
   // ── Modal & File Queue Management ─────────────────────────────────────────
   const modalBackdrop = $('notebook-modal-backdrop');
@@ -710,39 +797,6 @@
     });
   }
 
-  // ── Compression & Codec Utilities (Zero-Server) ───────────────────────────
-  async function compressStringToBase64Url(str) {
-    const cs = new CompressionStream('gzip');
-    const writer = cs.writable.getWriter();
-    writer.write(new TextEncoder().encode(str));
-    writer.close();
-    const blob = await new Response(cs.readable).blob();
-    const buffer = await blob.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    const chunkSize = 8192;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
-    }
-    const b64 = btoa(binary);
-    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  }
-
-  async function decompressBase64UrlToString(b64url) {
-    let stdB64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
-    while (stdB64.length % 4) stdB64 += '=';
-    const binary = atob(stdB64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    const ds = new DecompressionStream('gzip');
-    const writer = ds.writable.getWriter();
-    writer.write(bytes);
-    writer.close();
-    return new Response(ds.readable).text();
-  }
-
   function dataURLtoFile(dataurl, filename) {
     const arr = dataurl.split(',');
     const mimeMatch = arr[0].match(/:(.*?);/);
@@ -756,43 +810,20 @@
     return new File([u8arr], filename, { type: mime });
   }
 
-  // ── Serverless Sharing Engine ──────────────────────────────────────────────
+  // ── Standalone Notebook Archive Export Engine ─────────────────────────────
   let activeSharingNotebook = null;
   const shareModalBackdrop = $('share-modal-backdrop');
-  const shareLinkInput = $('share-link-input');
-  const shareCopyLinkBtn = $('share-copy-link-btn');
   const shareExportBundleBtn = $('share-export-bundle-btn');
   const shareExportBundleText = $('share-export-bundle-text');
   const shareModalCloseBtn = $('share-modal-close-btn');
   const shareModalDismissBtn = $('share-modal-dismiss-btn');
 
-  async function openShareModal(nb) {
+  function openShareModal(nb) {
     activeSharingNotebook = nb;
     if (!shareModalBackdrop) return;
 
-    if (shareCopyLinkBtn) shareCopyLinkBtn.textContent = 'Copy Link';
     if (shareExportBundleText) shareExportBundleText.textContent = 'Download .mainotebook File';
     if (shareExportBundleBtn) shareExportBundleBtn.disabled = false;
-
-    // Generate compact URL payload
-    const sharePayload = {
-      v: 1,
-      type: 'mai-notebook-share',
-      title: nb.title,
-      description: nb.description || '',
-      color: nb.color || 'amber',
-      notes: nb.notes || '',
-      files: (nb.files || []).map(f => ({ name: f.name, type: f.type, size: f.size }))
-    };
-
-    try {
-      const b64url = await compressStringToBase64Url(JSON.stringify(sharePayload));
-      const shareUrl = `${window.location.origin}${window.location.pathname}#share=${b64url}`;
-      if (shareLinkInput) shareLinkInput.value = shareUrl;
-    } catch (err) {
-      console.warn('Could not compress share payload:', err);
-      if (shareLinkInput) shareLinkInput.value = window.location.href;
-    }
 
     shareModalBackdrop.classList.add('open');
   }
@@ -808,26 +839,6 @@
     if (e.target === shareModalBackdrop) closeShareModal();
   });
 
-  shareCopyLinkBtn?.addEventListener('click', async () => {
-    if (!shareLinkInput?.value) return;
-    try {
-      await navigator.clipboard.writeText(shareLinkInput.value);
-      shareCopyLinkBtn.textContent = 'Copied!';
-      showToast('Shareable link copied to clipboard', 2200);
-      setTimeout(() => {
-        if (shareCopyLinkBtn) shareCopyLinkBtn.textContent = 'Copy Link';
-      }, 2000);
-    } catch (e) {
-      shareLinkInput.select();
-      document.execCommand('copy');
-      shareCopyLinkBtn.textContent = 'Copied!';
-      showToast('Link copied to clipboard', 2200);
-      setTimeout(() => {
-        if (shareCopyLinkBtn) shareCopyLinkBtn.textContent = 'Copy Link';
-      }, 2000);
-    }
-  });
-
   shareExportBundleBtn?.addEventListener('click', async () => {
     if (!activeSharingNotebook) return;
     if (shareExportBundleBtn) shareExportBundleBtn.disabled = true;
@@ -836,6 +847,7 @@
     try {
       await exportNotebookBundle(activeSharingNotebook);
       showToast(`Exported "${activeSharingNotebook.title}.mainotebook"`, 3000);
+      closeShareModal();
     } catch (err) {
       console.error('Failed to export bundle:', err);
       showToast('Export failed. Please try again.', 2600);
@@ -978,46 +990,20 @@
     }
 
     try {
-      if (pendingImportData.mode === 'bundle') {
-        const bundle = pendingImportData.payload;
-        for (const doc of (bundle.documents || [])) {
-          if (doc.dataUrl) {
-            const fileObj = dataURLtoFile(doc.dataUrl, doc.name);
-            await saveDocToDB(doc.key, fileObj, doc.name, doc.type);
-          }
-        }
-        const targetNb = {
-          ...bundle.notebook,
-          id: 'nb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-          updatedAt: Date.now()
-        };
-        await saveNotebookToDB(targetNb);
-        showToast(`Imported "${targetNb.title}" with ${(bundle.documents || []).length} document(s)`, 3000);
-      } else if (pendingImportData.mode === 'hash') {
-        const payload = pendingImportData.payload;
-        const targetNb = {
-          id: 'nb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-          title: payload.title,
-          description: payload.description || '',
-          color: payload.color || 'amber',
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          notes: payload.notes || '',
-          activeFileKey: '',
-          files: (payload.files || []).map(f => ({
-            key: `${f.name.toLowerCase()}|${f.size}|0`,
-            name: f.name,
-            type: f.type || 'pdf',
-            size: f.size || 0,
-            addedAt: Date.now()
-          }))
-        };
-        await saveNotebookToDB(targetNb);
-        showToast(`Imported "${targetNb.title}" to your notebooks`, 3000);
-        if (window.location.hash) {
-          history.replaceState(null, '', window.location.pathname + window.location.search);
+      const bundle = pendingImportData.payload;
+      for (const doc of (bundle.documents || [])) {
+        if (doc.dataUrl) {
+          const fileObj = dataURLtoFile(doc.dataUrl, doc.name);
+          await saveDocToDB(doc.key, fileObj, doc.name, doc.type);
         }
       }
+      const targetNb = {
+        ...bundle.notebook,
+        id: 'nb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        updatedAt: Date.now()
+      };
+      await saveNotebookToDB(targetNb);
+      showToast(`Imported "${targetNb.title}" with ${(bundle.documents || []).length} document(s)`, 3000);
 
       closeImportModal();
       await loadAndRenderNotebooks();
@@ -1082,28 +1068,7 @@
     }
   });
 
-  async function checkShareHash() {
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#share=')) {
-      const b64url = hash.slice('#share='.length);
-      if (!b64url) return;
-      try {
-        const jsonText = await decompressBase64UrlToString(b64url);
-        const payload = JSON.parse(jsonText);
-        if (payload && payload.title) {
-          openImportModal({ mode: 'hash', payload });
-        }
-      } catch (err) {
-        console.warn('Could not unpack share link from hash:', err);
-        showToast('Invalid or corrupted notebook share link', 2800);
-      }
-    }
-  }
-
-  window.addEventListener('hashchange', checkShareHash);
-
   // Initialize
   initPwaInstall();
   loadAndRenderNotebooks();
-  checkShareHash();
 })();

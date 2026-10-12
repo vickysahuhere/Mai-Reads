@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f2eb" />
+  <meta name="theme-color" content="#F6F5F1" />
   <meta name="description" content="Study Notebooks in Mai-Reads (My Reads). Bundle multiple PDF and DOCX files into private, offline study binders with seamless switching and unified notes." />
   <meta name="keywords" content="mai reads notebooks, study binders, offline multi pdf reader, bundle pdf docx, private document binder, mai-reads, my reads" />
   <meta name="author" content="Maithil Studios" />
@@ -90,7 +90,12 @@
     ]
   </script>
 
-  <!-- Instant PWA & Theme State Check (Prevents any flash of install buttons if installed) -->
+  <!-- Typography: Geist & Newsreader per MAI-READS-UI-SPEC.md -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+
+  <!-- Instant PWA & Theme State Check -->
   <script>
     (function() {
       try {
@@ -106,7 +111,7 @@
         var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.content = dark ? '#1c1d1a' : '#f6f3ec';
+        if (meta) meta.content = dark ? '#151613' : '#F6F5F1';
       } catch(e) {}
     })();
   </script>
@@ -119,162 +124,130 @@
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-  <!-- Top Sticky Navigation Bar -->
+  <!-- Top Sticky Navigation Bar (Section 5) -->
   <header class="nb-nav" role="banner">
     <div class="nb-nav-inner">
       <div class="nb-nav-left">
         <a href="index.html" class="nb-back-link" aria-label="Return to Mai-Reads Reader">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
-          <span class="nb-back-text-full">Back to Reader</span>
-          <span class="nb-back-text-mobile">Reader</span>
+          <span class="wordmark-icon" aria-hidden="true" style="width:20px;height:20px;font-size:11px;border-radius:5px;">M</span>
+          <span style="font-family:var(--font-serif);font-size:18px;font-weight:500;">Mai-Reads</span>
         </a>
-        <span class="nb-brand-badge" aria-hidden="true">Study Notebooks</span>
       </div>
 
       <div class="nb-nav-right">
-        <button id="create-notebook-btn" class="nb-primary-btn" type="button" aria-label="Create new notebook">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <span class="nb-btn-text-full">New Notebook</span>
-          <span class="nb-btn-text-mobile">New</span>
-        </button>
-        <button id="nb-install-btn" class="nb-theme-btn pwa-install-btn" type="button" aria-label="Install Mai-Reads as app" title="Install as app">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect width="20" height="14" x="2" y="3" rx="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-            <path d="m9 10 3 3 3-3"/>
-            <line x1="12" y1="6" x2="12" y2="13"/>
-          </svg>
-        </button>
-        <button id="feedback-toggle-nb" class="nb-theme-btn" type="button" aria-label="Share Feedback" title="Share feedback &amp; suggestions">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button id="feedback-toggle-nb" class="icon-button" type="button" aria-label="Share Feedback" title="Share feedback &amp; suggestions">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
         </button>
-        <button id="docs-theme-toggle" class="nb-theme-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">
-          <span id="docs-theme-icon" aria-hidden="true">
-            <!-- Icon populated by JS -->
-          </span>
+        <button id="docs-theme-toggle" class="icon-button" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">
+          <span id="docs-theme-icon" aria-hidden="true"></span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Container (Section 5: Two columns wrapping layout) -->
   <main class="nb-container" role="main">
 
-    <!-- Hero Section -->
-    <header class="nb-hero">
-      <span class="nb-eyebrow">MULTI-DOCUMENT STUDY WORKSPACES</span>
-      <h1>Study Notebooks</h1>
-      <p>Organize multiple textbooks, research papers, and lecture notes into unified binders. Flip between documents seamlessly, jot cross-file notes, and read with 100% local privacy.</p>
-    </header>
-
-    <!-- Toolbar & Stats -->
-    <div class="nb-toolbar">
-      <div id="notebook-stats" class="nb-stats">
-        <span class="nb-stat-pill">Loading notebooks…</span>
+    <!-- Title Block -->
+    <header class="nb-title-block">
+      <div class="nb-title-text">
+        <h1>Notebooks</h1>
+        <p>Bundle documents and notes. Stored on this device.</p>
       </div>
-      <div class="nb-toolbar-actions">
+      <div class="nb-title-actions">
         <input id="import-bundle-picker" type="file" accept=".mainotebook,application/json" hidden />
-        <button id="import-notebook-btn" class="nb-secondary-btn nb-toolbar-btn" type="button" aria-label="Import notebook bundle file" title="Import a .mainotebook bundle file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          <span>Import Binder</span>
+        <button id="import-notebook-btn" class="btn-secondary" type="button" aria-label="Import notebook archive file" title="Import a .mainotebook bundle file">
+          <span>Import</span>
+        </button>
+        <button id="create-notebook-btn" class="btn-primary" type="button" aria-label="Create new notebook">
+          <span>New notebook</span>
         </button>
       </div>
+    </header>
+
+    <!-- Toolbar / Status -->
+    <div id="notebook-stats" class="nb-stats">
+      <span class="nb-stat-pill">Loading notebooks…</span>
     </div>
 
-    <!-- Notebooks Grid -->
-    <div id="notebook-grid" class="nb-grid">
-      <!-- Notebook cards dynamically rendered here by notebook.js -->
+    <!-- Two Columns Area: Left Grid + Right Detail Pane -->
+    <div class="nb-columns-wrap">
+
+      <!-- Left Column: Grid of Cards -->
+      <section class="nb-list-column" aria-label="Notebooks list">
+        <div id="notebook-grid" class="nb-grid">
+          <!-- Notebook cards and "+ Create notebook" dashed tile dynamically rendered here by notebook.js -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="notebook-empty" class="nb-empty hidden">
+          <div class="nb-empty-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <h3>No notebooks yet</h3>
+          <p>Bundle multiple PDFs and Word documents into focused reading binders.</p>
+          <button id="empty-create-btn" class="btn-primary" type="button">
+            <span>Create notebook</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Right Column: Detail Pane (Section 5) -->
+      <aside id="nb-detail-column" class="nb-detail-column" aria-label="Notebook details">
+        <div id="nb-detail-pane" class="nb-detail-pane">
+          <div class="nb-detail-header">
+            <div class="nb-detail-kicker">
+              <span id="nb-detail-dot" class="nb-color-dot dot-amber"></span>
+              <span id="nb-detail-color-name">Amber</span>
+              <span>· Notebook</span>
+            </div>
+            <h2 id="nb-detail-title" class="nb-detail-title">Select a notebook</h2>
+            <p id="nb-detail-desc" class="nb-card-desc" style="display:none;"></p>
+          </div>
+
+          <div class="segmented nb-detail-tabs">
+            <button id="nb-tab-docs" class="mode-button selected" type="button">Documents</button>
+            <button id="nb-tab-notes" class="mode-button" type="button">Scratchpad</button>
+          </div>
+
+          <div id="nb-detail-docs-panel" class="nb-detail-tab-content">
+            <div id="nb-detail-doc-rows" class="nb-doc-rows">
+              <div class="nb-doc-row" style="color:var(--muted);font-style:italic;">Choose a notebook to inspect its files</div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+              <button id="nb-detail-add-btn" class="btn-secondary" type="button" style="height:42px;font-size:13.5px;">Add documents</button>
+              <button id="nb-detail-share-btn" class="btn-secondary" type="button" style="height:42px;font-size:13.5px;">Export archive</button>
+            </div>
+          </div>
+
+          <div id="nb-detail-notes-panel" class="nb-detail-tab-content hidden">
+            <div id="nb-detail-notes-text" style="font-size:14px;line-height:1.6;color:var(--ink-2);min-height:100px;white-space:pre-wrap;background:var(--surface-2);padding:14px;border-radius:var(--radius-sm);">No scratchpad notes yet.</div>
+          </div>
+
+          <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;">
+            <a id="nb-detail-open-btn" href="#" class="btn-primary" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">
+              <span>Open notebook</span>
+            </a>
+            <p style="font-size:12px;color:var(--muted);text-align:center;">Stored on this device only. Never uploaded.</p>
+          </div>
+        </div>
+      </aside>
+
     </div>
-
-    <!-- Empty State -->
-    <div id="notebook-empty" class="nb-empty hidden">
-      <div class="nb-empty-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
-      </div>
-      <h3>No notebooks created yet</h3>
-      <p>Create your first notebook to bundle multiple PDFs and Word documents into a cohesive reading binder.</p>
-      <button id="empty-create-btn" class="nb-primary-btn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Create your first notebook</span>
-      </button>
-    </div>
-
-    <!-- Feature Showcase / Guide -->
-    <section class="nb-showcase" aria-labelledby="showcase-title">
-      <h2 id="showcase-title" class="nb-showcase-title">Why Use Study Notebooks?</h2>
-      <div class="nb-feature-grid">
-        <article class="nb-feature-card">
-          <div class="nb-feature-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          </div>
-          <h4>Multi-Document Binders</h4>
-          <p>Bundle related chapters, research papers, syllabus PDFs, and lecture notes into a single cohesive project without file clutter.</p>
-        </article>
-
-        <article class="nb-feature-card">
-          <div class="nb-feature-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect width="18" height="18" x="3" y="3" rx="2"/>
-              <path d="M9 3v18"/>
-            </svg>
-          </div>
-          <h4>1-Click Document Switching</h4>
-          <p>Flick between files with top document tabs or the collapsible binder sidebar. Each document preserves its exact zoom, page, and highlights.</p>
-        </article>
-
-        <article class="nb-feature-card">
-          <div class="nb-feature-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-          </div>
-          <h4>Unified Scratchpad</h4>
-          <p>Jot cross-file study notes, literature reviews, or quick questions directly beside your documents. Notes automatically save locally.</p>
-        </article>
-
-        <article class="nb-feature-card">
-          <div class="nb-feature-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <h4>100% Private &amp; Offline</h4>
-          <p>Zero cloud accounts, zero analytics, zero server uploads. All notebook contents and notes remain encrypted and stored locally in IndexedDB.</p>
-        </article>
-      </div>
-    </section>
 
     <!-- Semantic Crawlable SEO Section for Search Bots -->
     <section class="seo-data sr-only" aria-labelledby="about-study-notebooks">
       <h2 id="about-study-notebooks">About Study Notebooks: Offline Multi-Document Binders for Research &amp; Study</h2>
       <article>
-        <p>Mai-Reads Study Notebooks provide an distraction-free environment for organizing and reading multiple PDF and DOCX documents simultaneously. Whether studying for college exams, reading scientific papers, or comparing business reports, Study Notebooks allow you to create unified document collections with zero cloud uploads.</p>
+        <p>Mai-Reads Study Notebooks provide a distraction-free environment for organizing and reading multiple PDF and DOCX documents simultaneously. Whether studying for college exams, reading scientific papers, or comparing business reports, Study Notebooks allow you to create unified document collections with zero cloud uploads.</p>
         
         <h3>Key Features of Study Notebooks</h3>
         <ul>
@@ -288,7 +261,7 @@
 
   </main>
 
-  <!-- Create / Edit Notebook Modal -->
+  <!-- Create / Edit Notebook Modal (Section 5) -->
   <div id="notebook-modal-backdrop" class="nb-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="nb-modal">
       <div class="nb-modal-header">
@@ -303,7 +276,7 @@
 
       <form id="nb-form">
         <div class="nb-form-group">
-          <label for="nb-title-input" class="nb-form-label">Notebook Name</label>
+          <label for="nb-title-input" class="nb-form-label">Notebook name</label>
           <input id="nb-title-input" class="nb-input" type="text" placeholder="e.g. Molecular Biology 101, Q3 Financials…" required />
         </div>
 
@@ -313,9 +286,9 @@
         </div>
 
         <div class="nb-form-group">
-          <span class="nb-form-label">Color Accent</span>
+          <span class="nb-form-label">Color</span>
           <div class="nb-color-options">
-            <button type="button" class="nb-color-choice choice-amber selected" data-color="amber" title="Warm Amber"></button>
+            <button type="button" class="nb-color-choice choice-amber selected" data-color="amber" title="Amber"></button>
             <button type="button" class="nb-color-choice choice-emerald" data-color="emerald" title="Emerald"></button>
             <button type="button" class="nb-color-choice choice-indigo" data-color="indigo" title="Indigo"></button>
             <button type="button" class="nb-color-choice choice-rose" data-color="rose" title="Rose"></button>
@@ -324,7 +297,7 @@
         </div>
 
         <div class="nb-form-group">
-          <span class="nb-form-label">Add Documents (PDF or DOCX)</span>
+          <span class="nb-form-label">Add documents (PDF or DOCX)</span>
           <input id="nb-file-picker" type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
           <div id="nb-dropzone" class="nb-dropzone">
             <div class="nb-dropzone-icon">
@@ -334,21 +307,21 @@
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
             </div>
-            <div class="nb-dropzone-title">Click to browse or drop multiple files here</div>
-            <div class="nb-dropzone-hint">Select multiple PDF or DOCX files to include in this binder</div>
+            <div class="nb-dropzone-title">Click to browse or drop files here</div>
+            <div class="nb-dropzone-hint">Select PDF or DOCX files to include</div>
           </div>
         </div>
 
         <div class="nb-form-group">
-          <span class="nb-form-label">Queued Documents</span>
+          <span class="nb-form-label">Queued documents</span>
           <div id="nb-queued-files" class="nb-queued-files">
             <!-- Queued files appear here -->
           </div>
         </div>
 
         <div class="nb-modal-footer">
-          <button id="modal-cancel-btn" class="nb-secondary-btn" type="button">Cancel</button>
-          <button id="modal-save-btn" class="nb-primary-btn" type="submit">Save Notebook</button>
+          <button id="modal-cancel-btn" class="btn-secondary" type="button">Cancel</button>
+          <button id="modal-save-btn" class="btn-primary" type="submit">Save notebook</button>
         </div>
       </form>
     </div>
@@ -434,7 +407,7 @@
     </div>
   </div>
 
-  <!-- PWA Install Guide Modal (1-click trigger or browser guide) -->
+  <!-- PWA Install Guide Modal -->
   <div id="pwa-install-modal-backdrop" class="feedback-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pwa-install-modal-title">
     <div class="feedback-modal pwa-install-modal">
       <div class="feedback-modal-header">
@@ -462,7 +435,7 @@
         <div id="pwa-native-prompt-section" class="pwa-prompt-section hidden">
           <div class="pwa-feature-badge">1-Click Installation Ready</div>
           <p class="pwa-prompt-desc">Click below to install Mai-Reads directly to your system.</p>
-          <button id="pwa-trigger-install-btn" class="nb-primary-btn pwa-hero-install-btn" type="button">
+          <button id="pwa-trigger-install-btn" class="btn-primary pwa-hero-install-btn" type="button">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="7 10 12 15 17 10"/>
@@ -502,21 +475,19 @@
     </div>
   </div>
 
-  <!-- Share Notebook Modal (Serverless Link + .mainotebook file) -->
+  <!-- Share / Export Notebook Modal (.mainotebook file) -->
   <div id="share-modal-backdrop" class="feedback-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
     <div class="feedback-modal nb-share-modal">
       <div class="feedback-modal-header">
         <div class="feedback-title-wrap">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feedback-icon" aria-hidden="true">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          <h2 id="share-modal-title" class="feedback-modal-title">Share Notebook</h2>
+          <h2 id="share-modal-title" class="feedback-modal-title">Export Notebook Archive</h2>
         </div>
-        <button id="share-modal-close-btn" class="feedback-modal-close" type="button" aria-label="Close share dialog">
+        <button id="share-modal-close-btn" class="feedback-modal-close" type="button" aria-label="Close export dialog">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -525,28 +496,8 @@
       </div>
 
       <div class="nb-share-body">
-        <p class="feedback-modal-subtitle" id="share-modal-subtitle">Share this study workspace 100% serverless. No clouds or tracking.</p>
+        <p class="feedback-modal-subtitle" id="share-modal-subtitle">Export this study workspace into a standalone portable archive. Stored and packaged 100% on this device.</p>
 
-        <!-- Method 1: Instant Share Link (URL Hash payload) -->
-        <div class="nb-share-method-card">
-          <div class="nb-share-method-header">
-            <div class="nb-share-method-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
-              <span>Instant Share Link</span>
-            </div>
-            <span class="nb-share-badge">Serverless URL</span>
-          </div>
-          <p class="nb-share-method-desc">Compresses the notebook structure, notes, and metadata into a client-only link. Opening the link unpacks the binder directly in their browser.</p>
-          <div class="nb-share-link-box">
-            <input id="share-link-input" class="nb-share-input" type="text" readonly aria-label="Shareable notebook link" />
-            <button id="share-copy-link-btn" class="nb-primary-btn" type="button">Copy Link</button>
-          </div>
-        </div>
-
-        <!-- Method 2: Portable .mainotebook Archive File -->
         <div class="nb-share-method-card">
           <div class="nb-share-method-header">
             <div class="nb-share-method-title">
@@ -555,13 +506,13 @@
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              <span>Portable Binder Archive</span>
+              <span>Portable Binder Archive (.mainotebook)</span>
             </div>
             <span class="nb-share-badge">All Files Included</span>
           </div>
-          <p class="nb-share-method-desc">Exports a single standalone <code>.mainotebook</code> bundle file containing your notes and full documents. Send it via WhatsApp, AirDrop, Discord, or Email.</p>
-          <button id="share-export-bundle-btn" class="nb-secondary-btn nb-export-btn" type="button">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <p class="nb-share-method-desc">Exports a single compressed <code>.mainotebook</code> file containing your notes and full documents. You can back it up, air-drop, or import it into any browser.</p>
+          <button id="share-export-bundle-btn" class="btn-primary" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
@@ -614,7 +565,7 @@
 
       <div class="feedback-modal-footer">
         <button id="import-modal-cancel-btn" class="feedback-secondary-btn" type="button">Cancel</button>
-        <button id="import-modal-confirm-btn" class="feedback-primary-btn" type="button">
+        <button id="import-modal-confirm-btn" class="btn-primary" type="button">
           <span>Import to My Notebooks</span>
         </button>
       </div>

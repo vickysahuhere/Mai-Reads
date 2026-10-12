@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f2eb" />
+  <meta name="theme-color" content="#F6F5F1" />
   <meta name="description" content="Mai-Reads (also known as My Reads) is an ultra-fast, 100% private PDF &amp; DOCX document reader and study notebook workspace. Bundle multiple files into binders, highlight offline, take scratchpad notes, and read distraction-free." />
   <meta name="keywords" content="mai reads, my reads, myreads, study notebooks, multi pdf reader, bundle pdf files, combine documents reader, study binder app, offline document organizer, indexeddb study notebook, reading scratchpad, notes and pdf reader, distraction free study workspace, maireads, mai-reads, my reads pdf, offline pdf reader, minimal pdf viewer, docx reader, study reader, private document reader, highlight pdf offline, indexeddb pdf cache, dyslexia reading tool, adhd reader" />
   <meta name="author" content="Maithil Studios" />
@@ -73,7 +73,7 @@
           "Jitter-free anchor-stabilized continuous zoom (60% to 200%)",
           "Offline Native Text Highlighter with persistent local storage",
           "Instant client-side PDF export with baked-in annotations",
-          "Distraction-free minimalist God Mode interface",
+          "Distraction-free minimalist interface",
           "Instant Resume via IndexedDB offline cache",
           "Dark mode, custom themes, and independent paper brightness controls",
           "PDF and DOCX native parsing in-browser",
@@ -179,7 +179,12 @@
   <link rel="manifest" href="./manifest.json" />
   <title>Mai-Reads (My Reads) — Minimalist Document Reader &amp; Study Notebooks</title>
 
-  <!-- Instant PWA & Theme State Check (Prevents any flash of install buttons if installed) -->
+  <!-- Typography: Geist & Newsreader per MAI-READS-UI-SPEC.md -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+
+  <!-- Instant PWA & Theme State Check -->
   <script>
     (function() {
       try {
@@ -195,21 +200,20 @@
         var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.content = dark ? '#1c1d1a' : '#f6f3ec';
+        if (meta) meta.content = dark ? '#151613' : '#F6F5F1';
       } catch(e) {}
     })();
   </script>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <input id="file-picker" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
 
-  <!-- Drag & Drop Overlay -->
+  <!-- Drag & Drop Overlay (Section 7 Edge Case 1) -->
   <div id="drop-overlay" class="drop-overlay hidden" aria-hidden="true">
     <div class="drop-card">
       <div class="drop-icon-wrap">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
           <line x1="12" y1="18" x2="12" y2="12"/>
@@ -217,15 +221,15 @@
           <line x1="15" y1="15" x2="12" y2="12"/>
         </svg>
       </div>
-      <div class="drop-title">Drop your document here</div>
-      <div class="drop-hint">PDF or DOCX · stays on your device</div>
+      <div class="drop-title">Drop to open</div>
+      <div class="drop-hint">PDF or DOCX. Stays on your device.</div>
     </div>
   </div>
 
-  <!-- Toast Notification -->
+  <!-- Toast Notification (Section 2) -->
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-  <!-- History Sidebar (ChatGPT style) -->
+  <!-- History Sidebar Drawer -->
   <aside id="history-panel" class="history-panel" aria-label="Reading history" aria-hidden="true">
     <div class="history-header">
       <div class="history-title-wrap">
@@ -252,224 +256,154 @@
   </aside>
   <div id="history-backdrop" class="history-backdrop hidden"></div>
 
-  <!-- Welcome / Home View -->
+  <!-- Welcome / Home View (Section 3) -->
   <main id="welcome" class="welcome">
-    <!-- Floating Island Dock -->
-    <nav class="welcome-dock-container" aria-label="Quick actions">
-      <div class="welcome-dock">
-        <button id="history-toggle-welcome" class="dock-btn nav-button history-toggle" type="button" aria-label="Reading history" title="Reading history (H)">
-          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-            <path d="M12 7v5l4 2"/>
-          </svg>
-          <span class="dock-text">History</span>
-          <kbd class="dock-kbd" aria-hidden="true">H</kbd>
-          <span id="welcome-history-dot" class="nav-badge hidden"></span>
-        </button>
-
-        <span class="dock-divider" aria-hidden="true"></span>
-
-        <a id="welcome-notebooks-link" href="notebook.html" class="dock-btn nav-button notebooks-link" aria-label="Study Notebooks" title="Study Notebooks (N)">
-          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-          <span class="dock-text">Notebooks</span>
-          <kbd class="dock-kbd" aria-hidden="true">N</kbd>
-          <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
-        </a>
-
-        <span class="dock-divider" aria-hidden="true"></span>
-
-        <button id="feedback-toggle-welcome" class="dock-btn nav-button feedback-toggle" type="button" aria-label="Share Feedback" title="Share feedback &amp; suggestions">
-          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span class="dock-text">Feedback</span>
-        </button>
-
-        <span id="pwa-install-dock-sep" class="dock-divider pwa-install-dock-sep" aria-hidden="true"></span>
-
-        <button id="pwa-install-dock-btn" class="dock-btn nav-button pwa-install-btn" type="button" aria-label="Install Mai-Reads as app" title="Install as app">
-          <svg class="dock-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect width="20" height="14" x="2" y="3" rx="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-            <path d="m9 10 3 3 3-3"/>
-            <line x1="12" y1="6" x2="12" y2="13"/>
-          </svg>
-          <span class="dock-text">Install</span>
-        </button>
-
-        <span class="dock-divider" aria-hidden="true"></span>
-
-        <button id="theme-toggle" class="dock-btn nav-button theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
-          <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true">
-            <!-- Populated by JS with SVG sun/moon -->
-          </span>
-          <span class="dock-text sr-only">Theme</span>
-        </button>
-      </div>
-    </nav>
-
     <div class="welcome-inner">
-      <header class="welcome-header">
-        <div class="welcome-eyebrow">Local Document Reader</div>
-        <h1>Mai-Reads</h1>
-        <p class="welcome-subhead">Quiet, fast reader for PDF and Word documents. Completely offline.</p>
+      <!-- Topbar Header Row -->
+      <header class="welcome-topbar">
+        <a href="index.html" class="welcome-wordmark" aria-label="Mai-Reads Home">
+          <span class="wordmark-icon" aria-hidden="true">M</span>
+          <span class="wordmark-text">Mai-Reads</span>
+        </a>
+        <div class="welcome-topbar-actions">
+          <button id="history-toggle-welcome" class="topbar-btn" type="button" aria-label="Reading history (H)" title="Reading history (H)">
+            <span>History</span>
+            <kbd class="key-hint" aria-hidden="true">H</kbd>
+            <span id="welcome-history-dot" class="nav-badge hidden"></span>
+          </button>
+          <a id="welcome-notebooks-link" href="notebook.html" class="topbar-btn" aria-label="Study Notebooks (N)" title="Study Notebooks (N)">
+            <span>Notebooks</span>
+            <kbd class="key-hint" aria-hidden="true">N</kbd>
+            <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
+            <span id="welcome-notebook-count" class="sr-only">0</span>
+          </a>
+          <button id="theme-toggle" class="icon-button topbar-theme-btn" type="button" aria-label="Switch theme" title="Switch theme">
+            <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true"></span>
+          </button>
+        </div>
       </header>
 
-      <!-- Balanced Workspace Grid: Single Document + Study Notebooks -->
-      <div class="welcome-workspace-grid">
-        <!-- Card 1: Read Single Document -->
-        <button class="open-card welcome-card" id="welcome-open" aria-label="Open a PDF or Word document" type="button">
-          <div class="card-icon-wrap plus-wrap">
-            <svg class="plus-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </div>
-          <span class="open-label card-title">Open Document</span>
-          <span class="file-hint card-desc">PDF or DOCX from device</span>
-          <span class="card-action-cue">
-            <span>Choose file</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </span>
-        </button>
+      <!-- Hero Section -->
+      <section class="welcome-hero">
+        <h1 class="welcome-display-title">Open a document.</h1>
+        <p class="welcome-subtitle">PDF or Word. It stays on this device, always.</p>
+        <div class="welcome-hero-actions">
+          <button id="welcome-open" class="btn-primary" type="button">Choose file</button>
+          <a href="notebook.html" class="btn-secondary">New notebook</a>
+        </div>
+        <p class="welcome-drop-hint">or drop a file anywhere on this page</p>
+      </section>
 
-        <!-- Card 2: Study Notebooks Binder -->
-        <a href="notebook.html" class="welcome-notebook-card welcome-card" aria-label="Open Study Notebooks workspace">
-          <div class="card-icon-wrap notebook-icon-wrap">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              <line x1="9" y1="7" x2="15" y2="7"/>
-              <line x1="9" y1="11" x2="13" y2="11"/>
-            </svg>
+      <!-- Continue Reading Section (Populated dynamically up to 3 items) -->
+      <section id="resume-container" class="continue-reading-section hidden">
+        <div class="continue-reading-header">
+          <span class="welcome-eyebrow">CONTINUE READING</span>
+          <button id="view-all-history-btn" class="welcome-view-all-btn" type="button">View all</button>
+        </div>
+        <div id="continue-reading-card" class="continue-reading-card">
+          <div id="continue-reading-items" class="continue-reading-items">
+            <!-- 1 to 3 items inserted here by updateResumeButton() -->
           </div>
-          <div class="card-title-row">
-            <span class="card-title">Study Notebooks</span>
-            <span id="welcome-notebook-count" class="chip-count hidden">0</span>
-          </div>
-          <span class="card-desc">Multi-file binders with notes</span>
-          <span class="card-action-cue">
-            <span>Open workspace</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </span>
-        </a>
+        </div>
+        <!-- Hidden elements preserved for reader.js backward-compatibility -->
+        <div class="sr-only" aria-hidden="true">
+          <button id="resume-btn" type="button"><span id="resume-title"></span><span id="resume-meta"></span></button>
+          <button id="feedback-toggle-welcome" type="button"></button>
+          <span id="pwa-install-dock-sep" class="pwa-install-dock-sep"></span>
+        </div>
+      </section>
+
+      <!-- Privacy Lock Line -->
+      <div class="welcome-privacy-line">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>Saved in this browser only. Reselect a file to resume if your browser clears it.</span>
       </div>
 
-      <!-- Instant Resume Last Read Document Bookmark Ribbon -->
-      <div id="resume-container" class="resume-container hidden">
-        <button id="resume-btn" class="resume-card" type="button" aria-label="Resume reading previous document">
-          <div class="resume-icon-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-          </div>
-          <div class="resume-info">
-            <div class="resume-kicker-row">
-              <span class="resume-kicker">Resume Reading</span>
-              <span class="resume-instant-badge">Cached</span>
-            </div>
-            <div id="resume-title" class="resume-title">Document name</div>
-            <div id="resume-meta" class="resume-meta">Page 1</div>
-          </div>
-          <div class="resume-arrow-wrap">
-            <span class="resume-continue-text">Continue</span>
-            <div class="resume-arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </div>
-          </div>
-        </button>
-      </div>
+      <!-- Collapsed SEO Article (Section 0 Rule 2: Keep in DOM for search bots) -->
+      <details class="welcome-seo-details">
+        <summary class="welcome-seo-summary">About Mai-Reads document reader &amp; offline features</summary>
+        <article>
+          <p>Mai-Reads (also known as My Reads or MyReads) is a 100% local, lightning-fast, distraction-free document reader and multi-file study notebook workspace. We built it so students, researchers, and professionals can bundle, open, read, zoom, and highlight PDF and DOCX files securely in their browser with zero server uploads.</p>
+          
+          <h3>Why Choose Mai-Reads / My Reads for Document Study &amp; Research</h3>
+          <ul>
+            <li><strong>Multi-File Study Notebooks:</strong> Bundle related textbooks, lecture notes, syllabus guides, and research papers into unified binders with 1-click tab switching.</li>
+            <li><strong>Integrated Study Scratchpad:</strong> Jot notes, chapter summaries, and citations directly beside your documents with local real-time auto-saving.</li>
+            <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache remembers your exact page, scroll ratio, and annotations for every document independently.</li>
+            <li><strong>Zero Data Collection &amp; Serverless:</strong> 100% private. Your documents, notebooks, and notes never leave your device.</li>
+            <li><strong>Precision Text Highlighter:</strong> Select text or freehand draw highlight bands across scanned documents with client-side baked-in PDF export.</li>
+            <li><strong>Silky 60/120fps Smooth Zoom:</strong> Mathematical anchor lock keeps your position stable without jitter or rubbery pulls.</li>
+          </ul>
+
+          <h3>Accessibility &amp; Cognitive Ergonomics</h3>
+          <p>Mai-Reads (My Reads) is intentionally designed to support readers with specific accessibility needs and medical conditions:</p>
+          <ul>
+            <li><strong>ADHD (Attention-Deficit/Hyperactivity Disorder):</strong> A completely distraction-free interface with hidden controls prevents attention loss and hyper-focus disruption.</li>
+            <li><strong>Asthenopia (Digital Eye Strain) &amp; Photophobia (Light Sensitivity):</strong> Independent paper brightness controls and a deep dark mode help readers with migraines, post-concussion syndrome, and severe eye strain.</li>
+            <li><strong>Dyslexia &amp; Processing Disorders:</strong> Clean, unhurried reading layouts (single-page or continuous) without ads or pop-ups reduce cognitive load.</li>
+            <li><strong>Autism Spectrum Disorder (ASD):</strong> The minimalist, calm UI prevents visual sensory overload.</li>
+          </ul>
+          
+          <h3>Frequently Asked Questions</h3>
+          <p><strong>What is Mai-Reads (My Reads)?</strong> Mai-Reads is a private, web-based PDF and DOCX reader and study notebook workspace designed for distraction-free reading, academic study, and research.</p>
+          <p><strong>How do Study Notebooks work in Mai-Reads?</strong> Study Notebooks allow you to group multiple documents into organized binders. You can switch between files with a 1-click top tab strip, take unified notes in the built-in scratchpad, and preserve progress for every document with 100% offline privacy.</p>
+          <p><strong>Is Mai-Reads completely private and offline?</strong> Yes, all processing and document caching happen locally using browser-native technologies (IndexedDB) with zero telemetry or cloud uploads.</p>
+          <p><strong>Does it support Word Documents and PDFs?</strong> Yes, both PDF and DOCX files are natively rendered directly inside your browser.</p>
+          <p>Crafted with quiet care by Maithil Studios.</p>
+        </article>
+      </details>
+
+      <!-- Welcome Footer -->
+      <footer class="welcome-footer">
+        <a href="docs.html" class="welcome-foot-link">Guide</a>
+        <span class="welcome-foot-sep" aria-hidden="true">·</span>
+        <button id="welcome-feedback-btn" class="welcome-foot-link" type="button">Feedback</button>
+        <span class="welcome-foot-sep pwa-install-foot-sep" aria-hidden="true">·</span>
+        <button id="pwa-install-foot-btn" class="welcome-foot-link pwa-install-btn" type="button">Install app</button>
+        <span class="welcome-foot-sep" aria-hidden="true">·</span>
+        <button id="studio-link-btn" class="welcome-foot-link" type="button">Maithil Studios</button>
+      </footer>
     </div>
 
-  
-
-      <section class="seo-data sr-only" aria-labelledby="about-mai-reads">
-      <h2 id="about-mai-reads">About Mai-Reads (My Reads): Privacy-First Document Reader &amp; Study Notebooks</h2>
-      <article>
-        <p>Mai-Reads (also known as My Reads or MyReads) is a 100% local, lightning-fast, distraction-free document reader and multi-file study notebook workspace. We built it so students, researchers, and professionals can bundle, open, read, zoom, and highlight PDF and DOCX files securely in their browser with zero server uploads.</p>
-        
-        <h3>Why Choose Mai-Reads / My Reads for Document Study &amp; Research</h3>
-        <ul>
-          <li><strong>Multi-File Study Notebooks:</strong> Bundle related textbooks, lecture notes, syllabus guides, and research papers into unified binders with 1-click tab switching.</li>
-          <li><strong>Integrated Study Scratchpad:</strong> Jot notes, chapter summaries, and citations directly beside your documents with local real-time auto-saving.</li>
-          <li><strong>Offline capabilities:</strong> Instant resume via IndexedDB cache remembers your exact page, scroll ratio, and annotations for every document independently.</li>
-          <li><strong>Zero Data Collection &amp; Serverless:</strong> 100% private. Your documents, notebooks, and notes never leave your device.</li>
-          <li><strong>Precision Text Highlighter:</strong> Select text or freehand draw highlight bands across scanned documents with client-side baked-in PDF export.</li>
-          <li><strong>Silky 60/120fps Smooth Zoom:</strong> Mathematical anchor lock keeps your position stable without jitter or rubbery pulls.</li>
-        </ul>
-
-        <h3>Accessibility &amp; Cognitive Ergonomics</h3>
-        <p>Mai-Reads (My Reads) is intentionally designed to support readers with specific accessibility needs and medical conditions:</p>
-        <ul>
-          <li><strong>ADHD (Attention-Deficit/Hyperactivity Disorder):</strong> A completely distraction-free interface with hidden controls prevents attention loss and hyper-focus disruption.</li>
-          <li><strong>Asthenopia (Digital Eye Strain) &amp; Photophobia (Light Sensitivity):</strong> Independent paper brightness controls and a deep dark mode help readers with migraines, post-concussion syndrome, and severe eye strain.</li>
-          <li><strong>Dyslexia &amp; Processing Disorders:</strong> Clean, unhurried reading layouts (single-page or continuous) without ads or pop-ups reduce cognitive load.</li>
-          <li><strong>Autism Spectrum Disorder (ASD):</strong> The minimalist, calm UI prevents visual sensory overload.</li>
-        </ul>
-        
-        <h3>Frequently Asked Questions</h3>
-        <details><summary>What is Mai-Reads (My Reads)?</summary><p>Mai-Reads (often searched as My Reads or MyReads) is a private, web-based PDF and DOCX reader and study notebook workspace designed for distraction-free reading, academic study, and research.</p></details>
-        <details><summary>How do Study Notebooks work in Mai-Reads?</summary><p>Study Notebooks allow you to group multiple documents into organized binders. You can switch between files with a 1-click top tab strip, take unified notes in the built-in scratchpad, and preserve progress for every document with 100% offline privacy.</p></details>
-        <details><summary>Is Mai-Reads completely private and offline?</summary><p>Yes, all processing and document caching happen locally using browser-native technologies (IndexedDB) with zero telemetry or cloud uploads.</p></details>
-        <details><summary>Does it support Word Documents and PDFs?</summary><p>Yes, both PDF and DOCX files are natively rendered directly inside your browser.</p></details>
-        <p>Crafted with quiet care by Maithil Studios.</p>
-      </article>
-    </section>
-
-    <footer class="welcome-foot">
-      <button id="studio-link-btn" type="button">Made for unhurried reading</button>
-      <span class="welcome-foot-sep" aria-hidden="true">·</span>
-      <a href="docs.html" class="welcome-docs-link">Documentation &amp; Guide</a>
-      <span class="welcome-foot-sep" aria-hidden="true">·</span>
-      <button id="welcome-feedback-btn" class="welcome-docs-link" type="button" style="background:none;border:none;padding:0;cursor:pointer;">Feedback</button>
-      <span class="welcome-foot-sep pwa-install-foot-sep" aria-hidden="true">·</span>
-      <button id="pwa-install-foot-btn" class="welcome-docs-link pwa-install-btn" type="button" style="background:none;border:none;padding:0;cursor:pointer;">Install App</button>
-    </footer>
+    <!-- Mobile Bottom Navigation (Open / History / Notebooks) -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+      <button id="mobile-nav-open" class="mobile-nav-item" type="button">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="12" y2="12"/>
+          <line x1="15" y1="15" x2="12" y2="12"/>
+        </svg>
+        <span>Open</span>
+      </button>
+      <button id="mobile-nav-history" class="mobile-nav-item" type="button">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        </svg>
+        <span>History</span>
+      </button>
+      <a id="mobile-nav-notebooks" href="notebook.html" class="mobile-nav-item">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <span>Notebooks</span>
+      </a>
+    </nav>
   </main>
 
-  <!-- Document Reader View -->
+  <!-- Document Reader View (Section 4) -->
   <section id="reader" class="reader hidden" aria-label="Document reader">
-    <div id="reading-surface" class="reading-surface mode-continuous">
-      <div id="paper" class="paper"><div id="pages" class="pages"></div></div>
-    </div>
-    
-    <div id="loading" class="loading hidden">
-      <div class="loading-spinner" aria-hidden="true"></div>
-      <div class="loading-text">Opening your document…</div>
-    </div>
-    
-    <div id="error" class="error hidden" role="alert"></div>
-    <!-- Floating Selection Tooltip for Highlighting & Copying -->
-    <div id="selection-tooltip" class="selection-tooltip hidden" role="toolbar" aria-label="Selection actions">
-      <button id="btn-highlight-selection" class="tooltip-btn tooltip-btn-highlight" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-          <path d="m2 2 7.586 7.586"/>
-        </svg>
-        <span>Highlight</span>
-      </button>
-      <button id="btn-copy-selection" class="tooltip-btn" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-        </svg>
-        <span>Copy</span>
-      </button>
-    </div>
-
-    <!-- Floating Active Highlighter Bar at top of reading screen -->
-    <div id="highlight-bar" class="highlight-bar hidden">
-      <span class="highlight-bar-dot" aria-hidden="true"></span>
-      <span class="highlight-bar-text">Highlighter Active — Drag across page to highlight</span>
-      <button id="highlight-bar-done" type="button">Done</button>
+    <!-- Top Document Title Chip -->
+    <div id="doc-title" class="doc-title">
+      <span id="doc-title-text" class="doc-title-text"></span>
+      <span id="doc-page-chip" class="doc-page-chip"></span>
     </div>
 
     <!-- Floating Top Document Tab Strip for Notebooks -->
@@ -542,184 +476,218 @@
     </aside>
     <div id="binder-backdrop" class="history-backdrop hidden"></div>
 
-    <!-- Floating Top-Left History Button in Reader -->
-    <button id="history-toggle-reader" class="floating-btn history-toggle-reader" type="button" aria-label="Open reading history" title="Reading history (H)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-        <path d="M3 3v5h5"/>
-        <path d="M12 7v5l4 2"/>
-      </svg>
-      <span class="btn-label-desktop">History</span>
-    </button>
+    <!-- Reading Surface -->
+    <div id="reading-surface" class="reading-surface mode-continuous">
+      <div id="paper" class="paper"><div id="pages" class="pages"></div></div>
+    </div>
+    
+    <!-- Loading State -->
+    <div id="loading" class="loading hidden">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <div class="loading-text">Opening your document…</div>
+    </div>
+    
+    <!-- Error State -->
+    <div id="error" class="error hidden" role="alert"></div>
 
-    <!-- Floating Bottom-Right Reading Controls Toggle -->
-    <button id="control-toggle" class="floating-btn control-toggle" aria-label="Show reading controls" title="Reading controls">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="4" y1="6" x2="20" y2="6"/>
-        <line x1="4" y1="12" x2="20" y2="12"/>
-        <line x1="4" y1="18" x2="20" y2="18"/>
-        <circle cx="8" cy="6" r="2" fill="currentColor"/>
-        <circle cx="16" cy="12" r="2" fill="currentColor"/>
-        <circle cx="10" cy="18" r="2" fill="currentColor"/>
-      </svg>
-    </button>
+    <!-- Bottom Center Dock (Section 4) -->
+    <nav id="reader-dock" class="reader-dock" aria-label="Reader tools">
+      <button id="history-toggle-reader" class="dock-btn" type="button" aria-label="Reading history (H)" title="Reading history (H)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        </svg>
+      </button>
+      <button id="search-toggle" class="dock-btn" type="button" aria-label="Find in document" title="Find in document">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+      <button id="highlight-toggle" class="dock-btn" type="button" aria-label="Highlighter mode" title="Highlighter mode">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+          <path d="m2 2 7.586 7.586"/>
+        </svg>
+      </button>
+      <button id="bookmark-add" class="dock-btn" type="button" aria-label="Bookmark page" title="Bookmark page">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+        </svg>
+      </button>
+      <span class="dock-sep" aria-hidden="true"></span>
+      <button id="control-toggle" class="dock-btn" type="button" aria-label="Reading controls" title="Reading controls">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+          <circle cx="8" cy="6" r="2" fill="currentColor"/>
+          <circle cx="16" cy="12" r="2" fill="currentColor"/>
+          <circle cx="10" cy="18" r="2" fill="currentColor"/>
+        </svg>
+      </button>
+    </nav>
 
-    <!-- Reading Controls Panel -->
+    <!-- Floating Selection Tooltip for Highlighting & Copying -->
+    <div id="selection-tooltip" class="selection-tooltip hidden" role="toolbar" aria-label="Selection actions">
+      <button id="btn-highlight-selection" class="tooltip-btn tooltip-btn-highlight" type="button">
+        <span class="tooltip-hl-swatch" aria-hidden="true"></span>
+        <span>Highlight</span>
+      </button>
+      <button id="btn-copy-selection" class="tooltip-btn" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+        </svg>
+        <span>Copy</span>
+      </button>
+    </div>
+
+    <!-- Floating Active Highlighter Bar at top of reading screen -->
+    <div id="highlight-bar" class="highlight-bar hidden">
+      <span class="highlight-bar-dot" aria-hidden="true"></span>
+      <span class="highlight-bar-text">Highlighter on</span>
+      <button id="highlight-bar-done" type="button">Done</button>
+    </div>
+
+    <!-- Search Box In-Document -->
+    <div id="search-box" class="search-box hidden">
+      <div class="search-input-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="search-input" type="search" placeholder="Search this document…" aria-label="Search this document" />
+      </div>
+      <div id="search-results" class="search-results" aria-live="polite"></div>
+    </div>
+
+    <!-- Reading Controls Panel (Section 4 Exact Sequence) -->
     <aside id="controls" class="controls hidden" aria-label="Reading controls">
+      <div class="sheet-drag-handle" aria-hidden="true"></div>
+
+      <!-- 1. Page readout -->
       <div class="control-top">
         <div class="page-readout">
-          <span id="page-label">Page</span>
+          <span id="page-label" class="sr-only">Page</span>
           <strong id="page-current">—</strong>
-          <span class="slash">/</span>
+          <span class="slash">of</span>
           <span id="page-total">—</span>
         </div>
         <button id="close-controls" class="icon-button" aria-label="Hide controls" type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
 
+      <!-- 2. Page slider -->
       <input id="page-slider" class="range page-range" type="range" min="1" max="1" value="1" aria-label="Go to page" />
 
-      <div class="control-row zoom-row">
-        <label for="zoom">Zoom</label>
-        <div class="zoom-controls-wrap">
+      <!-- 3. Zoom: stepper + Fit width / Fit page chips -->
+      <div class="control-section zoom-section">
+        <div class="control-row-header">
+          <label for="zoom" class="control-label">Zoom</label>
+        </div>
+        <div class="zoom-stepper-row">
           <button id="zoom-out-btn" class="zoom-step-btn" type="button" aria-label="Zoom out" title="Zoom out (Ctrl -)">−</button>
           <button id="zoom-value" class="zoom-value-btn" type="button" aria-label="Reset zoom" title="Click to reset to 100% (Ctrl 0)">100%</button>
           <button id="zoom-in-btn" class="zoom-step-btn" type="button" aria-label="Zoom in" title="Zoom in (Ctrl +)">+</button>
         </div>
+        <div class="zoom-chips-row">
+          <button id="zoom-fit-width" class="chip-btn" type="button">Fit width</button>
+          <button id="zoom-fit-page" class="chip-btn" type="button">Fit page</button>
+        </div>
+        <input id="zoom" class="range sr-only" type="range" min="60" max="200" value="100" aria-label="Document zoom" />
       </div>
-      <input id="zoom" class="range" type="range" min="60" max="200" value="100" aria-label="Document zoom" />
-      <span class="zoom-hint">Slider, buttons, pinch, or trackpad</span>
 
-      <div class="control-row brightness-row">
-        <label for="brightness">Paper brightness</label>
-        <span id="brightness-value">100%</span>
+      <!-- 4. Paper brightness -->
+      <div class="control-section brightness-section">
+        <div class="control-row-header">
+          <label for="brightness" class="control-label">Paper brightness</label>
+          <span id="brightness-value" class="control-value">100%</span>
+        </div>
+        <input id="brightness" class="range" type="range" min="55" max="100" value="100" aria-label="Paper brightness" />
       </div>
-      <input id="brightness" class="range" type="range" min="55" max="100" value="100" aria-label="Paper brightness" />
 
-      <div class="control-row mode-row">
-        <span>Page layout</span>
+      <!-- 5. Layout segmented -->
+      <div class="control-section">
+        <div class="control-row-header">
+          <span class="control-label">Page layout</span>
+        </div>
         <div class="segmented">
           <button class="mode-button" data-mode="single" type="button">One page</button>
           <button class="mode-button selected" data-mode="continuous" type="button">Continuous</button>
         </div>
       </div>
 
-      <div class="control-row highlight-row">
-        <span>Highlighter</span>
-        <div class="segmented">
-          <button id="highlight-toggle" class="mode-button" type="button" title="Freehand box draw">Draw</button>
-          <button id="highlight-clear" class="mode-button hidden" type="button" title="Clear highlights from this document">Clear</button>
-          <button id="download-pdf" class="mode-button hidden" type="button" title="Export highlighted PDF">Export</button>
+      <!-- 6. Theme segmented (Light / Dark / System) -->
+      <div class="control-section">
+        <div class="control-row-header">
+          <span class="control-label">Theme</span>
+        </div>
+        <div class="segmented theme-segmented">
+          <button id="theme-btn-light" class="theme-seg-btn" type="button">Light</button>
+          <button id="theme-btn-dark" class="theme-seg-btn" type="button">Dark</button>
+          <button id="theme-btn-system" class="theme-seg-btn selected" type="button">System</button>
+        </div>
+        <!-- Retain legacy single toggle for backward compatibility -->
+        <button id="reader-theme-toggle" class="sr-only" type="button"><span id="reader-theme-icon"></span><span id="reader-theme-text"></span></button>
+      </div>
+
+      <!-- 7. Rows: Contents, Bookmarks, Highlights -->
+      <div class="control-rows-group">
+        <details id="outline" class="panel-row-details hidden">
+          <summary class="panel-row-summary">
+            <span>Table of contents</span>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </summary>
+          <div id="outline-list" class="outline-list"></div>
+        </details>
+
+        <details id="bookmarks-panel-row" class="panel-row-details">
+          <summary class="panel-row-summary">
+            <span>Bookmarks</span>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </summary>
+          <div id="bookmark-list" class="bookmark-list"></div>
+        </details>
+
+        <details id="highlights-panel-row" class="panel-row-details">
+          <summary class="panel-row-summary">
+            <span>Highlights</span>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </summary>
+          <div class="highlights-panel-content">
+            <button id="highlight-clear" class="text-button" type="button" style="margin-top:6px;">Clear all highlights</button>
+          </div>
+        </details>
+      </div>
+
+      <!-- 8. Bottom block -->
+      <div class="control-bottom-block">
+        <button id="download-pdf" class="btn-primary btn-block" type="button">Export PDF with highlights</button>
+
+        <div class="control-trio-row">
+          <button id="fullscreen" class="btn-secondary trio-btn" type="button">Full screen</button>
+          <button id="open-another" class="btn-secondary trio-btn" type="button">Open another</button>
+          <button id="back-to-home" class="btn-secondary trio-btn" type="button">Home</button>
+        </div>
+
+        <!-- Preserved hook buttons for legacy handlers -->
+        <div class="sr-only" aria-hidden="true">
+          <button id="controls-history-toggle" type="button">History</button>
+          <button id="controls-feedback-btn" type="button">Feedback</button>
+        </div>
+
+        <div class="controls-privacy-block">
+          <p class="privacy-note">Read in this browser. Never uploaded.</p>
+          <button id="clear-data" class="clear-data-btn" type="button">Clear saved reading data</button>
         </div>
       </div>
-
-      <div class="utility-row">
-        <button id="search-toggle" class="text-button" type="button">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          Find in document
-        </button>
-        <button id="bookmark-add" class="text-button" type="button">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
-          </svg>
-          Bookmark page
-        </button>
-      </div>
-
-      <div id="search-box" class="search-box hidden">
-        <div class="search-input-wrap">
-          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input id="search-input" type="search" placeholder="Search this document…" aria-label="Search this document" />
-        </div>
-        <div id="search-results" class="search-results" aria-live="polite"></div>
-      </div>
-
-      <div id="bookmark-list" class="bookmark-list"></div>
-
-      <details id="outline" class="outline hidden">
-        <summary>Table of contents</summary>
-        <div id="outline-list" class="outline-list"></div>
-      </details>
-
-      <div class="control-actions">
-        <button id="fullscreen" class="action-button" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-          </svg>
-          <span>Full screen</span>
-        </button>
-        <button id="reader-theme-toggle" class="action-button" type="button" aria-label="Toggle theme">
-          <span id="reader-theme-icon" class="theme-icon-wrap" aria-hidden="true"></span>
-          <span id="reader-theme-text">Theme</span>
-        </button>
-        <button id="controls-history-toggle" class="action-button" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-            <path d="M12 7v5l4 2"/>
-          </svg>
-          <span>History</span>
-        </button>
-        <a href="notebook.html" class="action-button" title="Study Notebooks" style="text-decoration:none;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-          <span>Notebooks</span>
-        </a>
-        <button id="controls-feedback-btn" class="action-button" type="button" title="Share feedback &amp; suggestions">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span>Feedback</span>
-        </button>
-        <button id="controls-install-btn" class="action-button pwa-install-btn" type="button" title="Install Mai-Reads as app">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect width="20" height="14" x="2" y="3" rx="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-            <path d="m9 10 3 3 3-3"/>
-            <line x1="12" y1="6" x2="12" y2="13"/>
-          </svg>
-          <span>Install</span>
-        </button>
-        <button id="open-another" class="action-button" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          <span>Open another</span>
-        </button>
-        <button id="back-to-home" class="action-button action-button-wide" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-          <span>Home</span>
-        </button>
-      </div>
-
-      <button id="clear-data" class="clear-data" type="button">Clear saved reading data</button>
-      <p class="privacy-note">Your document is read in this browser and is never uploaded.</p>
     </aside>
-
-    <div id="doc-title" class="doc-title">
-      <svg class="doc-title-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      <span id="doc-title-text" class="doc-title-text"></span>
-    </div>
   </section>
 
   <!-- Feedback & Suggestions Modal Dialog -->
@@ -802,7 +770,7 @@
     </div>
   </div>
 
-  <!-- PWA Install Guide Modal (1-click trigger or browser guide) -->
+  <!-- PWA Install Guide Modal -->
   <div id="pwa-install-modal-backdrop" class="feedback-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pwa-install-modal-title">
     <div class="feedback-modal pwa-install-modal">
       <div class="feedback-modal-header">

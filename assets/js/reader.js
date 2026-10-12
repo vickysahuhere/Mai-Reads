@@ -228,8 +228,17 @@
       readerThemeBtn.title = `Switch to ${dark ? 'light' : 'dark'} mode`;
     }
 
+    ['light', 'dark', 'system'].forEach(val => {
+      const btn = $(`theme-btn-${val}`);
+      if (btn) {
+        const isSelected = themePreference === val;
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      }
+    });
+
     const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) metaTheme.content = dark ? '#1c1d1a' : '#f6f3ec';
+    if (metaTheme) metaTheme.content = dark ? '#151613' : '#F6F5F1';
   }
 
   applyTheme(themePreference);
@@ -244,6 +253,22 @@
 
   $('theme-toggle')?.addEventListener('click', toggleThemeAction);
   $('reader-theme-toggle')?.addEventListener('click', toggleThemeAction);
+
+  $('theme-btn-light')?.addEventListener('click', () => {
+    applyTheme('light');
+    saveStore({ theme: 'light' });
+    showToast('Light theme enabled');
+  });
+  $('theme-btn-dark')?.addEventListener('click', () => {
+    applyTheme('dark');
+    saveStore({ theme: 'dark' });
+    showToast('Dark theme enabled');
+  });
+  $('theme-btn-system')?.addEventListener('click', () => {
+    applyTheme('system');
+    saveStore({ theme: 'system' });
+    showToast('System theme enabled');
+  });
 
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
     if (themePreference === 'system') applyTheme('system');
@@ -266,7 +291,7 @@
     if (label) label.textContent = `${value}%`;
   }
 
-  // ── Resume Last Read Button on Welcome View ───────────────────────────────
+  // ── Resume Last Read Button on Welcome View (Section 3 Spec) ─────────────
   async function updateResumeButton() {
     const container = $('resume-container');
     if (!container) return;
@@ -282,30 +307,90 @@
     const page = pos?.page || 1;
     const total = pos?.total || latest.totalPages || 1;
 
-    $('resume-title').textContent = latest.name;
+    if ($('resume-title')) $('resume-title').textContent = latest.name;
     let meta = `Page ${page} of ${total}`;
     if (total <= 1) meta = `Page ${page}`;
-    $('resume-meta').textContent = `${meta} · Resumes instantly`;
+    if ($('resume-meta')) $('resume-meta').textContent = `${meta} · Resumes instantly`;
     container.classList.remove('hidden');
 
-    $('resume-btn').onclick = async () => {
-      showToast(`Opening "${latest.name}"…`, 1500);
-      const cached = await getDocFromDB(latest.key);
-      if (cached && cached.file) {
-        let fileObj = cached.file;
-        if (!(fileObj instanceof File)) {
-          fileObj = new File([cached.file], cached.name, {
-            type: cached.type,
-            lastModified: cached.savedAt
-          });
+    const itemsContainer = $('continue-reading-items');
+    if (itemsContainer) {
+      itemsContainer.replaceChildren();
+      const topItems = history.slice(0, 3);
+      topItems.forEach(item => {
+        const itemPos = positions[item.key];
+        const itemPage = itemPos?.page || 1;
+        const itemTotal = itemPos?.total || item.totalPages || 1;
+        const pct = Math.min(100, Math.max(0, Math.round((itemPage / Math.max(1, itemTotal)) * 100)));
+        const isDocx = (item.name && item.name.endsWith('.docx')) || item.type === 'docx';
+        const badgeText = isDocx ? 'DOC' : 'PDF';
+
+        let itemMetaText = `Page ${itemPage} of ${itemTotal}`;
+        if (itemTotal <= 1) itemMetaText = `Page ${itemPage}`;
+        if (itemPage >= itemTotal && itemTotal > 1) itemMetaText = 'Finished';
+
+        const row = document.createElement('button');
+        row.className = 'continue-reading-row';
+        row.type = 'button';
+        row.innerHTML = `
+          <span class="file-badge">${badgeText}</span>
+          <div class="continue-row-info">
+            <span class="continue-row-name">${item.name}</span>
+            <div class="continue-row-meta">
+              <span>${itemMetaText}</span>
+              <div class="progress-hairline" style="--progress: ${pct}%">
+                <div class="progress-hairline-fill"></div>
+              </div>
+            </div>
+          </div>
+          <span class="continue-row-time">${relativeDate(item.opened || Date.now())}</span>
+        `;
+        row.addEventListener('click', async () => {
+          showToast(`Opening "${item.name}"…`, 1500);
+          const cached = await getDocFromDB(item.key);
+          if (cached && cached.file) {
+            let fileObj = cached.file;
+            if (!(fileObj instanceof File)) {
+              fileObj = new File([cached.file], cached.name, {
+                type: cached.type,
+                lastModified: cached.savedAt
+              });
+            }
+            await openFile(fileObj, item.key);
+          } else {
+            showToast(`Please select "${item.name}" to resume`, 3500);
+            picker.click();
+          }
+        });
+        itemsContainer.append(row);
+      });
+    }
+
+    const resumeBtn = $('resume-btn');
+    if (resumeBtn) {
+      resumeBtn.onclick = async () => {
+        showToast(`Opening "${latest.name}"…`, 1500);
+        const cached = await getDocFromDB(latest.key);
+        if (cached && cached.file) {
+          let fileObj = cached.file;
+          if (!(fileObj instanceof File)) {
+            fileObj = new File([cached.file], cached.name, {
+              type: cached.type,
+              lastModified: cached.savedAt
+            });
+          }
+          await openFile(fileObj, latest.key);
+        } else {
+          showToast(`Please select "${latest.name}" to resume`, 3500);
+          picker.click();
         }
-        await openFile(fileObj, latest.key);
-      } else {
-        showToast(`Please select "${latest.name}" to resume`, 3500);
-        picker.click();
-      }
-    };
+      };
+    }
   }
+
+  $('view-all-history-btn')?.addEventListener('click', openHistoryPanel);
+  $('mobile-nav-history')?.addEventListener('click', openHistoryPanel);
+  $('mobile-nav-open')?.addEventListener('click', () => picker.click());
 
   // ── History Engine ────────────────────────────────────────────────────────
   function openHistoryPanel() {
@@ -593,17 +678,59 @@
     e.target.value = '';
   });
 
+  function updateControlsState() {
+    const isOpen = !controls.classList.contains('hidden');
+    toggle.classList.toggle('active', isOpen);
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+
   toggle.addEventListener('click', e => {
     e.stopPropagation();
     controls.classList.toggle('hidden');
+    updateControlsState();
   });
 
-  $('close-controls')?.addEventListener('click', () => controls.classList.add('hidden'));
+  $('close-controls')?.addEventListener('click', () => {
+    controls.classList.add('hidden');
+    updateControlsState();
+  });
 
   // Clicking on reading surface closes reading controls if open
   surface.addEventListener('click', e => {
     if (!controls.classList.contains('hidden') && !e.target.closest('#controls') && !e.target.closest('#control-toggle')) {
       controls.classList.add('hidden');
+      updateControlsState();
+    }
+  });
+
+  // Dock auto-hides while reading surface is scrolling per Section 4
+  const readerDock = $('reader-dock');
+  let dockScrollTimer = null;
+  surface.addEventListener('scroll', () => {
+    if (readerDock) {
+      readerDock.classList.add('dock-hidden');
+      clearTimeout(dockScrollTimer);
+      dockScrollTimer = setTimeout(() => {
+        readerDock.classList.remove('dock-hidden');
+      }, 400);
+    }
+  }, { passive: true });
+
+  window.addEventListener('mousemove', () => {
+    if (readerDock?.classList.contains('dock-hidden')) {
+      readerDock.classList.remove('dock-hidden');
+    }
+  }, { passive: true });
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (!controls.classList.contains('hidden')) {
+        controls.classList.add('hidden');
+        updateControlsState();
+      }
+      if (readerDock?.classList.contains('dock-hidden')) {
+        readerDock.classList.remove('dock-hidden');
+      }
     }
   });
 
@@ -764,6 +891,51 @@
     scheduleZoomRedraw(40);
     showToast('Zoom reset to 100%');
   });
+
+  function zoomFitWidth() {
+    if (!pdf || !pageNodes.length) {
+      setLiveZoom(100);
+      return;
+    }
+    const currIdx = Math.max(0, Math.min(pageNodes.length - 1, currentPage - 1));
+    const base = pdfPageBases[currIdx] || pdfPageBases[0];
+    if (!base) return;
+    const isMobile = window.innerWidth <= 600;
+    const hPadding = isMobile ? 24 : 64;
+    const availW = surface.clientWidth - hPadding;
+    const baseScale = getPdfPageScale(base, 100);
+    const baseW = base.width * baseScale;
+    if (baseW > 0) {
+      const targetZoom = Math.max(60, Math.min(200, Math.round((availW / baseW) * 100)));
+      setLiveZoom(targetZoom);
+      scheduleZoomRedraw(40);
+      showToast(`Fit width (${targetZoom}%)`);
+    }
+  }
+
+  function zoomFitPage() {
+    if (!pdf || !pageNodes.length) {
+      setLiveZoom(100);
+      return;
+    }
+    const currIdx = Math.max(0, Math.min(pageNodes.length - 1, currentPage - 1));
+    const base = pdfPageBases[currIdx] || pdfPageBases[0];
+    if (!base) return;
+    const isMobile = window.innerWidth <= 600;
+    const vPadding = isMobile ? 32 : 64;
+    const availH = surface.clientHeight - vPadding;
+    const baseScale = getPdfPageScale(base, 100);
+    const baseH = base.height * baseScale;
+    if (baseH > 0) {
+      const targetZoom = Math.max(60, Math.min(200, Math.round((availH / baseH) * 100)));
+      setLiveZoom(targetZoom);
+      scheduleZoomRedraw(40);
+      showToast(`Fit page (${targetZoom}%)`);
+    }
+  }
+
+  $('zoom-fit-width')?.addEventListener('click', zoomFitWidth);
+  $('zoom-fit-page')?.addEventListener('click', zoomFitPage);
 
   // Trackpad pinch (Ctrl + Wheel) with smooth exponential scaling & anchor lock
   surface.addEventListener('wheel', e => {
