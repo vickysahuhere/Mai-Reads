@@ -29,17 +29,17 @@
 }
 
 :root[data-resolved-theme="dark"] {
-  --bg: #151613;
-  --surface: #1F201C;
-  --surface-2: #292A25;
-  --paper: #22231E;
-  --paper-ink: #DCD8CB;
-  --ink: #E6E2D6;
-  --ink-2: #C2BDB2;
-  --muted: #A8A498;
-  --line: #34352F;
-  --line-strong: #44463E;
-  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --bg: #111111;
+  --surface: #181818;
+  --surface-2: #242424;
+  --paper: #161616;
+  --paper-ink: #ECECEC;
+  --ink: #F5F5F7;
+  --ink-2: #A1A1A6;
+  --muted: #737378;
+  --line: #262626;
+  --line-strong: #383838;
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
 body.notebook-page {

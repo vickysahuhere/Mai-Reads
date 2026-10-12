@@ -272,7 +272,7 @@ body.docs-page {
 }
 
 [data-resolved-theme="dark"] .docs-callout {
-  border-color: rgba(196, 164, 124, 0.3);
+  border-color: var(--line-strong);
 }
 
 .docs-callout-icon {

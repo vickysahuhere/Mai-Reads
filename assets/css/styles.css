@@ -26,6 +26,8 @@
   --radius-pill: 999px;
   --shadow-paper: 0 1px 2px rgba(21, 20, 15, 0.06), 0 12px 40px rgba(21, 20, 15, 0.08);
   --shadow-float: 0 12px 32px rgba(21, 20, 15, 0.12);
+  --shadow-subtle: 0 1px 3px rgba(21, 20, 15, 0.08);
+  --shadow-thumb: 0 1px 4px rgba(21, 20, 15, 0.16);
   --font-ui: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Newsreader', Georgia, serif;
   --sat: env(safe-area-inset-top, 0px);
@@ -47,21 +49,23 @@
 }
 
 :root[data-resolved-theme="dark"] {
-  --bg: #151613;
-  --surface: #1F201C;
-  --surface-2: #292A25;
-  --reader-bg: #121310;
-  --paper: #22231E;
-  --paper-ink: #DCD8CB;
-  --ink: #E6E2D6;
-  --ink-2: #C2BDB2;
-  --muted: #A8A498;
-  --line: #34352F;
-  --line-strong: #44463E;
-  --hl-dark-bg: rgba(243, 213, 107, 0.28);
-  --hl-dark-ink: #F4EBCB;
-  --shadow-paper: none;
-  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --bg: #111111;          /* neutral obsidian background */
+  --surface: #181818;     /* clean neutral dark surface */
+  --surface-2: #242424;   /* neutral dark segmented track, chips, skeletons */
+  --reader-bg: #0C0C0C;   /* deep pure charcoal reading surround */
+  --paper: #161616;       /* neutral dark paper */
+  --paper-ink: #ECECEC;   /* crisp neutral paper text - no yellow tint */
+  --ink: #F5F5F7;         /* crisp clean neutral ink */
+  --ink-2: #A1A1A6;       /* crisp neutral secondary ink */
+  --muted: #737378;       /* crisp neutral muted text */
+  --line: #262626;        /* crisp neutral hairline border - no olive/yellow tint */
+  --line-strong: #383838; /* crisp neutral strong border */
+  --hl-dark-bg: rgba(243, 213, 107, 0.22);
+  --hl-dark-ink: #FFF8E1;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-thumb: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --shadow-paper: 0 1px 3px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
 /* ── 2. Reset & Base Typography ───────────────────────────────────────────── */
@@ -321,14 +325,15 @@ svg {
   background-color: var(--surface);
   color: var(--ink);
   font-weight: 500;
-  box-shadow: 0 1px 3px rgba(21, 20, 15, 0.08);
+  box-shadow: var(--shadow-subtle);
 }
 
 :root[data-resolved-theme="dark"] .segmented button.selected,
 :root[data-resolved-theme="dark"] .mode-button.selected,
 :root[data-resolved-theme="dark"] .theme-seg-btn.selected {
-  background-color: #3A3B34;
+  background-color: #2D2D30;
   color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* Range Input */
@@ -351,7 +356,7 @@ input[type="range"].range::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--ink);
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(21, 20, 15, 0.16);
+  box-shadow: var(--shadow-thumb);
   border: none;
 }
 
@@ -362,7 +367,7 @@ input[type="range"].range::-moz-range-thumb {
   background: var(--ink);
   cursor: pointer;
   border: none;
-  box-shadow: 0 1px 4px rgba(21, 20, 15, 0.16);
+  box-shadow: var(--shadow-thumb);
 }
 
 /* File Badge */
@@ -435,8 +440,10 @@ input[type="range"].range::-moz-range-thumb {
 }
 
 :root[data-resolved-theme="dark"] .toast {
-  background-color: #E6E2D6;
-  color: #151613;
+  background-color: #222225;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 .toast.visible {
@@ -769,7 +776,7 @@ input[type="range"].range::-moz-range-thumb {
   font-weight: 500;
   color: var(--ink);
   z-index: 70;
-  box-shadow: 0 1px 3px rgba(21, 20, 15, 0.06);
+  box-shadow: var(--shadow-subtle);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   max-width: 90vw;
@@ -777,7 +784,8 @@ input[type="range"].range::-moz-range-thumb {
 
 :root[data-resolved-theme="dark"] .doc-title,
 :root[data-resolved-theme="dark"] #doc-title {
-  background: rgba(21, 22, 19, 0.92);
+  background: rgba(24, 24, 26, 0.94);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 .doc-title-text {

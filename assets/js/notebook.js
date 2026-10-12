@@ -169,7 +169,7 @@
     const iconEl = $('docs-theme-icon');
     if (iconEl) iconEl.innerHTML = dark ? SUN_SVG : MOON_SVG;
     const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) metaTheme.content = dark ? '#1c1d1a' : '#f6f3ec';
+    if (metaTheme) metaTheme.content = dark ? '#111111' : '#F6F5F1';
   }
 
   const currentTheme = readStore().theme || 'system';

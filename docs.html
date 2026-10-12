@@ -63,7 +63,7 @@
         var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.resolvedTheme = dark ? 'dark' : 'light';
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.content = dark ? '#1c1d1a' : '#f6f3ec';
+        if (meta) meta.content = dark ? '#111111' : '#F6F5F1';
       } catch(e) {}
     })();
   </script>

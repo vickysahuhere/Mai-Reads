@@ -238,7 +238,7 @@
     });
 
     const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) metaTheme.content = dark ? '#151613' : '#F6F5F1';
+    if (metaTheme) metaTheme.content = dark ? '#111111' : '#F6F5F1';
   }
 
   applyTheme(themePreference);
