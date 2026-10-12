@@ -273,6 +273,22 @@
     if (shareBtn) {
       shareBtn.onclick = () => openShareModal(nb);
     }
+
+    const editBtn = $('nb-detail-edit-btn');
+    if (editBtn) {
+      editBtn.onclick = () => openEditModal(nb);
+    }
+
+    const deleteBtn = $('nb-detail-delete-btn');
+    if (deleteBtn) {
+      deleteBtn.onclick = async () => {
+        if (confirm(`Delete notebook "${nb.title}"? Your documents will remain safe in storage.`)) {
+          await deleteNotebookFromDB(nb.id);
+          showToast(`Deleted "${nb.title}"`);
+          loadAndRenderNotebooks();
+        }
+      };
+    }
   }
 
   // ── UI Rendering ──────────────────────────────────────────────────────────
@@ -330,9 +346,10 @@
             <span class="nb-color-dot dot-${accentColor}"></span>
             <span class="nb-card-dot-name">${accentColor}</span>
           </div>
-          <button class="icon-button nb-card-menu-btn" type="button" aria-label="Notebook options" title="Notebook options" style="width:32px;height:32px;">
+          <button class="icon-button nb-card-menu-btn" type="button" aria-label="Edit notebook" title="Edit notebook" style="width:32px;height:32px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
           </button>
         </div>
@@ -350,10 +367,15 @@
 
       card.addEventListener('click', e => {
         if (e.target.closest('.nb-card-menu-btn')) return;
+        const wasSelected = selectedNotebookId === nb.id;
         selectedNotebookId = nb.id;
         document.querySelectorAll('.nb-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         updateDetailPane(nb);
+        if (window.innerWidth <= 900 && !wasSelected) {
+          const detailCol = $('nb-detail-column');
+          detailCol?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
 
       card.addEventListener('keydown', e => {
@@ -363,25 +385,15 @@
         }
       });
 
-      // Menu button interactions (Edit / Delete / Share / Notes)
+      // Menu button interactions (opens Edit dialog directly)
       const menuBtn = card.querySelector('.nb-card-menu-btn');
       menuBtn?.addEventListener('click', e => {
         e.stopPropagation();
-        const action = prompt(`Notebook "${nb.title}":\nType "share" to export archive\nType "edit" to rename/add files\nType "delete" to remove\nType "notes" to view scratchpad`);
-        if (action === 'delete') {
-          if (confirm(`Are you sure you want to delete "${nb.title}"? Your documents will remain safe in storage.`)) {
-            deleteNotebookFromDB(nb.id).then(() => {
-              showToast(`Deleted "${nb.title}"`);
-              loadAndRenderNotebooks();
-            });
-          }
-        } else if (action === 'share') {
-          openShareModal(nb);
-        } else if (action === 'edit') {
-          openEditModal(nb);
-        } else if (action === 'notes') {
-          alert(`Scratchpad notes for ${nb.title}:\n\n${nb.notes || '(No notes yet)'}`);
-        }
+        selectedNotebookId = nb.id;
+        document.querySelectorAll('.nb-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        updateDetailPane(nb);
+        openEditModal(nb);
       });
 
       grid.append(card);

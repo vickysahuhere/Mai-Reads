@@ -795,6 +795,33 @@ input[type="range"].range::-moz-range-thumb {
   white-space: nowrap;
 }
 
+.doc-title-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: -8px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.doc-title-back-btn:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+  transform: translateX(-1px);
+}
+
+.doc-title-back-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
 /* Paper Surface */
 .paper {
   background-color: var(--paper);
@@ -1346,6 +1373,7 @@ input[type="range"].range::-moz-range-thumb {
   justify-content: center;
   flex-shrink: 0;
   cursor: pointer;
+  text-decoration: none;
 }
 
 /* Binder & Scratchpad Sidebar Panel */

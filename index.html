@@ -402,12 +402,22 @@
   <section id="reader" class="reader hidden" aria-label="Document reader">
     <!-- Top Document Title Chip -->
     <div id="doc-title" class="doc-title">
+      <button id="doc-title-back" class="doc-title-back-btn" type="button" aria-label="Return home" title="Return home">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
       <span id="doc-title-text" class="doc-title-text"></span>
       <span id="doc-page-chip" class="doc-page-chip"></span>
     </div>
 
     <!-- Floating Top Document Tab Strip for Notebooks -->
     <div id="notebook-tabs-bar" class="notebook-tabs-bar hidden" role="tablist" aria-label="Notebook document tabs">
+      <a id="notebook-exit-link" href="notebook" class="notebook-tab-action-btn" title="Back to Notebooks library" aria-label="Back to Notebooks library">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
       <div id="notebook-tab-items" class="notebook-tab-items"></div>
       <button id="notebook-add-file-btn" class="notebook-tab-action-btn" type="button" title="Add document to notebook" aria-label="Add document to notebook">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

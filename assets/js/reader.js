@@ -672,6 +672,15 @@
     updateResumeButton();
   });
 
+  $('doc-title-back')?.addEventListener('click', async e => {
+    e.stopPropagation();
+    if (currentNotebook) {
+      window.location.href = 'notebook';
+    } else {
+      $('back-to-home')?.click();
+    }
+  });
+
   picker.addEventListener('change', async e => {
     const file = e.target.files?.[0];
     if (file) await openFile(file);
@@ -1085,6 +1094,10 @@
     if (!inInput && (e.key === 'h' || e.key === 'H')) {
       if (historyPanel.classList.contains('open')) closeHistoryPanel();
       else openHistoryPanel();
+    }
+
+    if (!inInput && (e.key === 'n' || e.key === 'N') && !welcome.classList.contains('hidden')) {
+      window.location.href = 'notebook';
     }
 
     if (!inInput && !reader.classList.contains('hidden')) {
