@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "ping-indexnow": "node scripts/ping-indexnow.mjs",
-    "index": "node scripts/ping-indexnow.mjs"
+    "index": "node scripts/ping-indexnow.mjs",
+    "serve": "node scripts/serve.mjs"
   },
   "author": "Maithil Studios",
   "license": "MIT"

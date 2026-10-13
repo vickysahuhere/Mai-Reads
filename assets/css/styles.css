@@ -1036,8 +1036,8 @@ input[type="range"].range::-moz-range-thumb {
 .paper {
   background-color: var(--paper);
   color: var(--paper-ink);
-  width: 100%;
-  max-width: 720px;
+  width: fit-content;
+  max-width: 100%;
   box-shadow: var(--shadow-paper);
   border-radius: 4px;
   margin: 0 auto;
@@ -1056,11 +1056,15 @@ input[type="range"].range::-moz-range-thumb {
 .page-node,
 .document-page {
   position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 24px;
+  display: block;
+}
+
+.document-page.docx-page {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 24px;
+  max-width: 760px;
 }
 
 .page-node canvas,
@@ -1073,11 +1077,9 @@ input[type="range"].range::-moz-range-thumb {
 /* PDF.js Text Layer */
 .textLayer {
   position: absolute;
-  text-align: initial;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
   overflow: hidden;
   opacity: 1;
   line-height: 1;
@@ -1206,8 +1208,72 @@ input[type="range"].range::-moz-range-thumb {
   align-items: center;
   gap: 2px;
   box-shadow: var(--shadow-float);
-  transform: translateX(-50%);
+  transform: translate(-50%, -100%);
   transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+.selection-tooltip.tooltip-below {
+  transform: translate(-50%, 0);
+}
+
+/* Freehand Drawing Mode */
+#reading-surface.highlighting-mode {
+  cursor: crosshair !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+#reading-surface.highlighting-mode .document-page,
+#reading-surface.highlighting-mode .paper {
+  cursor: crosshair !important;
+}
+
+#reading-surface.highlighting-mode .textLayer {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Notebook Mode: Hide standalone floating doc-title chip */
+.reader.in-notebook-mode #doc-title {
+  display: none !important;
+}
+
+/* Empty Notebook State in Reader */
+.notebook-reader-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 56px 28px;
+  max-width: 480px;
+  margin: 40px auto;
+  background: var(--surface);
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-subtle);
+}
+
+.notebook-reader-empty-icon {
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.notebook-reader-empty-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.notebook-reader-empty-desc {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.55;
+  margin-bottom: 16px;
 }
 
 .tooltip-btn {
@@ -1807,7 +1873,7 @@ input[type="range"].range::-moz-range-thumb {
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 75;
+  z-index: 210;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -1929,7 +1995,7 @@ input[type="range"].range::-moz-range-thumb {
 /* ── Binder & Scratchpad Sidebar Drawer Panel ───────────────────────────── */
 .notebook-binder-panel {
   position: fixed;
-  top: 0;
+  top: calc(var(--sat) + 54px);
   left: 0;
   bottom: 0;
   width: 360px;
@@ -2765,12 +2831,12 @@ input[type="range"].range::-moz-range-thumb {
 
   .notebook-binder-panel {
     position: fixed;
-    top: 0;
+    top: calc(var(--sat) + 54px);
     right: 0;
     bottom: 0;
     width: min(380px, 80vw);
     box-shadow: var(--shadow-float);
-    z-index: 96;
+    z-index: 200;
   }
 }
 

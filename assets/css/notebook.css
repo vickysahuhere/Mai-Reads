@@ -342,6 +342,21 @@ body.notebook-page {
   font-size: 13.5px;
 }
 
+.nb-doc-row-interactive {
+  text-decoration: none;
+  color: var(--ink);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nb-doc-row-interactive:hover {
+  background-color: var(--surface);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 .nb-doc-row-name {
   flex: 1;
   min-width: 0;
@@ -354,6 +369,19 @@ body.notebook-page {
 .nb-doc-row-progress {
   font-size: 12px;
   color: var(--muted);
+}
+
+.nb-doc-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: transform 160ms, color 160ms;
+}
+
+.nb-doc-row-interactive:hover .nb-doc-row-action {
+  color: var(--ink);
+  transform: translateX(2px);
 }
 
 .nb-detail-actions {

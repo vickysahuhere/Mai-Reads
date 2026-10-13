@@ -65,13 +65,34 @@
   async function getDocFromDB(key) {
     try {
       const db = await getDB();
-      return new Promise((resolve, reject) => {
+      const direct = await new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_DOCS, 'readonly');
         const store = tx.objectStore(STORE_DOCS);
         const req = store.get(key);
         req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => reject(req.error);
       });
+      if (direct && direct.file) return direct;
+
+      // Resilient fallback: search by filename and file size in case lastModified shifted
+      if (key && key.includes('|')) {
+        const [targetName, targetSize] = key.split('|');
+        const allDocs = await new Promise((resolve) => {
+          const tx = db.transaction(STORE_DOCS, 'readonly');
+          const store = tx.objectStore(STORE_DOCS);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        });
+        const matched = allDocs.find(d => {
+          if (!d || !d.file) return false;
+          const nameMatch = d.name && d.name.toLowerCase() === targetName.toLowerCase();
+          const sizeMatch = !targetSize || targetSize === '0' || Math.abs((d.size || 0) - Number(targetSize)) <= 2;
+          return nameMatch && sizeMatch;
+        });
+        if (matched) return matched;
+      }
+      return null;
     } catch (err) {
       console.warn('Could not get document from IndexedDB:', err);
       return null;
@@ -653,12 +674,17 @@
     e.preventDefault();
     dragCounter = 0;
     dropOverlay?.classList.add('hidden');
-    const file = e.dataTransfer?.files?.[0];
-    if (file) {
-      if (/\.(pdf|docx)$/i.test(file.name) || file.type.includes('pdf') || file.type.includes('wordprocessingml')) {
-        await openFile(file);
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      if (currentNotebook && !reader.classList.contains('hidden')) {
+        await addFilesToCurrentNotebook(files);
       } else {
-        showToast('Please select a PDF or DOCX document.');
+        const file = files[0];
+        if (/\.(pdf|docx)$/i.test(file.name) || file.type.includes('pdf') || file.type.includes('wordprocessingml')) {
+          await openFile(file);
+        } else {
+          showToast('Please select a PDF or DOCX document.');
+        }
       }
     }
   });
@@ -681,6 +707,10 @@
     controls.classList.add('hidden');
     reader.classList.add('hidden');
     welcome.classList.remove('hidden');
+    $('doc-title')?.classList.remove('hidden');
+    $('notebook-tabs-bar')?.classList.add('hidden');
+    reader.classList.remove('in-notebook-mode');
+    currentNotebook = null;
     updateHistoryBadges();
     updateResumeButton();
   });
@@ -1145,7 +1175,7 @@
     }
 
     if (!inInput && (e.key === 'n' || e.key === 'N') && !welcome.classList.contains('hidden')) {
-      window.location.href = 'notebook';
+      window.location.href = 'notebook.html';
     }
 
     if (!inInput && !reader.classList.contains('hidden')) {
@@ -1959,6 +1989,9 @@
     showToast('Highlight deleted');
   }
 
+  let currentSelectionRange = null;
+  let currentSelectedText = '';
+
   function hideSelectionTooltip() {
     $('selection-tooltip')?.classList.add('hidden');
   }
@@ -1990,6 +2023,9 @@
       return;
     }
 
+    currentSelectionRange = range.cloneRange();
+    currentSelectedText = selectedText;
+
     const tooltip = $('selection-tooltip');
     if (!tooltip) return;
 
@@ -2004,12 +2040,19 @@
 
   function applyHighlightToSelection() {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !selection.rangeCount) return;
+    let range = null;
+    let selectedText = '';
 
-    const selectedText = selection.toString().trim();
-    if (!selectedText) return;
+    if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
+      selectedText = selection.toString().trim();
+      range = selection.getRangeAt(0);
+    } else if (currentSelectionRange && currentSelectedText) {
+      range = currentSelectionRange;
+      selectedText = currentSelectedText;
+    }
 
-    const range = selection.getRangeAt(0);
+    if (!selectedText || !range) return;
+
     const rects = Array.from(range.getClientRects());
     if (!rects.length) return;
 
@@ -2064,7 +2107,9 @@
 
     if (addedCount > 0) {
       saveHighlights();
-      selection.removeAllRanges();
+      currentSelectionRange = null;
+      currentSelectedText = '';
+      window.getSelection()?.removeAllRanges();
       hideSelectionTooltip();
       showToast('Highlighted!');
     }
@@ -2079,6 +2124,11 @@
     }
   });
 
+  // Prevent mousedown on tooltip from shifting focus or clearing user selection
+  $('selection-tooltip')?.addEventListener('mousedown', e => {
+    e.preventDefault();
+  });
+
   surface.addEventListener('scroll', hideSelectionTooltip, { passive: true });
   zoomInput.addEventListener('input', hideSelectionTooltip, { passive: true });
   window.addEventListener('resize', hideSelectionTooltip, { passive: true });
@@ -2086,13 +2136,18 @@
 
   $('btn-copy-selection')?.addEventListener('click', () => {
     const selection = window.getSelection();
-    const text = selection ? selection.toString().trim() : '';
+    let text = (selection && !selection.isCollapsed) ? selection.toString().trim() : '';
+    if (!text) text = currentSelectedText;
     if (text) {
       navigator.clipboard.writeText(text).then(() => {
         showToast('Copied to clipboard');
+        currentSelectionRange = null;
+        currentSelectedText = '';
         hideSelectionTooltip();
       }).catch(() => {
         showToast('Text copied');
+        currentSelectionRange = null;
+        currentSelectedText = '';
         hideSelectionTooltip();
       });
     }
@@ -2319,11 +2374,51 @@
     }
 
     currentNotebook = nb;
+    const targetFile = params.get('file');
+    if (targetFile && (currentNotebook.files || []).some(f => f.key === targetFile)) {
+      currentNotebook.activeFileKey = targetFile;
+    }
     activateNotebookMode();
+  }
+
+  function renderEmptyNotebookPlaceholder() {
+    pages.replaceChildren();
+    pageNodes = [];
+    pdfTexts = [];
+    pdfPageBases = [];
+    pdf = null;
+    outlineItems = [];
+    docxMode = false;
+
+    const emptyBox = document.createElement('div');
+    emptyBox.className = 'notebook-reader-empty';
+    emptyBox.innerHTML = `
+      <div class="notebook-reader-empty-icon" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          <line x1="12" y1="8" x2="12" y2="14"/>
+          <line x1="9" y1="11" x2="15" y2="11"/>
+        </svg>
+      </div>
+      <h3 class="notebook-reader-empty-title">${currentNotebook?.title || 'Study Notebook'}</h3>
+      <p class="notebook-reader-empty-desc">This notebook has no documents yet. Add PDFs or Word files to start studying with instant tab switching and scratchpad notes.</p>
+      <button id="reader-empty-add-btn" class="btn-primary" type="button" style="min-height:44px;padding:0 22px;margin-top:8px;">Add Document</button>
+    `;
+    emptyBox.querySelector('#reader-empty-add-btn')?.addEventListener('click', () => {
+      $('notebook-file-picker')?.click();
+    });
+    pages.append(emptyBox);
   }
 
   function activateNotebookMode() {
     if (!currentNotebook) return;
+
+    // Immediately transition into reader screen
+    welcome.classList.add('hidden');
+    reader.classList.remove('hidden');
+    reader.classList.add('in-notebook-mode');
+    $('doc-title')?.classList.add('hidden');
 
     // Show top tabs bar in reader
     const tabsBar = $('notebook-tabs-bar');
@@ -2345,6 +2440,7 @@
       const activeKey = currentNotebook.activeFileKey || files[0].key;
       switchNotebookDocument(activeKey, false);
     } else {
+      renderEmptyNotebookPlaceholder();
       showToast(`Notebook "${currentNotebook.title}" has no files yet. Click Binder to add files!`, 3500);
       openBinderPanel();
     }
@@ -2524,6 +2620,7 @@
       return;
     }
 
+    let latestAddedKey = '';
     for (const file of valid) {
       const key = `${file.name.toLowerCase()}|${file.size}|${file.lastModified || 0}`;
       const isPdf = /\.pdf$/i.test(file.name) || file.type.includes('pdf');
@@ -2541,9 +2638,12 @@
           addedAt: Date.now()
         });
       }
+      latestAddedKey = key;
     }
 
-    if (!currentNotebook.activeFileKey && currentNotebook.files.length > 0) {
+    if (latestAddedKey) {
+      currentNotebook.activeFileKey = latestAddedKey;
+    } else if (!currentNotebook.activeFileKey && currentNotebook.files.length > 0) {
       currentNotebook.activeFileKey = currentNotebook.files[0].key;
     }
 

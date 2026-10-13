@@ -245,12 +245,18 @@
       if (files.length > 0) {
         docRows.innerHTML = files.map(f => {
           const ext = f.type || (f.name.endsWith('.docx') ? 'docx' : 'pdf');
+          const docUrl = `index.html?notebook=${encodeURIComponent(nb.id)}&file=${encodeURIComponent(f.key)}`;
           return `
-            <div class="nb-doc-row" title="${f.name}">
+            <a class="nb-doc-row nb-doc-row-interactive" href="${docUrl}" title="Open ${f.name} in reader">
               <span class="nb-file-badge nb-file-badge-${ext}">${ext.toUpperCase()}</span>
               <span class="nb-doc-row-name">${f.name}</span>
               <span class="nb-doc-row-progress">${formatBytes(f.size)}</span>
-            </div>
+              <span class="nb-doc-row-action" aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
           `;
         }).join('');
       } else {
@@ -263,7 +269,8 @@
     }
 
     if (openBtn) {
-      openBtn.href = `index.html?notebook=${encodeURIComponent(nb.id)}`;
+      const activeParam = nb.activeFileKey ? `&file=${encodeURIComponent(nb.activeFileKey)}` : '';
+      openBtn.href = `index.html?notebook=${encodeURIComponent(nb.id)}${activeParam}`;
     }
 
     if (addBtn) {
@@ -378,6 +385,11 @@
           const detailCol = $('nb-detail-column');
           detailCol?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+      });
+
+      card.addEventListener('dblclick', () => {
+        const activeParam = nb.activeFileKey ? `&file=${encodeURIComponent(nb.activeFileKey)}` : '';
+        window.location.href = `index.html?notebook=${encodeURIComponent(nb.id)}${activeParam}`;
       });
 
       card.addEventListener('keydown', e => {
