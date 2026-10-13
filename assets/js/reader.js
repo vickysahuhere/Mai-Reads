@@ -398,6 +398,7 @@
   // ── History Engine ────────────────────────────────────────────────────────
   function openHistoryPanel() {
     closeBinderPanel();
+    $('search-box')?.classList.add('hidden');
     if (controls && !controls.classList.contains('hidden')) {
       controls.classList.add('hidden');
       updateControlsState();
@@ -687,7 +688,7 @@
   $('doc-title-back')?.addEventListener('click', async e => {
     e.stopPropagation();
     if (currentNotebook) {
-      window.location.href = 'notebook';
+      window.location.href = 'notebook.html';
     } else {
       $('back-to-home')?.click();
     }
@@ -2417,8 +2418,15 @@
       }
       await openFile(fileObj, key);
     } else {
-      showToast(`Please select "${fileEntry.name}" to cache it in this browser`, 3500);
-      picker.click();
+      // File not in cache — guide user gracefully instead of popping a surprise picker
+      showToast(`"${fileEntry.name}" needs to be re-added. Use the Binder ＋ button to select it.`, 4500);
+      openBinderPanel();
+      // Briefly highlight the add-file button so it's obvious
+      const addBtn = $('binder-add-file-btn');
+      if (addBtn) {
+        addBtn.classList.add('pulse-hint');
+        setTimeout(() => addBtn.classList.remove('pulse-hint'), 2500);
+      }
     }
   }
 
@@ -2446,6 +2454,10 @@
       const page = pos?.page || 1;
       const total = pos?.total || 1;
       const ext = f.type || (f.name.endsWith('.docx') ? 'docx' : 'pdf');
+      const isActiveBinder = f.key === currentNotebook.activeFileKey;
+      const progressText = total > 1
+        ? `Page ${page} of ${total}${isActiveBinder ? ' · Reading' : ''}`
+        : isActiveBinder ? 'Reading now' : 'Not opened yet';
 
       item.innerHTML = `
         <span class="doc-badge doc-badge-${ext}">${ext.toUpperCase()}</span>
@@ -2552,6 +2564,7 @@
     const backdrop = $('binder-backdrop');
     if (!panel) return;
     closeHistoryPanel();
+    $('search-box')?.classList.add('hidden');
     if (controls && !controls.classList.contains('hidden')) {
       controls.classList.add('hidden');
       updateControlsState();

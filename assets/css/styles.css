@@ -2896,3 +2896,14 @@ input[type="range"].range::-moz-range-thumb {
     color: var(--ink);
   }
 }
+
+/* ── Pulse Hint: Guide attention to a button (e.g. binder re-add) ─────────── */
+@keyframes pulse-hint {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); transform: scale(1); }
+  50%  { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent); transform: scale(1.07); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); transform: scale(1); }
+}
+
+.pulse-hint {
+  animation: pulse-hint 0.65s ease-in-out 3;
+}
