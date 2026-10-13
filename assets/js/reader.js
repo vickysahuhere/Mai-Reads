@@ -397,6 +397,11 @@
 
   // ── History Engine ────────────────────────────────────────────────────────
   function openHistoryPanel() {
+    closeBinderPanel();
+    if (controls && !controls.classList.contains('hidden')) {
+      controls.classList.add('hidden');
+      updateControlsState();
+    }
     renderHistoryPanel();
     historyPanel.classList.add('open');
     historyPanel.setAttribute('aria-hidden', 'false');
@@ -702,6 +707,11 @@
 
   toggle.addEventListener('click', e => {
     e.stopPropagation();
+    const willOpen = controls.classList.contains('hidden');
+    if (willOpen) {
+      closeBinderPanel();
+      closeHistoryPanel();
+    }
     controls.classList.toggle('hidden');
     updateControlsState();
   });
@@ -1880,14 +1890,18 @@
     updateHighlightUi();
   }
 
+  const HIGHLIGHT_PEN_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/></svg>`;
+  const HIGHLIGHT_ACTIVE_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/></svg>`;
+
   function updateHighlightUi() {
     const hasHighlights = documentHighlights.length > 0;
     $('download-pdf')?.classList.toggle('hidden', !hasHighlights);
     $('highlight-clear')?.classList.toggle('hidden', !hasHighlights);
     const toggleBtn = $('highlight-toggle');
     if (toggleBtn) {
-      toggleBtn.classList.toggle('selected', isHighlighting);
-      toggleBtn.textContent = isHighlighting ? 'Done' : 'Draw';
+      toggleBtn.classList.toggle('active', isHighlighting);
+      toggleBtn.innerHTML = isHighlighting ? HIGHLIGHT_ACTIVE_SVG : HIGHLIGHT_PEN_SVG;
+      toggleBtn.title = isHighlighting ? 'Exit highlighter draw mode' : 'Highlighter draw mode';
     }
   }
 
@@ -2431,9 +2445,10 @@
       const pos = positions[f.key];
       const page = pos?.page || 1;
       const total = pos?.total || 1;
-      const progressText = total > 1 ? `Page ${page} of ${total}` : `Page ${page}`;
+      const ext = f.type || (f.name.endsWith('.docx') ? 'docx' : 'pdf');
 
       item.innerHTML = `
+        <span class="doc-badge doc-badge-${ext}">${ext.toUpperCase()}</span>
         <div class="binder-file-info">
           <div class="binder-file-name">${f.name}</div>
           <div class="binder-file-meta">${progressText}</div>
@@ -2536,6 +2551,12 @@
     const panel = $('notebook-binder-panel');
     const backdrop = $('binder-backdrop');
     if (!panel) return;
+    closeHistoryPanel();
+    if (controls && !controls.classList.contains('hidden')) {
+      controls.classList.add('hidden');
+      updateControlsState();
+    }
+    $('notebook-binder-toggle-btn')?.classList.add('active');
     renderBinderDocsList();
     panel.classList.add('open');
     panel.setAttribute('aria-hidden', 'false');
@@ -2547,6 +2568,7 @@
     const panel = $('notebook-binder-panel');
     const backdrop = $('binder-backdrop');
     if (!panel) return;
+    $('notebook-binder-toggle-btn')?.classList.remove('active');
     panel.classList.remove('open');
     panel.setAttribute('aria-hidden', 'true');
     backdrop?.classList.remove('visible');
