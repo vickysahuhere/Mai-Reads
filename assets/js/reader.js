@@ -659,6 +659,10 @@
 
   // ── Welcome & Reader Navigation ───────────────────────────────────────────
   $('welcome-open')?.addEventListener('click', () => picker.click());
+  $('welcome-dropzone')?.addEventListener('click', e => {
+    if (e.target.closest('button, a')) return;
+    picker.click();
+  });
   $('open-another')?.addEventListener('click', () => {
     controls.classList.add('hidden');
     picker.click();

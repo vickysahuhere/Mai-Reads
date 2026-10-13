@@ -23,7 +23,10 @@
   --radius-pill: 999px;
   --shadow-float: 0 12px 32px rgba(21, 20, 15, 0.12);
   --font-ui: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Newsreader', Georgia, serif;
+  --font-serif: 'Fraunces', 'Newsreader', Georgia, serif;
+  --font-display: 'Fraunces', 'Newsreader', Georgia, serif;
+  --accent: #B5792F;
+  --accent-soft: rgba(181, 121, 47, 0.12);
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
@@ -484,28 +487,171 @@ body.notebook-page {
   gap: 12px;
 }
 
-/* Empty State */
-.nb-empty-state {
-  text-align: center;
-  padding: 64px 20px;
+/* Full-Width Artistic Empty State */
+.nb-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.nb-empty.hidden {
+  display: none !important;
+}
+
+.nb-empty-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 48px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  text-align: center;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(35, 30, 20, 0.04);
 }
 
-.nb-empty-title {
-  font-family: var(--font-serif);
-  font-size: 28px;
-  font-weight: 400;
+:root[data-resolved-theme="dark"] .nb-empty-card {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.nb-empty-illustration {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background-color: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.nb-empty-headings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 600px;
+}
+
+.nb-empty-headings h2 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.5vw, 36px);
+  font-weight: 500;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
-.nb-empty-sub {
-  font-size: 15px;
+.nb-empty-headings p {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.nb-empty-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* Starter Templates Section */
+.nb-templates-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nb-templates-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
-  max-width: 360px;
-  margin-bottom: 8px;
+  text-align: left;
+}
+
+.nb-templates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.nb-template-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 2px 8px rgba(35, 30, 20, 0.03);
+  cursor: pointer;
+}
+
+.nb-template-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: 0 8px 20px rgba(35, 30, 20, 0.06);
+}
+
+:root[data-resolved-theme="dark"] .nb-template-card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-resolved-theme="dark"] .nb-template-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.nb-template-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nb-template-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.nb-template-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+
+.nb-template-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.nb-template-btn {
+  margin-top: auto;
+  align-self: flex-start;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Mobile Responsiveness */
