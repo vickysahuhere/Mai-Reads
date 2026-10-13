@@ -633,148 +633,20 @@
   $('create-notebook-btn')?.addEventListener('click', openCreateModal);
   $('empty-create-btn')?.addEventListener('click', openCreateModal);
 
-  function openTemplateModal(title, desc, color) {
-    openCreateModal();
-    if (titleInput) titleInput.value = title;
-    if (descInput) descInput.value = desc;
-    selectedColor = color;
-    updateColorSelection();
-    titleInput?.focus();
-  }
-
-  function createMinimalPdfBlob(title, lines) {
-    const streamContent = [
-      'BT',
-      '/F1 18 Tf',
-      '50 720 Td',
-      `(${title.replace(/[()\\]/g, '')}) Tj`,
-      '/F1 12 Tf'
-    ];
-    let y = -28;
-    for (const line of lines) {
-      streamContent.push(`0 ${y} Td`);
-      streamContent.push(`(${line.replace(/[()\\]/g, '')}) Tj`);
-      y = -18;
-    }
-    streamContent.push('ET');
-    const streamStr = streamContent.join('\n');
-    const len = streamStr.length;
-
-    const parts = [
-      '%PDF-1.4\n',
-      '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
-      '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
-      '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n',
-      `4 0 obj\n<< /Length ${len} >>\nstream\n${streamStr}\nendstream\nendobj\n`,
-      '5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n',
-      'xref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000242 00000 n \n0000000340 00000 n \ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n417\n%%EOF'
-    ];
-    return new Blob(parts, { type: 'application/pdf' });
-  }
-
-  async function createSampleNotebook() {
-    showToast('Preparing sample Neurobiology binder…', 1500);
-
-    const doc1Blob = createMinimalPdfBlob('Chapter 4: Synaptic Transmission', [
-      'Neurobiology 301 - Core Textbook Reading',
-      ' ',
-      '1. Synaptic vesicles dock at active zones via the SNARE complex.',
-      '2. Depolarization opens voltage-gated Ca2+ channels (P/Q and N type).',
-      '3. Localized Ca2+ microdomains trigger rapid vesicle exocytosis.',
-      '4. Neurotransmitters diffuse across the 20nm synaptic cleft.',
-      '5. Rapid clearance occurs via presynaptic reuptake and enzymatic breakdown.'
-    ]);
-
-    const doc2Blob = createMinimalPdfBlob('Lecture 7: Action Potentials & Ion Channels', [
-      'Department of Neurobiology - Fall Lecture Slides',
-      ' ',
-      'Slide 1: Resting membrane potential is determined primarily by K+ leak channels.',
-      'Slide 2: Voltage-gated sodium channels activate at threshold (~ -55mV).',
-      'Slide 3: Fast channel inactivation establishes the absolute refractory period.',
-      'Slide 4: Saltatory conduction in myelinated axons increases velocity tenfold.'
-    ]);
-
-    const doc3Blob = new Blob([
-      'Course Syllabus: Advanced Neurobiology (BIO-301)\n\nWeek 1-3: Membrane Biophysics & Ion Channels\nWeek 4-6: Synaptic Transmission & Neurotransmitters\nWeek 7-9: Long-Term Potentiation & Synaptic Plasticity\nWeek 10: Final Comprehensive Examination'
-    ], { type: 'text/plain' });
-
-    const key1 = 'textbook_ch4.pdf|2411724|0';
-    const key2 = 'lecture_slides.pdf|1887436|0';
-    const key3 = 'syllabus.docx|49152|0';
-
-    await saveDocToDB(key1, doc1Blob, 'Textbook_Ch4.pdf', 'pdf');
-    await saveDocToDB(key2, doc2Blob, 'Lecture_Slides.pdf', 'pdf');
-    await saveDocToDB(key3, doc3Blob, 'Syllabus.docx', 'docx');
-
-    const sampleNotebook = {
-      id: 'nb_sample_neurobiology',
-      title: 'Neurobiology Exam',
-      description: 'Synaptic transmission, neuroanatomy slides, and core curriculum syllabus.',
-      color: 'amber',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      notes: `# Neurobiology Exam Revision Notes
-
-## 1. Action Potentials
-- Resting potential is -70mV maintained by the Na+/K+ ATPase pump (3 Na+ out, 2 K+ in).
-- Threshold potential: ~ -55mV. Voltage-gated Na+ channels open rapidly causing depolarization (+40mV).
-- Repolarization is driven by Na+ channel inactivation and delayed opening of voltage-gated K+ channels.
-
-## 2. Synaptic Transmission
-- Presynaptic Ca2+ influx via voltage-gated Ca2+ channels triggers neurotransmitter vesicle exocytosis.
-- Core SNARE proteins: Synaptobrevin (v-SNARE), Syntaxin-1 and SNAP-25 (t-SNAREs).
-- Synaptotagmin-1 acts as the primary calcium sensor for fast synchronous release.
-
-## 3. High-Priority Exam Checklist
-- Review Chapter 4 diagrams on synaptic vesicle recycling (clathrin-mediated endocytosis).
-- Review Lecture Slide 18: NMDA receptor magnesium block removal during Long-Term Potentiation (LTP).`,
-      activeFileKey: key1,
-      files: [
-        {
-          key: key1,
-          name: 'Textbook_Ch4.pdf',
-          type: 'pdf',
-          size: 2411724,
-          addedAt: Date.now()
-        },
-        {
-          key: key2,
-          name: 'Lecture_Slides.pdf',
-          type: 'pdf',
-          size: 1887436,
-          addedAt: Date.now()
-        },
-        {
-          key: key3,
-          name: 'Syllabus.docx',
-          type: 'docx',
-          size: 49152,
-          addedAt: Date.now()
-        }
-      ]
-    };
-
-    await saveNotebookToDB(sampleNotebook);
-    selectedNotebookId = sampleNotebook.id;
-    await loadAndRenderNotebooks();
-    showToast('Sample "Neurobiology Exam" binder ready!', 2200);
-  }
-
-  $('title-sample-btn')?.addEventListener('click', createSampleNotebook);
-  $('empty-sample-btn')?.addEventListener('click', createSampleNotebook);
-
-  document.querySelectorAll('.nb-template-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const template = card.getAttribute('data-template');
-      if (template === 'exam') {
-        openTemplateModal('Course Exam Prep', 'Textbooks, lecture slides, and syllabus review schedule.', 'amber');
-      } else if (template === 'research') {
-        openTemplateModal('Research & Thesis', 'Literature reviews, methodology papers, and thesis draft notes.', 'sage');
-      } else if (template === 'literature') {
-        openTemplateModal('Literature & Book Club', 'Essays, fiction manuscripts, and book chapter notes.', 'rose');
-      }
-    });
+  $('empty-import-btn')?.addEventListener('click', () => {
+    $('import-bundle-picker')?.click();
   });
+
+  // Clean up any previously created sample notebook
+  (async function cleanSampleBinder() {
+    try {
+      const sample = await getNotebookById('nb_sample_neurobiology');
+      if (sample) {
+        await deleteNotebookFromDB('nb_sample_neurobiology');
+        loadAndRenderNotebooks();
+      }
+    } catch (e) {}
+  })();
 
   // ── Feedback & Suggestions Engine ─────────────────────────────────────────
   const feedbackBackdrop = $('feedback-modal-backdrop');
