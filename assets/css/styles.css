@@ -3461,3 +3461,309 @@ input[type="range"].range::-moz-range-thumb {
     background-color: #fec5d2 !important;
   }
 }
+
+/* ── Contextual Highlight Action Popover ─────────────────────────────────── */
+.highlight-action-menu {
+  position: fixed;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--bg-surface-elevated, #ffffff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translate(-50%, -100%);
+  animation: hlMenuPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+:root[data-resolved-theme="dark"] .highlight-action-menu {
+  background: rgba(28, 28, 30, 0.94);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.highlight-action-menu.menu-below {
+  transform: translate(-50%, 8px);
+}
+
+@keyframes hlMenuPop {
+  from { opacity: 0; transform: translate(-50%, -90%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+
+.highlight-action-menu.menu-below {
+  animation: hlMenuPopBelow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes hlMenuPopBelow {
+  from { opacity: 0; transform: translate(-50%, 0px) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, 8px) scale(1); }
+}
+
+.hl-menu-colors {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 2px;
+}
+
+.hl-menu-color-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+}
+
+.hl-menu-color-btn:hover {
+  transform: scale(1.18);
+}
+
+.hl-menu-color-btn.active {
+  border-color: var(--text-primary);
+  transform: scale(1.15);
+}
+
+.hl-menu-color-btn.hl-amber { background: #facc15; }
+.hl-menu-color-btn.hl-green { background: #4ade80; }
+.hl-menu-color-btn.hl-blue  { background: #60a5fa; }
+.hl-menu-color-btn.hl-rose  { background: #f472b6; }
+
+.hl-menu-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-color, rgba(0, 0, 0, 0.12));
+  margin: 0 2px;
+}
+
+.hl-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hl-menu-btn:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.06));
+  color: var(--text-primary);
+}
+
+.hl-menu-btn.hl-menu-delete:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+/* ── Scratchpad Formatting Helpers ───────────────────────────────────────── */
+.scratchpad-format-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 8px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scratchpad-format-row::-webkit-scrollbar {
+  display: none;
+}
+
+.sp-format-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  background: var(--hover-bg, rgba(0, 0, 0, 0.03));
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.sp-format-chip:hover {
+  background: var(--active-bg, rgba(0, 0, 0, 0.08));
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+/* ── Graceful Document Error Recovery Card ───────────────────────────────── */
+#error.error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  max-width: 480px;
+  width: calc(100% - 32px);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.doc-error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 28px;
+  background: var(--bg-surface-elevated, #ffffff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  animation: errorCardIn 0.22s ease-out;
+}
+
+:root[data-resolved-theme="dark"] .doc-error-card {
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.45);
+}
+
+@keyframes errorCardIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.doc-error-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.doc-error-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.doc-error-desc {
+  margin: 0 0 24px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 380px;
+}
+
+.doc-error-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.doc-error-actions .btn-primary,
+.doc-error-actions .btn-secondary {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── Keyboard Shortcuts Modal ────────────────────────────────────────────── */
+.shortcuts-modal-card {
+  max-width: 520px;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 18px 24px 24px 24px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.shortcut-item kbd {
+  display: inline-block;
+  padding: 3px 7px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-primary);
+  background: var(--hover-bg, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.15));
+  border-radius: 6px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-resolved-theme="dark"] .shortcut-item kbd {
+  background: #2c2c2e;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ── Zoom Boundary Disabled Feedback ─────────────────────────────────────── */
+.zoom-btn:disabled,
+.zoom-btn[aria-disabled="true"] {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* ── Notebook Tab Bar Actions ────────────────────────────────────────────── */
+.notebook-tabs-bar .notebook-tab-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.notebook-tabs-bar .notebook-tab-action-btn:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.06));
+  color: var(--text-primary);
+}
+
+.notebook-tabs-bar .notebook-tab-action-btn.active {
+  background: var(--active-bg, rgba(0, 0, 0, 0.1));
+  color: var(--text-primary);
+}
+
+.notebook-tabs-bar .notebook-tab-action-btn.icon-only {
+  padding: 4px 6px;
+}
+

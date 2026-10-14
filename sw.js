@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mai-reads-v28-offline';
+const CACHE_NAME = 'mai-reads-v29-offline';
 const ASSETS = [
   './',
   './index.html',

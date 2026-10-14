@@ -99,6 +99,43 @@
     }
   }
 
+  async function saveDocNotesToDB(key, notes) {
+    if (!key) return;
+    try {
+      const db = await getDB();
+      const tx = db.transaction(STORE_DOCS, 'readwrite');
+      const store = tx.objectStore(STORE_DOCS);
+      const existing = await new Promise(res => {
+        const req = store.get(key);
+        req.onsuccess = () => res(req.result || null);
+        req.onerror = () => res(null);
+      });
+      if (existing) {
+        existing.notes = notes;
+        store.put(existing);
+      }
+    } catch (err) {
+      console.warn('Could not save notes to DB:', err);
+    }
+  }
+
+  async function getDocNotesFromDB(key) {
+    if (!key) return '';
+    try {
+      const db = await getDB();
+      const tx = db.transaction(STORE_DOCS, 'readonly');
+      const store = tx.objectStore(STORE_DOCS);
+      const record = await new Promise(res => {
+        const req = store.get(key);
+        req.onsuccess = () => res(req.result || null);
+        req.onerror = () => res(null);
+      });
+      return record?.notes || '';
+    } catch {
+      return '';
+    }
+  }
+
   async function deleteDocFromDB(key) {
     try {
       const db = await getDB();
@@ -774,13 +811,32 @@
   // Dock auto-hides when cursor is idle and awakens on movement
   const readerDock = $('reader-dock');
   let dockIdleTimer = null;
+  let isInteractingWithDock = false;
+
+  readerDock?.addEventListener('pointerdown', () => {
+    isInteractingWithDock = true;
+    clearTimeout(dockIdleTimer);
+  });
+  window.addEventListener('pointerup', () => {
+    if (isInteractingWithDock) {
+      isInteractingWithDock = false;
+      wakeDock();
+    }
+  });
+  window.addEventListener('pointercancel', () => {
+    if (isInteractingWithDock) {
+      isInteractingWithDock = false;
+      wakeDock();
+    }
+  });
 
   function wakeDock() {
     if (!readerDock) return;
     readerDock.classList.remove('dock-hidden');
     clearTimeout(dockIdleTimer);
     dockIdleTimer = setTimeout(() => {
-      // Keep dock visible if mouse is hovering over the dock or a popup is open
+      // Keep dock visible if interacting, hovering, or any overlay/panel is open
+      if (isInteractingWithDock) return;
       if (readerDock.matches(':hover')) return;
       if (readerDock.contains(document.activeElement)) return;
       if (controls && !controls.classList.contains('hidden')) return;
@@ -788,6 +844,9 @@
       if ($('binder-panel')?.classList.contains('open')) return;
       if ($('history-panel')?.classList.contains('open')) return;
       if ($('search-box') && !$('search-box').classList.contains('hidden')) return;
+      if ($('highlight-action-menu') && !$('highlight-action-menu').classList.contains('hidden')) return;
+      if ($('shortcuts-modal-backdrop') && !$('shortcuts-modal-backdrop').classList.contains('hidden')) return;
+      if ($('feedback-modal-backdrop') && !$('feedback-modal-backdrop').classList.contains('hidden')) return;
       readerDock.classList.add('dock-hidden');
     }, 2200);
   }
@@ -798,15 +857,16 @@
   window.addEventListener('keydown', wakeDock, { passive: true });
 
   surface.addEventListener('scroll', () => {
-    if (readerDock) readerDock.classList.add('dock-hidden');
+    if (readerDock && !isInteractingWithDock) readerDock.classList.add('dock-hidden');
     clearTimeout(dockIdleTimer);
     dockIdleTimer = setTimeout(wakeDock, 120);
   }, { passive: true });
 
   readerDock?.addEventListener('mouseenter', () => clearTimeout(dockIdleTimer));
-    readerDock?.addEventListener('mouseleave', () => {
+  readerDock?.addEventListener('mouseleave', () => {
     clearTimeout(dockIdleTimer);
     dockIdleTimer = setTimeout(() => {
+      if (isInteractingWithDock) return;
       if (controls && !controls.classList.contains('hidden')) return;
       if ($('doc-scratchpad-panel')?.classList.contains('open')) return;
       readerDock.classList.add('dock-hidden');
@@ -818,9 +878,42 @@
 
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (!controls.classList.contains('hidden')) {
+      const hlMenu = $('highlight-action-menu');
+      if (hlMenu && !hlMenu.classList.contains('hidden')) {
+        hideHighlightActionMenu();
+        return;
+      }
+      const shortcutsModal = $('shortcuts-modal-backdrop');
+      if (shortcutsModal && !shortcutsModal.classList.contains('hidden')) {
+        closeShortcutsModal();
+        return;
+      }
+      const feedbackModal = $('feedback-modal-backdrop');
+      if (feedbackModal && feedbackModal.classList.contains('open')) {
+        closeFeedbackModal();
+        return;
+      }
+      if (controls && !controls.classList.contains('hidden')) {
         controls.classList.add('hidden');
         updateControlsState();
+        return;
+      }
+      if ($('doc-scratchpad-panel')?.classList.contains('open')) {
+        toggleScratchpad(false);
+        return;
+      }
+      if ($('binder-panel')?.classList.contains('open')) {
+        toggleBinderPanel(false);
+        return;
+      }
+      if ($('history-panel')?.classList.contains('open')) {
+        closeHistoryPanel();
+        return;
+      }
+      const searchBox = $('search-box');
+      if (searchBox && !searchBox.classList.contains('hidden')) {
+        searchBox.classList.add('hidden');
+        return;
       }
       if (readerDock?.classList.contains('dock-hidden')) {
         readerDock.classList.remove('dock-hidden');
@@ -938,6 +1031,7 @@
     zoomInput.value = String(newZoom);
     const zoomValEl = $('zoom-value');
     if (zoomValEl) zoomValEl.textContent = `${newZoom}%`;
+    updateZoomButtonsState(newZoom);
 
     const zoomRatio = newZoom / 100;
     paper.style.setProperty('--doc-zoom', String(zoomRatio));
@@ -966,6 +1060,23 @@
     }
 
     scheduleZoomRedraw(140);
+  }
+
+  function updateZoomButtonsState(zoom) {
+    const min = Number(zoomInput.min || 60);
+    const max = Number(zoomInput.max || 200);
+    const zoomOut = $('zoom-out-btn');
+    const zoomIn = $('zoom-in-btn');
+    if (zoomOut) {
+      const atMin = zoom <= min;
+      zoomOut.disabled = atMin;
+      zoomOut.setAttribute('aria-disabled', String(atMin));
+    }
+    if (zoomIn) {
+      const atMax = zoom >= max;
+      zoomIn.disabled = atMax;
+      zoomIn.setAttribute('aria-disabled', String(atMax));
+    }
   }
 
   zoomInput.addEventListener('input', e => {
@@ -1339,9 +1450,51 @@
     } catch (error) {
       if (token !== renderToken) return;
       $('loading').classList.add('hidden');
-      $('error').textContent = error.message || 'This document could not be opened.';
-      $('error').classList.remove('hidden');
+      showDocumentError(error.message || 'This document could not be opened.');
     }
+  }
+
+  function showDocumentError(msg) {
+    const errorEl = $('error');
+    if (!errorEl) return;
+    errorEl.replaceChildren();
+
+    const card = document.createElement('div');
+    card.className = 'doc-error-card';
+    card.innerHTML = `
+      <div class="doc-error-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="doc-error-title">Unable to Open Document</h3>
+      <p class="doc-error-desc">${msg || 'This file could not be read. Please make sure it is a valid PDF or Word (.docx) document.'}</p>
+      <div class="doc-error-actions">
+        <button id="doc-error-picker-btn" class="btn-primary" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Choose Another File</span>
+        </button>
+        <button id="doc-error-home-btn" class="btn-secondary" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Return to Home</span>
+        </button>
+      </div>
+    `;
+
+    card.querySelector('#doc-error-picker-btn')?.addEventListener('click', () => {
+      errorEl.classList.add('hidden');
+      picker.click();
+    });
+
+    card.querySelector('#doc-error-home-btn')?.addEventListener('click', () => {
+      errorEl.classList.add('hidden');
+      $('back-to-home')?.click();
+    });
+
+    errorEl.appendChild(card);
+    errorEl.classList.remove('hidden');
   }
 
   let globalPdfBytes = null;
@@ -1981,11 +2134,10 @@
     document.querySelectorAll('.hl-color-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.color === color);
     });
-    const indicator = document.querySelector('.header-hl-indicator');
-    if (indicator) {
+    document.querySelectorAll('.header-hl-indicator').forEach(indicator => {
       const colorMap = { amber: '#f3d56b', green: '#9dd9a3', blue: '#92c7f7', rose: '#f7a6b8' };
       indicator.style.backgroundColor = colorMap[color] || '#f3d56b';
-    }
+    });
   }
 
   function setHighlighterSubMode(mode) {
@@ -2025,6 +2177,23 @@
       headerDownload.title = hasHighlights ? 'Export document with highlights' : 'Export document as PDF';
     }
 
+    // Notebook Tab Bar action buttons
+    const nbDownload = $('nb-tab-download-btn');
+    if (nbDownload) {
+      nbDownload.classList.toggle('hidden', !isDocLoaded);
+      nbDownload.removeAttribute('disabled');
+      nbDownload.style.opacity = '';
+      const label = nbDownload.querySelector('.binder-btn-text');
+      if (label) {
+        label.textContent = hasHighlights ? `Download (${documentHighlights.length})` : 'Download';
+      }
+      nbDownload.title = hasHighlights ? 'Export document with highlights' : 'Export document as PDF';
+    }
+    const nbHl = $('nb-tab-hl-btn');
+    if (nbHl) {
+      nbHl.classList.toggle('active', isHighlighting);
+    }
+
     $('hl-bar-download')?.classList.toggle('hidden', !hasHighlights);
     $('highlight-clear')?.classList.toggle('hidden', !hasHighlights);
 
@@ -2042,6 +2211,118 @@
       headerBtn.classList.toggle('active', isHighlighting);
     }
   }
+
+  let activeHighlightForMenu = null;
+
+  function showHighlightActionMenu(highlight, targetEl) {
+    activeHighlightForMenu = highlight;
+    const menu = $('highlight-action-menu');
+    if (!menu || !targetEl) return;
+
+    hideSelectionTooltip();
+
+    // Set active color dot in popover
+    menu.querySelectorAll('.hl-menu-color-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.color === (highlight.color || 'amber'));
+    });
+
+    const rect = targetEl.getBoundingClientRect();
+    const isNearTop = rect.top < 60;
+    const left = Math.max(120, Math.min(window.innerWidth - 120, rect.left + rect.width / 2));
+    const top = isNearTop ? rect.bottom + 6 : rect.top - 6;
+
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.classList.toggle('menu-below', isNearTop);
+    menu.classList.remove('hidden');
+    wakeDock();
+  }
+
+  function hideHighlightActionMenu() {
+    activeHighlightForMenu = null;
+    $('highlight-action-menu')?.classList.add('hidden');
+  }
+
+  // Highlight Action Menu Buttons
+  $('highlight-action-menu')?.querySelectorAll('.hl-menu-color-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!activeHighlightForMenu) return;
+      const newColor = btn.dataset.color || 'amber';
+      activeHighlightForMenu.color = newColor;
+      saveHighlights();
+      // Update DOM classes for this highlight wrap
+      const wrap = document.querySelector(`.text-highlight-wrap[data-id="${activeHighlightForMenu.id}"]`);
+      if (wrap) {
+        wrap.querySelectorAll('.text-highlight-band').forEach(band => {
+          band.className = band.className.replace(/hl-(amber|green|blue|rose)/g, '').trim() + ` hl-${newColor}`;
+        });
+      }
+      hideHighlightActionMenu();
+      showToast(`Color changed to ${newColor.charAt(0).toUpperCase() + newColor.slice(1)}`);
+    });
+  });
+
+  $('hl-menu-copy-btn')?.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!activeHighlightForMenu) return;
+    const text = activeHighlightForMenu.text || '';
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Text copied to clipboard!');
+      }).catch(() => {
+        showToast('Text copied');
+      });
+    } else {
+      showToast('No text available to copy');
+    }
+    hideHighlightActionMenu();
+  });
+
+  $('hl-menu-note-btn')?.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!activeHighlightForMenu) return;
+    const text = activeHighlightForMenu.text || '';
+    const curPage = activeHighlightForMenu.page || 1;
+    const cite = `\n> ${text || 'Highlighted passage'}\n— [Page ${curPage}], "${getActiveDocHeading()}"\n`;
+
+    if (isNotebookActive()) {
+      const nbTextarea = $('binder-notes-textarea');
+      if (nbTextarea) {
+        nbTextarea.value = (nbTextarea.value ? nbTextarea.value.trimEnd() + '\n\n' : '') + cite;
+        nbTextarea.dispatchEvent(new Event('input'));
+      }
+      toggleBinderPanel(true);
+    } else {
+      const docTextarea = $('doc-scratchpad-textarea');
+      if (docTextarea) {
+        docTextarea.value = (docTextarea.value ? docTextarea.value.trimEnd() + '\n\n' : '') + cite;
+        docTextarea.dispatchEvent(new Event('input'));
+      }
+      toggleScratchpad(true);
+    }
+    hideHighlightActionMenu();
+    showToast('Quote added to Scratchpad!');
+  });
+
+  $('hl-menu-delete-btn')?.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!activeHighlightForMenu) return;
+    deleteHighlight(activeHighlightForMenu.id);
+    hideHighlightActionMenu();
+  });
+
+  window.addEventListener('pointerdown', e => {
+    const menu = $('highlight-action-menu');
+    if (menu && !menu.classList.contains('hidden')) {
+      if (!menu.contains(e.target) && !e.target.closest('.text-highlight-band')) {
+        hideHighlightActionMenu();
+      }
+    }
+  });
+
+  surface.addEventListener('scroll', hideHighlightActionMenu, { passive: true });
+  window.addEventListener('resize', hideHighlightActionMenu, { passive: true });
 
   function renderPageHighlights(pageNum, node) {
     if (!node) return;
@@ -2064,11 +2345,11 @@
           band.style.top = `${r.y}%`;
           band.style.width = `${r.w}%`;
           band.style.height = `${r.h}%`;
-          band.title = 'Click to delete highlight';
+          band.title = 'Click to edit or remove highlight';
           band.addEventListener('click', e => {
             e.stopPropagation();
             if (window.getSelection()?.toString()?.trim()) return;
-            deleteHighlight(h.id);
+            showHighlightActionMenu(h, band);
           });
           wrap.appendChild(band);
         });
@@ -2080,10 +2361,10 @@
         band.style.width = `${h.w}%`;
         band.style.height = `${h.h}%`;
         band.style.pointerEvents = 'auto';
-        band.title = 'Click to delete highlight';
+        band.title = 'Click to edit or remove highlight';
         band.addEventListener('click', e => {
           e.stopPropagation();
-          deleteHighlight(h.id);
+          showHighlightActionMenu(h, band);
         });
         wrap.appendChild(band);
       }
@@ -2096,6 +2377,7 @@
     documentHighlights = documentHighlights.filter(h => h.id !== id);
     saveHighlights();
     document.querySelectorAll(`.text-highlight-wrap[data-id="${id}"]`).forEach(el => el.remove());
+    updateHighlightUi();
     showToast('Highlight deleted');
   }
 
@@ -2454,7 +2736,15 @@
       if (docName) docName.textContent = getActiveDocHeading();
       const textarea = $('doc-scratchpad-textarea');
       if (textarea && textarea.dataset.loadedKey !== fileKey) {
-        textarea.value = localStorage.getItem('mai-notes-' + fileKey) || '';
+        let val = localStorage.getItem('mai-notes-' + fileKey);
+        if (!val && fileKey) {
+          getDocNotesFromDB(fileKey).then(dbVal => {
+            if (dbVal && !textarea.value) {
+              textarea.value = dbVal;
+            }
+          });
+        }
+        textarea.value = val || '';
         textarea.dataset.loadedKey = fileKey;
       }
       panel.classList.add('open');
@@ -2481,14 +2771,44 @@
   docScratchpadTextarea?.addEventListener('input', () => {
     if (docScratchpadStatus) docScratchpadStatus.textContent = 'Saving…';
     clearTimeout(docNotesDebounce);
-    docNotesDebounce = setTimeout(() => {
+    docNotesDebounce = setTimeout(async () => {
       try {
         localStorage.setItem('mai-notes-' + fileKey, docScratchpadTextarea.value);
-        if (docScratchpadStatus) docScratchpadStatus.textContent = 'Saved';
+        if (docScratchpadStatus) docScratchpadStatus.textContent = 'Saved ✓';
       } catch (err) {
-        if (docScratchpadStatus) docScratchpadStatus.textContent = 'Save error';
+        try {
+          await saveDocNotesToDB(fileKey, docScratchpadTextarea.value);
+          if (docScratchpadStatus) docScratchpadStatus.textContent = 'Saved ✓';
+        } catch {
+          if (docScratchpadStatus) docScratchpadStatus.textContent = 'Save error';
+        }
       }
     }, 400);
+  });
+
+  // Formatting helper chips
+  function insertFormatIntoTextarea(textarea, prefix, suffix = '') {
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const sel = textarea.value.substring(start, end);
+    const replacement = prefix + (sel || '') + suffix;
+    textarea.setRangeText(replacement, start, end, 'end');
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+  }
+
+  $('sp-format-bullet')?.addEventListener('click', () => {
+    insertFormatIntoTextarea(docScratchpadTextarea, '• ');
+  });
+  $('sp-format-todo')?.addEventListener('click', () => {
+    insertFormatIntoTextarea(docScratchpadTextarea, '[ ] ');
+  });
+  $('sp-format-heading')?.addEventListener('click', () => {
+    insertFormatIntoTextarea(docScratchpadTextarea, '\n### ');
+  });
+  $('sp-format-quote')?.addEventListener('click', () => {
+    insertFormatIntoTextarea(docScratchpadTextarea, '\n> ');
   });
 
   // Insert Page Citation
@@ -2571,6 +2891,22 @@
   $('header-scratchpad-btn')?.addEventListener('click', () => toggleScratchpad());
   $('dock-scratchpad-toggle')?.addEventListener('click', () => toggleScratchpad());
   $('header-controls-btn')?.addEventListener('click', toggleControls);
+
+  // Synchronized Notebook Tab Bar Action Buttons
+  $('nb-tab-hl-btn')?.addEventListener('click', () => {
+    setHighlighterMode(!isHighlighting);
+  });
+  $('nb-tab-download-btn')?.addEventListener('click', exportCurrentDocumentWithHighlights);
+  $('nb-tab-controls-btn')?.addEventListener('click', () => toggleControls());
+
+  // Horizontal wheel scroll for notebook document tabs
+  $('notebook-tab-items')?.addEventListener('wheel', e => {
+    const el = $('notebook-tab-items');
+    if (el && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
 
   // Export Document with burned-in highlights (PDF via PDF-Lib, DOCX via high-fidelity Print-to-PDF)
   async function exportCurrentDocumentWithHighlights() {
@@ -3128,12 +3464,54 @@
     if (e.target === feedbackBackdrop) closeFeedbackModal();
   });
 
+  async function flushOfflineFeedback() {
+    let queue = [];
+    try {
+      queue = JSON.parse(localStorage.getItem('mai_offline_feedback') || '[]');
+    } catch {}
+    if (!queue.length || !navigator.onLine) return;
+
+    for (const item of queue) {
+      try {
+        await fetch('https://formsubmit.co/ajax/your-email@example.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(item)
+        });
+      } catch {}
+    }
+    localStorage.removeItem('mai_offline_feedback');
+    showToast('Offline feedback submitted. Thank you!');
+  }
+
+  window.addEventListener('online', flushOfflineFeedback);
+
   feedbackForm?.addEventListener('submit', async e => {
     e.preventDefault();
     const message = feedbackMessageInput?.value.trim();
     if (!message) return;
 
     const email = feedbackEmailInput?.value.trim() || 'Anonymous';
+    const payload = {
+      _subject: `Mai-Reads Feedback: ${selectedFeedbackCategory}`,
+      category: selectedFeedbackCategory,
+      message: message,
+      email: email,
+      timestamp: new Date().toISOString()
+    };
+
+    if (!navigator.onLine) {
+      try {
+        const queue = JSON.parse(localStorage.getItem('mai_offline_feedback') || '[]');
+        queue.push(payload);
+        localStorage.setItem('mai_offline_feedback', JSON.stringify(queue));
+      } catch {}
+      feedbackFormContainer?.classList.add('hidden');
+      feedbackSuccessContainer?.classList.remove('hidden');
+      showToast("You're offline. Feedback saved and will send when you reconnect.", 3500);
+      return;
+    }
+
     if (feedbackSubmitBtn) {
       feedbackSubmitBtn.disabled = true;
       feedbackSubmitBtn.innerHTML = `<span>Sending…</span>`;
@@ -3146,13 +3524,7 @@
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          _subject: `Mai-Reads Feedback: ${selectedFeedbackCategory}`,
-          category: selectedFeedbackCategory,
-          message: message,
-          email: email,
-          timestamp: new Date().toISOString()
-        })
+        body: JSON.stringify(payload)
       });
     } catch (err) {
       console.warn('FormSubmit AJAX fallback:', err);
@@ -3265,6 +3637,35 @@
       if (e.target === modalBackdrop) closeInstallModal();
     });
   }
+
+  // ── Keyboard Shortcuts Modal Engine ──────────────────────────────────────
+  function openShortcutsModal() {
+    $('shortcuts-modal-backdrop')?.classList.remove('hidden');
+    $('shortcuts-modal-backdrop')?.classList.add('open');
+  }
+
+  function closeShortcutsModal() {
+    $('shortcuts-modal-backdrop')?.classList.remove('open');
+    $('shortcuts-modal-backdrop')?.classList.add('hidden');
+  }
+
+  $('shortcuts-close-btn')?.addEventListener('click', closeShortcutsModal);
+  $('shortcuts-modal-backdrop')?.addEventListener('click', e => {
+    if (e.target === $('shortcuts-modal-backdrop')) closeShortcutsModal();
+  });
+
+  window.addEventListener('keydown', e => {
+    const inInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+    if (!inInput && (e.key === '?' || (e.ctrlKey && e.key === '/'))) {
+      e.preventDefault();
+      const modal = $('shortcuts-modal-backdrop');
+      if (modal?.classList.contains('hidden') || !modal?.classList.contains('open')) {
+        openShortcutsModal();
+      } else {
+        closeShortcutsModal();
+      }
+    }
+  });
 
   // Initialize PWA Installation & Notebook Reader
   initPwaInstall();

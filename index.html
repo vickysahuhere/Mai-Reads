@@ -570,6 +570,32 @@
         </svg>
         <span class="binder-btn-text">Binder</span>
       </button>
+      <button id="nb-tab-hl-btn" class="notebook-tab-action-btn" type="button" title="Highlighter Tool (H)" aria-label="Highlighter Tool (H)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+          <path d="m2 2 7.586 7.586"/>
+        </svg>
+        <span class="binder-btn-text">Highlight</span>
+        <span class="header-hl-indicator" aria-hidden="true"></span>
+      </button>
+      <button id="nb-tab-download-btn" class="notebook-tab-action-btn" type="button" title="Export document as PDF" aria-label="Export document as PDF">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="binder-btn-text">Download</span>
+      </button>
+      <button id="nb-tab-controls-btn" class="notebook-tab-action-btn icon-only" type="button" title="Reading Controls" aria-label="Reading Controls">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+          <circle cx="8" cy="6" r="2" fill="currentColor"/>
+          <circle cx="16" cy="12" r="2" fill="currentColor"/>
+          <circle cx="10" cy="18" r="2" fill="currentColor"/>
+        </svg>
+      </button>
     </div>
 
     <!-- Hidden Multi-File Picker for Notebook inside Reader -->
@@ -651,6 +677,12 @@
 
       <div class="binder-notes-wrap doc-scratchpad-wrap">
         <textarea id="doc-scratchpad-textarea" class="binder-notes-area" placeholder="Jot notes, chapter summaries, key citations, or study thoughts here… Auto-saves locally for this document."></textarea>
+        <div class="scratchpad-format-row" role="toolbar" aria-label="Quick format helpers">
+          <button id="sp-format-bullet" class="sp-format-chip" type="button" title="Insert bullet item">• Bullet</button>
+          <button id="sp-format-todo" class="sp-format-chip" type="button" title="Insert task checkbox">[ ] Todo</button>
+          <button id="sp-format-heading" class="sp-format-chip" type="button" title="Insert section heading">### Heading</button>
+          <button id="sp-format-quote" class="sp-format-chip" type="button" title="Insert blockquote">> Quote</button>
+        </div>
         <div class="doc-scratchpad-actions">
           <button id="doc-scratchpad-insert-cite-btn" class="text-button" type="button">+ Insert Page Citation</button>
           <div class="doc-scratchpad-actions-right">
@@ -742,7 +774,39 @@
           <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
           <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
         </svg>
+    </div>
+
+    <!-- Contextual Action Menu for Existing Highlights (Color Switcher, Note, Copy, Delete) -->
+    <div id="highlight-action-menu" class="highlight-action-menu hidden" role="toolbar" aria-label="Highlight actions">
+      <div class="hl-menu-colors" role="radiogroup" aria-label="Highlight color">
+        <button class="hl-menu-color-btn hl-amber" data-color="amber" type="button" title="Amber highlight" aria-label="Amber highlight"></button>
+        <button class="hl-menu-color-btn hl-green" data-color="green" type="button" title="Green highlight" aria-label="Green highlight"></button>
+        <button class="hl-menu-color-btn hl-blue" data-color="blue" type="button" title="Blue highlight" aria-label="Blue highlight"></button>
+        <button class="hl-menu-color-btn hl-rose" data-color="rose" type="button" title="Rose highlight" aria-label="Rose highlight"></button>
+      </div>
+      <div class="hl-menu-divider" aria-hidden="true"></div>
+      <button id="hl-menu-copy-btn" class="hl-menu-btn" type="button" title="Copy text" aria-label="Copy highlighted text">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+        </svg>
         <span>Copy</span>
+      </button>
+      <button id="hl-menu-note-btn" class="hl-menu-btn" type="button" title="Send to Scratchpad" aria-label="Send to Scratchpad">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <line x1="12" y1="11" x2="12" y2="17"/>
+          <line x1="9" y1="14" x2="15" y2="14"/>
+        </svg>
+        <span>Note</span>
+      </button>
+      <button id="hl-menu-delete-btn" class="hl-menu-btn hl-menu-delete" type="button" title="Delete highlight" aria-label="Delete highlight">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+        <span>Delete</span>
       </button>
     </div>
 
@@ -1069,6 +1133,39 @@
 
       <div class="feedback-modal-footer">
         <button id="pwa-install-dismiss-btn" class="feedback-secondary-btn" type="button">Close</button>
+      </div>
+    </div>
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal-backdrop" class="feedback-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title">
+    <div class="feedback-modal-card shortcuts-modal-card">
+      <div class="feedback-modal-header">
+        <div class="feedback-modal-title-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
+            <path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/>
+            <path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/>
+            <path d="M8 16h8"/>
+          </svg>
+          <h2 id="shortcuts-modal-title" class="feedback-modal-title">Keyboard Shortcuts</h2>
+        </div>
+        <button id="shortcuts-close-btn" class="feedback-close-btn" type="button" aria-label="Close shortcuts dialog">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="shortcuts-grid">
+        <div class="shortcut-item"><kbd>?</kbd><span>Show / hide shortcuts</span></div>
+        <div class="shortcut-item"><kbd>H</kbd><span>Toggle Highlighter ribbon</span></div>
+        <div class="shortcut-item"><kbd>S</kbd><span>Open Study Scratchpad</span></div>
+        <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>F</kbd><span>Find in document</span></div>
+        <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>P</kbd><span>Download / Print PDF</span></div>
+        <div class="shortcut-item"><kbd>+</kbd> / <kbd>-</kbd><span>Zoom in / Zoom out</span></div>
+        <div class="shortcut-item"><kbd>0</kbd><span>Reset zoom to 100%</span></div>
+        <div class="shortcut-item"><kbd>&larr;</kbd> / <kbd>&rarr;</kbd><span>Previous / Next page</span></div>
+        <div class="shortcut-item"><kbd>Home</kbd> / <kbd>End</kbd><span>First / Last page</span></div>
+        <div class="shortcut-item"><kbd>Esc</kbd><span>Close open menu / panel</span></div>
       </div>
     </div>
   </div>
