@@ -495,16 +495,51 @@
 
   <!-- Document Reader View (Section 4) -->
   <section id="reader" class="reader hidden" aria-label="Document reader">
-    <!-- Top Document Title Chip -->
-    <div id="doc-title" class="doc-title">
-      <button id="doc-title-back" class="doc-title-back-btn" type="button" aria-label="Return home" title="Return home">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <span id="doc-title-text" class="doc-title-text"></span>
-      <span id="doc-page-chip" class="doc-page-chip"></span>
-    </div>
+    <!-- Top Document Title & Quick Action Bar -->
+    <header id="doc-title" class="doc-title" role="toolbar" aria-label="Document reader toolbar">
+      <div class="doc-title-left">
+        <button id="doc-title-back" class="doc-title-back-btn" type="button" aria-label="Return home" title="Return home">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <span id="doc-title-text" class="doc-title-text"></span>
+        <span id="doc-page-chip" class="doc-page-chip"></span>
+      </div>
+
+      <div class="doc-title-right">
+        <button id="header-highlighter-btn" class="reader-top-action-btn" type="button" aria-label="Highlighter Tool (H)" title="Highlighter Tool (H)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            <path d="m2 2 7.586 7.586"/>
+          </svg>
+          <span class="btn-text">Highlighter</span>
+          <span class="header-hl-indicator" aria-hidden="true"></span>
+        </button>
+
+        <button id="header-scratchpad-btn" class="reader-top-action-btn" type="button" aria-label="Study Scratchpad Notes (S)" title="Study Scratchpad Notes (S)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 12h6"/>
+            <path d="M9 16h4"/>
+          </svg>
+          <span class="btn-text">Scratchpad</span>
+          <span id="header-notes-dot" class="header-notes-dot hidden" aria-hidden="true"></span>
+        </button>
+
+        <button id="header-controls-btn" class="reader-top-action-btn icon-only" type="button" aria-label="Reading Controls" title="Reading Controls">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="6" x2="20" y2="6"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <line x1="4" y1="18" x2="20" y2="18"/>
+            <circle cx="8" cy="6" r="2" fill="currentColor"/>
+            <circle cx="16" cy="12" r="2" fill="currentColor"/>
+            <circle cx="10" cy="18" r="2" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </header>
 
     <!-- Floating Top Document Tab Strip for Notebooks -->
     <div id="notebook-tabs-bar" class="notebook-tabs-bar hidden" role="tablist" aria-label="Notebook document tabs">
@@ -581,6 +616,43 @@
     </aside>
     <div id="binder-backdrop" class="history-backdrop hidden"></div>
 
+    <!-- Dedicated Universal Study Scratchpad Panel (for Single Document Mode) -->
+    <aside id="doc-scratchpad-panel" class="notebook-binder-panel" aria-label="Document study scratchpad" aria-hidden="true">
+      <div class="binder-header">
+        <div class="binder-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 12h6"/>
+            <path d="M9 16h4"/>
+          </svg>
+          <span class="binder-title">Study Scratchpad</span>
+        </div>
+        <button id="doc-scratchpad-close-btn" class="history-close-btn" type="button" aria-label="Close scratchpad">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="scratchpad-doc-badge">
+        <span id="scratchpad-doc-name" class="scratchpad-doc-name">Document Notes</span>
+        <span id="doc-scratchpad-status" class="binder-notes-status">Saved</span>
+      </div>
+
+      <div class="binder-notes-wrap doc-scratchpad-wrap">
+        <textarea id="doc-scratchpad-textarea" class="binder-notes-area" placeholder="Jot notes, chapter summaries, key citations, or study thoughts here… Auto-saves locally for this document."></textarea>
+        <div class="doc-scratchpad-actions">
+          <button id="doc-scratchpad-insert-cite-btn" class="text-button" type="button">+ Insert Page Citation</button>
+          <div class="doc-scratchpad-actions-right">
+            <button id="doc-scratchpad-copy-btn" class="text-button" type="button">Copy</button>
+            <button id="doc-scratchpad-export-btn" class="text-button" type="button">Download .txt</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div id="doc-scratchpad-backdrop" class="history-backdrop hidden"></div>
+
     <!-- Reading Surface -->
     <div id="reading-surface" class="reading-surface mode-continuous">
       <div id="paper" class="paper"><div id="pages" class="pages"></div></div>
@@ -610,10 +682,18 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
       </button>
-      <button id="highlight-toggle" class="dock-btn" type="button" aria-label="Highlighter mode" title="Highlighter mode">
+      <button id="highlight-toggle" class="dock-btn" type="button" aria-label="Highlighter & Draw Mode (H)" title="Highlighter & Draw Mode (H)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
           <path d="m2 2 7.586 7.586"/>
+        </svg>
+      </button>
+      <button id="dock-scratchpad-toggle" class="dock-btn" type="button" aria-label="Study Scratchpad Notes (S)" title="Study Scratchpad Notes (S)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+          <path d="M9 12h6"/>
+          <path d="M9 16h4"/>
         </svg>
       </button>
       <button id="bookmark-add" class="dock-btn" type="button" aria-label="Bookmark page" title="Bookmark page">
@@ -640,6 +720,14 @@
         <span class="tooltip-hl-swatch" aria-hidden="true"></span>
         <span>Highlight</span>
       </button>
+      <button id="btn-add-quote-selection" class="tooltip-btn" type="button" title="Add quote with citation into Study Scratchpad">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <line x1="12" y1="11" x2="12" y2="17"/>
+          <line x1="9" y1="14" x2="15" y2="14"/>
+        </svg>
+        <span>Add to Notes</span>
+      </button>
       <button id="btn-copy-selection" class="tooltip-btn" type="button">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
@@ -649,11 +737,35 @@
       </button>
     </div>
 
-    <!-- Floating Active Highlighter Bar at top of reading screen -->
-    <div id="highlight-bar" class="highlight-bar hidden">
-      <span class="highlight-bar-dot" aria-hidden="true"></span>
-      <span class="highlight-bar-text">Highlighter on</span>
-      <button id="highlight-bar-done" type="button">Done</button>
+    <!-- Floating Active Highlighter & Drawing Ribbon at top of reading screen -->
+    <div id="highlight-bar" class="highlight-bar hidden" role="toolbar" aria-label="Highlighter tools">
+      <div class="hl-bar-pill-wrap">
+        <div class="hl-bar-indicator">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            <path d="m2 2 7.586 7.586"/>
+          </svg>
+          <span id="hl-bar-status-text" class="highlight-bar-text">Highlighter</span>
+        </div>
+
+        <div class="hl-mode-switcher" role="radiogroup" aria-label="Highlighter mode">
+          <button id="hl-mode-text" class="hl-mode-btn active" type="button" title="Text selection highlight mode" aria-label="Text selection highlight mode">Text</button>
+          <button id="hl-mode-draw" class="hl-mode-btn" type="button" title="Freehand box draw mode for diagrams, formulas & margins" aria-label="Freehand draw mode">Draw Box</button>
+        </div>
+
+        <div class="hl-color-palette" role="radiogroup" aria-label="Highlight colors">
+          <button class="hl-color-btn active" data-color="amber" title="Amber Yellow" aria-label="Amber Yellow" style="--c:#f3d56b;"></button>
+          <button class="hl-color-btn" data-color="green" title="Sage Green" aria-label="Sage Green" style="--c:#9dd9a3;"></button>
+          <button class="hl-color-btn" data-color="blue" title="Sky Blue" aria-label="Sky Blue" style="--c:#92c7f7;"></button>
+          <button class="hl-color-btn" data-color="rose" title="Soft Rose" aria-label="Soft Rose" style="--c:#f7a6b8;"></button>
+        </div>
+
+        <div class="hl-bar-actions">
+          <button id="highlight-clear" class="hl-bar-action-btn" type="button" title="Clear all highlights in document">Clear</button>
+          <button id="highlight-bar-done" class="hl-bar-done-btn" type="button" title="Exit highlighter (Esc)">Done</button>
+        </div>
+      </div>
+      <div id="hl-bar-instruction" class="hl-bar-instruction">Select text or drag a box across any passage or diagram</div>
     </div>
 
     <!-- Search Box In-Document -->

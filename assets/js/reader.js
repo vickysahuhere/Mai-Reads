@@ -736,15 +736,20 @@
     toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   }
 
-  toggle.addEventListener('click', e => {
-    e.stopPropagation();
-    const willOpen = controls.classList.contains('hidden');
+  function toggleControls(force) {
+    const willOpen = typeof force === 'boolean' ? force : controls.classList.contains('hidden');
     if (willOpen) {
       closeBinderPanel();
       closeHistoryPanel();
+      if (typeof toggleScratchpad === 'function') toggleScratchpad(false);
     }
-    controls.classList.toggle('hidden');
+    controls.classList.toggle('hidden', !willOpen);
     updateControlsState();
+  }
+
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    toggleControls();
   });
 
   $('close-controls')?.addEventListener('click', () => {
@@ -1914,6 +1919,10 @@
 
   
   // --- Professional Text Selection & Highlighter System ---
+  // --- Professional Text Selection, Multi-Color Highlighter & Universal Scratchpad System ---
+  let currentHighlightColor = localStorage.getItem('mai-hl-color') || 'amber';
+  let highlighterMode = 'text'; // 'text' | 'draw'
+
   function saveHighlights() {
     try {
       localStorage.setItem('mai-highlights-' + fileKey, JSON.stringify(documentHighlights));
@@ -1924,15 +1933,49 @@
   const HIGHLIGHT_PEN_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/></svg>`;
   const HIGHLIGHT_ACTIVE_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/></svg>`;
 
+  function setHighlightColor(color) {
+    currentHighlightColor = color;
+    try { localStorage.setItem('mai-hl-color', color); } catch {}
+    document.querySelectorAll('.hl-color-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.color === color);
+    });
+    const indicator = document.querySelector('.header-hl-indicator');
+    if (indicator) {
+      const colorMap = { amber: '#f3d56b', green: '#9dd9a3', blue: '#92c7f7', rose: '#f7a6b8' };
+      indicator.style.backgroundColor = colorMap[color] || '#f3d56b';
+    }
+  }
+
+  function setHighlighterSubMode(mode) {
+    highlighterMode = mode;
+    $('hl-mode-text')?.classList.toggle('active', mode === 'text');
+    $('hl-mode-draw')?.classList.toggle('active', mode === 'draw');
+    const instruct = $('hl-bar-instruction');
+    if (instruct) {
+      instruct.textContent = mode === 'text'
+        ? 'Select text directly to highlight with active color'
+        : 'Drag a box over any passage, formula, figure, or margin';
+    }
+    surface.classList.toggle('highlighting-mode-draw', mode === 'draw');
+  }
+
   function updateHighlightUi() {
     const hasHighlights = documentHighlights.length > 0;
     $('download-pdf')?.classList.toggle('hidden', !hasHighlights);
     $('highlight-clear')?.classList.toggle('hidden', !hasHighlights);
+
+    // Dock toggle button
     const toggleBtn = $('highlight-toggle');
     if (toggleBtn) {
       toggleBtn.classList.toggle('active', isHighlighting);
       toggleBtn.innerHTML = isHighlighting ? HIGHLIGHT_ACTIVE_SVG : HIGHLIGHT_PEN_SVG;
-      toggleBtn.title = isHighlighting ? 'Exit highlighter draw mode' : 'Highlighter draw mode';
+      toggleBtn.title = isHighlighting ? 'Exit highlighter (H)' : 'Highlighter & Draw Mode (H)';
+    }
+
+    // Top header toggle button
+    const headerBtn = $('header-highlighter-btn');
+    if (headerBtn) {
+      headerBtn.classList.toggle('active', isHighlighting);
     }
   }
 
@@ -1947,10 +1990,12 @@
       wrap.className = 'text-highlight-wrap';
       wrap.dataset.id = h.id;
 
+      const colorClass = h.color ? `hl-${h.color}` : 'hl-amber';
+
       if (h.rects && h.rects.length) {
         h.rects.forEach(r => {
           const band = document.createElement('div');
-          band.className = 'text-highlight-band';
+          band.className = `text-highlight-band ${colorClass}`;
           band.style.left = `${r.x}%`;
           band.style.top = `${r.y}%`;
           band.style.width = `${r.w}%`;
@@ -1965,11 +2010,12 @@
         });
       } else if (h.x !== undefined && h.w !== undefined) {
         const band = document.createElement('div');
-        band.className = 'text-highlight-band';
+        band.className = `highlight-box text-highlight-band ${colorClass}`;
         band.style.left = `${h.x}%`;
         band.style.top = `${h.y}%`;
         band.style.width = `${h.w}%`;
         band.style.height = `${h.h}%`;
+        band.style.pointerEvents = 'auto';
         band.title = 'Click to delete highlight';
         band.addEventListener('click', e => {
           e.stopPropagation();
@@ -2003,13 +2049,13 @@
       return;
     }
 
-    const selectedText = selection.toString().trim();
+    const range = selection.getRangeAt(0);
+    let selectedText = selection.toString().trim() || (range ? range.toString().trim() : '');
     if (!selectedText) {
       hideSelectionTooltip();
       return;
     }
 
-    const range = selection.getRangeAt(0);
     let container = range.commonAncestorContainer;
     if (container.nodeType === 3) container = container.parentElement;
     if (!container.closest('#reading-surface')) {
@@ -2025,6 +2071,12 @@
 
     currentSelectionRange = range.cloneRange();
     currentSelectedText = selectedText;
+
+    // If highlighter mode is actively on and set to 'text', highlight immediately on selection!
+    if (isHighlighting && highlighterMode === 'text') {
+      applyHighlightToSelection();
+      return;
+    }
 
     const tooltip = $('selection-tooltip');
     if (!tooltip) return;
@@ -2044,8 +2096,8 @@
     let selectedText = '';
 
     if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
-      selectedText = selection.toString().trim();
       range = selection.getRangeAt(0);
+      selectedText = selection.toString().trim() || (range ? range.toString().trim() : '');
     } else if (currentSelectionRange && currentSelectedText) {
       range = currentSelectionRange;
       selectedText = currentSelectedText;
@@ -2096,6 +2148,7 @@
         const highlightItem = {
           id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
           page: pageNum,
+          color: currentHighlightColor,
           text: selectedText,
           rects: highlightRects
         };
@@ -2153,7 +2206,7 @@
     }
   });
 
-  // Freehand Draw mode
+  // Highlighter Tool Ribbon & Freehand Draw Mode
   function setHighlighterMode(active) {
     if (docxMode && active) {
       showToast('Draw mode is for PDFs; select text directly to highlight');
@@ -2162,18 +2215,34 @@
     isHighlighting = Boolean(active);
     surface.classList.toggle('highlighting-mode', isHighlighting);
     $('highlight-bar')?.classList.toggle('hidden', !isHighlighting);
-    updateHighlightUi();
     if (isHighlighting) {
-      showToast('Draw mode active: drag a box over any text');
+      setHighlightColor(currentHighlightColor);
+      setHighlighterSubMode(highlighterMode);
+      showToast('Highlighter active: select text or switch to Draw Box');
+    } else {
+      surface.classList.remove('highlighting-mode-draw');
     }
+    updateHighlightUi();
   }
 
   $('highlight-toggle')?.addEventListener('click', () => {
     setHighlighterMode(!isHighlighting);
   });
+  $('header-highlighter-btn')?.addEventListener('click', () => {
+    setHighlighterMode(!isHighlighting);
+  });
 
   $('highlight-bar-done')?.addEventListener('click', () => {
     setHighlighterMode(false);
+  });
+
+  $('hl-mode-text')?.addEventListener('click', () => setHighlighterSubMode('text'));
+  $('hl-mode-draw')?.addEventListener('click', () => setHighlighterSubMode('draw'));
+
+  document.querySelectorAll('.hl-color-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setHighlightColor(btn.dataset.color || 'amber');
+    });
   });
 
   $('highlight-clear')?.addEventListener('click', () => {
@@ -2197,7 +2266,11 @@
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (touchPointers.size > 1) return;
 
-    const targetNode = e.target.closest('.document-page');
+    // In text mode, let clicks/drags directly select text on the textLayer
+    if (highlighterMode !== 'draw' && e.target.closest('.textLayer')) return;
+
+    const targetNode = e.target.closest('.document-page') || 
+      (document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList.contains('document-page')) : null);
     if (!targetNode) return;
 
     e.preventDefault();
@@ -2217,7 +2290,7 @@
     };
 
     activeHighlightBox = document.createElement('div');
-    activeHighlightBox.className = 'highlight-box highlight-drawing';
+    activeHighlightBox.className = `highlight-box highlight-drawing hl-${currentHighlightColor}`;
     activeHighlightBox.style.left = `${(highlightStart.x / rect.width) * 100}%`;
     activeHighlightBox.style.top = `${(highlightStart.y / rect.height) * 100}%`;
     activeHighlightBox.style.width = '0%';
@@ -2255,6 +2328,7 @@
       const newHighlight = {
         id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         page: activePageNum,
+        color: currentHighlightColor,
         x: parseFloat(activeHighlightBox.style.left),
         y: parseFloat(activeHighlightBox.style.top),
         w: parseFloat(activeHighlightBox.style.width),
@@ -2273,6 +2347,166 @@
     activePageNode = null;
     activePageNum = null;
   });
+
+  // ── Universal Study Scratchpad System (Single Docs & Notebooks) ──────────
+  let docNotesDebounce = null;
+
+  function isNotebookActive() {
+    return Boolean(currentNotebook && reader.classList.contains('in-notebook-mode'));
+  }
+
+  function getActiveDocHeading() {
+    return $('doc-title-text')?.textContent || (currentNotebook?.title || 'Document Notes');
+  }
+
+  function toggleScratchpad(forceOpen) {
+    if (isNotebookActive()) {
+      const panel = $('notebook-binder-panel');
+      const shouldOpen = forceOpen !== undefined ? forceOpen : !panel?.classList.contains('open');
+      if (shouldOpen) {
+        openBinderPanel();
+        $('binder-view-notes')?.click();
+      } else {
+        closeBinderPanel();
+      }
+      return;
+    }
+
+    const panel = $('doc-scratchpad-panel');
+    const backdrop = $('doc-scratchpad-backdrop');
+    if (!panel) return;
+
+    const isOpen = panel.classList.contains('open');
+    const willOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+
+    if (willOpen) {
+      if (controls && !controls.classList.contains('hidden')) {
+        controls.classList.add('hidden');
+        updateControlsState();
+      }
+      closeBinderPanel();
+      closeHistoryPanel();
+      const docName = $('scratchpad-doc-name');
+      if (docName) docName.textContent = getActiveDocHeading();
+      const textarea = $('doc-scratchpad-textarea');
+      if (textarea && textarea.dataset.loadedKey !== fileKey) {
+        textarea.value = localStorage.getItem('mai-notes-' + fileKey) || '';
+        textarea.dataset.loadedKey = fileKey;
+      }
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden', 'false');
+      backdrop?.classList.remove('hidden');
+      $('header-scratchpad-btn')?.classList.add('active');
+      $('dock-scratchpad-toggle')?.classList.add('active');
+      setTimeout(() => textarea?.focus(), 150);
+    } else {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+      backdrop?.classList.add('hidden');
+      $('header-scratchpad-btn')?.classList.remove('active');
+      $('dock-scratchpad-toggle')?.classList.remove('active');
+    }
+  }
+
+  function closeDocScratchpad() {
+    toggleScratchpad(false);
+  }
+
+  const docScratchpadTextarea = $('doc-scratchpad-textarea');
+  const docScratchpadStatus = $('doc-scratchpad-status');
+  docScratchpadTextarea?.addEventListener('input', () => {
+    if (docScratchpadStatus) docScratchpadStatus.textContent = 'Saving…';
+    clearTimeout(docNotesDebounce);
+    docNotesDebounce = setTimeout(() => {
+      try {
+        localStorage.setItem('mai-notes-' + fileKey, docScratchpadTextarea.value);
+        if (docScratchpadStatus) docScratchpadStatus.textContent = 'Saved';
+      } catch (err) {
+        if (docScratchpadStatus) docScratchpadStatus.textContent = 'Save error';
+      }
+    }, 400);
+  });
+
+  // Insert Page Citation
+  $('doc-scratchpad-insert-cite-btn')?.addEventListener('click', () => {
+    if (!docScratchpadTextarea) return;
+    const cur = Number($('page-current')?.textContent) || 1;
+    const cite = `\n— [Page ${cur}], "${getActiveDocHeading()}"\n`;
+    const start = docScratchpadTextarea.selectionStart;
+    const end = docScratchpadTextarea.selectionEnd;
+    docScratchpadTextarea.setRangeText(cite, start, end, 'end');
+    docScratchpadTextarea.dispatchEvent(new Event('input'));
+    docScratchpadTextarea.focus();
+  });
+
+  // Copy Scratchpad Notes
+  $('doc-scratchpad-copy-btn')?.addEventListener('click', () => {
+    const text = docScratchpadTextarea?.value || '';
+    if (!text.trim()) {
+      showToast('Scratchpad is empty');
+      return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Notes copied to clipboard!');
+    }).catch(() => {
+      showToast('Notes copied');
+    });
+  });
+
+  // Export Scratchpad Notes as .txt
+  $('doc-scratchpad-export-btn')?.addEventListener('click', () => {
+    const text = docScratchpadTextarea?.value || '';
+    if (!text.trim()) {
+      showToast('Scratchpad is empty');
+      return;
+    }
+    const title = getActiveDocHeading().replace(/[^a-z0-9]/gi, '_') || 'Study';
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title}_Notes.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    showToast('Notes downloaded!');
+  });
+
+  $('doc-scratchpad-close-btn')?.addEventListener('click', closeDocScratchpad);
+  $('doc-scratchpad-backdrop')?.addEventListener('click', closeDocScratchpad);
+
+  // Add selected text directly to Scratchpad
+  function addSelectedQuoteToScratchpad() {
+    const text = currentSelectedText || window.getSelection()?.toString().trim();
+    if (!text) return;
+
+    const cur = Number($('page-current')?.textContent) || 1;
+    const citation = `\n\n> "${text}"\n— [Page ${cur}], "${getActiveDocHeading()}"\n`;
+
+    if (isNotebookActive()) {
+      openBinderPanel();
+      $('binder-view-notes')?.click();
+      const area = $('binder-notes-area');
+      if (area) {
+        area.value = (area.value ? area.value.trimEnd() : '') + citation;
+        area.dispatchEvent(new Event('input'));
+      }
+    } else {
+      toggleScratchpad(true);
+      const area = $('doc-scratchpad-textarea');
+      if (area) {
+        area.value = (area.value ? area.value.trimEnd() : '') + citation;
+        area.dispatchEvent(new Event('input'));
+      }
+    }
+    hideSelectionTooltip();
+    showToast('Quote added to Study Scratchpad!');
+  }
+  $('btn-add-quote-selection')?.addEventListener('click', addSelectedQuoteToScratchpad);
+
+  // Synchronized Header & Dock Buttons
+  $('header-scratchpad-btn')?.addEventListener('click', () => toggleScratchpad());
+  $('dock-scratchpad-toggle')?.addEventListener('click', () => toggleScratchpad());
+  $('header-controls-btn')?.addEventListener('click', toggleControls);
 
   // Export PDF with burned-in highlights
   $('download-pdf')?.addEventListener('click', async () => {
