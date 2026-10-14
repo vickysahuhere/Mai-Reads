@@ -962,7 +962,7 @@ input[type="range"].range::-moz-range-thumb {
   align-items: center;
   position: relative;
   scroll-behavior: smooth;
-  padding: 80px 24px calc(var(--sab) + 96px);
+  padding: 80px 24px calc(var(--sab) + 130px);
 }
 
 /* Document Header Bar */
@@ -1241,24 +1241,98 @@ input[type="range"].range::-moz-range-thumb {
   border-style: dashed;
 }
 
-/* Reflowed Word DOCX text typography */
-.docx-body {
-  padding: 64px 72px;
-  font-family: var(--font-serif);
-  font-size: 17px;
-  line-height: 1.7;
-  color: var(--paper-ink);
+/* Reflowed Word DOCX text typography & Book Page Proportions */
+.document-page.docx-page {
+  width: 100%;
+  max-width: 820px;
+  margin: 32px auto 64px;
+  background: var(--paper-bg, #ffffff);
+  color: var(--paper-ink, #212529);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  padding: 64px 72px 96px;
+  box-sizing: border-box;
+  font-family: var(--font-serif, "Newsreader", Georgia, serif);
+  font-size: 18px;
+  line-height: 1.8;
+  letter-spacing: 0.005em;
+  position: relative;
+  zoom: var(--doc-zoom, 1);
+  transform-origin: top center;
+  transition: zoom 120ms ease-out;
 }
 
-.docx-body p {
-  margin-bottom: 1.2em;
+:root[data-resolved-theme="dark"] .document-page.docx-page {
+  background: var(--paper-bg, #1a1b1e);
+  color: var(--paper-ink, #e6edf3);
+  border-color: var(--line, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
-.docx-body h1, .docx-body h2, .docx-body h3 {
-  font-family: var(--font-serif);
+.document-page.docx-page p {
+  margin: 0 0 1.25em;
+  line-height: 1.8;
+}
+
+.document-page.docx-page h1 {
+  font-family: var(--font-serif, "Newsreader", Georgia, serif);
+  font-size: 1.85em;
+  font-weight: 700;
   line-height: 1.25;
-  margin: 1.5em 0 0.6em;
-  color: var(--paper-ink);
+  margin: 1.8em 0 0.6em;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.document-page.docx-page h1:first-child {
+  margin-top: 0.2em;
+}
+
+.document-page.docx-page h2 {
+  font-family: var(--font-serif, "Newsreader", Georgia, serif);
+  font-size: 1.45em;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 1.6em 0 0.6em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.document-page.docx-page h3 {
+  font-family: var(--font-serif, "Newsreader", Georgia, serif);
+  font-size: 1.2em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1.4em 0 0.5em;
+  color: var(--ink);
+}
+
+.document-page.docx-page ul,
+.document-page.docx-page ol {
+  padding-left: 28px;
+  margin: 0 0 1.25em;
+}
+
+.document-page.docx-page li {
+  margin: 0.4em 0;
+  line-height: 1.7;
+}
+
+.document-page.docx-page strong,
+.document-page.docx-page b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.document-page.docx-page blockquote {
+  margin: 1.5em 0;
+  padding: 12px 20px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-style: italic;
 }
 
 /* Text Selection Highlights */
@@ -1566,12 +1640,13 @@ input[type="range"].range::-moz-range-thumb {
   align-items: center;
   gap: 4px;
   box-shadow: var(--shadow-float);
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
   max-width: min(560px, calc(100vw - 20px - var(--sal) - var(--sar)));
+  will-change: transform, opacity;
 }
 
 .reader-dock.dock-hidden {
-  transform: translateX(-50%) translateY(90px);
+  transform: translateX(-50%) translateY(24px) scale(0.96);
   opacity: 0;
   pointer-events: none;
 }
@@ -3247,4 +3322,142 @@ input[type="range"].range::-moz-range-thumb {
 
 .pulse-hint {
   animation: pulse-hint 0.65s ease-in-out 3;
+}
+
+/* ── Plain-Sight Download / Export Buttons ───────────────────────────────── */
+#header-download-btn {
+  background: var(--surface-2);
+  color: var(--ink);
+  font-weight: 500;
+  border-color: var(--line-strong);
+}
+
+#header-download-btn:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.hl-bar-action-btn.hl-download-btn {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-color: var(--ink);
+}
+
+.hl-bar-action-btn.hl-download-btn:hover {
+  opacity: 0.88;
+}
+
+/* ── Print / Save as PDF Styles (Clean Vector Export with Highlights) ─────── */
+@media print {
+  @page {
+    margin: 18mm 16mm 18mm 16mm;
+    size: auto;
+  }
+
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide all app chrome, dock, panels, buttons */
+  #welcome,
+  #doc-title,
+  #reader-dock,
+  #controls,
+  #doc-scratchpad-panel,
+  #doc-scratchpad-backdrop,
+  #highlight-bar,
+  #selection-tooltip,
+  #history-panel,
+  #history-backdrop,
+  #binder-panel,
+  #binder-backdrop,
+  #search-box,
+  .theme-pill,
+  #toast,
+  .notebook-tabs-bar,
+  .reader-top-action-btn,
+  .zoom-indicator-pill {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  #reader-view,
+  #reading-surface,
+  #paper,
+  .pages {
+    display: block !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  .document-page.docx-page {
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    zoom: 1 !important;
+    background: transparent !important;
+    color: #111111 !important;
+    font-size: 12pt !important;
+    line-height: 1.65 !important;
+  }
+
+  .document-page.docx-page h1,
+  .document-page.docx-page h2,
+  .document-page.docx-page h3 {
+    color: #000000 !important;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .document-page.docx-page p,
+  .document-page.docx-page li,
+  .document-page.docx-page blockquote {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure highlights print with exact color */
+  .text-highlight-band {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    opacity: 0.75 !important;
+    mix-blend-mode: multiply !important;
+  }
+
+  .text-highlight-band.hl-amber {
+    background-color: #fce588 !important;
+  }
+  .text-highlight-band.hl-green {
+    background-color: #bbf0c2 !important;
+  }
+  .text-highlight-band.hl-blue {
+    background-color: #bfe0fd !important;
+  }
+  .text-highlight-band.hl-rose {
+    background-color: #fec5d2 !important;
+  }
 }

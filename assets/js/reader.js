@@ -711,6 +711,12 @@
     $('notebook-tabs-bar')?.classList.add('hidden');
     reader.classList.remove('in-notebook-mode');
     currentNotebook = null;
+    currentFile = null;
+    fileKey = '';
+    globalPdfBytes = null;
+    docxMode = false;
+    documentHighlights = [];
+    updateHighlightUi();
     updateHistoryBadges();
     updateResumeButton();
   });
@@ -765,24 +771,50 @@
     }
   });
 
-  // Dock auto-hides while reading surface is scrolling per Section 4
+  // Dock auto-hides when cursor is idle and awakens on movement
   const readerDock = $('reader-dock');
-  let dockScrollTimer = null;
-  surface.addEventListener('scroll', () => {
-    if (readerDock) {
+  let dockIdleTimer = null;
+
+  function wakeDock() {
+    if (!readerDock) return;
+    readerDock.classList.remove('dock-hidden');
+    clearTimeout(dockIdleTimer);
+    dockIdleTimer = setTimeout(() => {
+      // Keep dock visible if mouse is hovering over the dock or a popup is open
+      if (readerDock.matches(':hover')) return;
+      if (readerDock.contains(document.activeElement)) return;
+      if (controls && !controls.classList.contains('hidden')) return;
+      if ($('doc-scratchpad-panel')?.classList.contains('open')) return;
+      if ($('binder-panel')?.classList.contains('open')) return;
+      if ($('history-panel')?.classList.contains('open')) return;
+      if ($('search-box') && !$('search-box').classList.contains('hidden')) return;
       readerDock.classList.add('dock-hidden');
-      clearTimeout(dockScrollTimer);
-      dockScrollTimer = setTimeout(() => {
-        readerDock.classList.remove('dock-hidden');
-      }, 400);
-    }
+    }, 2200);
+  }
+
+  window.addEventListener('mousemove', wakeDock, { passive: true });
+  window.addEventListener('touchstart', wakeDock, { passive: true });
+  window.addEventListener('touchmove', wakeDock, { passive: true });
+  window.addEventListener('keydown', wakeDock, { passive: true });
+
+  surface.addEventListener('scroll', () => {
+    if (readerDock) readerDock.classList.add('dock-hidden');
+    clearTimeout(dockIdleTimer);
+    dockIdleTimer = setTimeout(wakeDock, 120);
   }, { passive: true });
 
-  window.addEventListener('mousemove', () => {
-    if (readerDock?.classList.contains('dock-hidden')) {
-      readerDock.classList.remove('dock-hidden');
-    }
-  }, { passive: true });
+  readerDock?.addEventListener('mouseenter', () => clearTimeout(dockIdleTimer));
+    readerDock?.addEventListener('mouseleave', () => {
+    clearTimeout(dockIdleTimer);
+    dockIdleTimer = setTimeout(() => {
+      if (controls && !controls.classList.contains('hidden')) return;
+      if ($('doc-scratchpad-panel')?.classList.contains('open')) return;
+      readerDock.classList.add('dock-hidden');
+    }, 1500);
+  });
+
+  // Start with dock awake and begin idle auto-hide countdown
+  wakeDock();
 
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
@@ -909,6 +941,13 @@
 
     const zoomRatio = newZoom / 100;
     paper.style.setProperty('--doc-zoom', String(zoomRatio));
+    if (docxMode) {
+      const docxPage = document.querySelector('.docx-page');
+      if (docxPage) {
+        docxPage.style.setProperty('--doc-zoom', String(zoomRatio));
+        docxPage.dataset.renderedZoom = String(newZoom);
+      }
+    }
 
     if (pdf && pageNodes.length && prevZoom !== newZoom) {
       // Fluid geometric anchor preservation without layout thrashing
@@ -955,6 +994,16 @@
   });
 
   function zoomFitWidth() {
+    if (docxMode) {
+      const isMobile = window.innerWidth <= 600;
+      const hPadding = isMobile ? 24 : 64;
+      const availW = surface.clientWidth - hPadding;
+      const targetZoom = Math.max(60, Math.min(200, Math.round((availW / 820) * 100)));
+      setLiveZoom(targetZoom);
+      scheduleZoomRedraw(40);
+      showToast(`Fit width (${targetZoom}%)`);
+      return;
+    }
     if (!pdf || !pageNodes.length) {
       setLiveZoom(100);
       return;
@@ -976,6 +1025,12 @@
   }
 
   function zoomFitPage() {
+    if (docxMode) {
+      setLiveZoom(100);
+      scheduleZoomRedraw(40);
+      showToast('Reset zoom (100%)');
+      return;
+    }
     if (!pdf || !pageNodes.length) {
       setLiveZoom(100);
       return;
@@ -1219,6 +1274,7 @@
 
     welcome.classList.add('hidden');
     reader.classList.remove('hidden');
+    wakeDock();
     $('loading').classList.remove('hidden');
     $('error').classList.add('hidden');
 
@@ -1331,15 +1387,7 @@
   async function renderPdf(bytes, token) {
     globalPdfBytes = bytes;
     documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
-    const downloadBtn = $('download-pdf');
-    if (downloadBtn) {
-      downloadBtn.removeAttribute('disabled');
-      downloadBtn.style.opacity = '';
-      downloadBtn.style.cursor = '';
-      downloadBtn.title = '';
-      if (documentHighlights.length > 0) downloadBtn.classList.remove('hidden');
-      else downloadBtn.classList.add('hidden');
-    }
+    updateHighlightUi();
 
     if (!window.pdfjsLib) throw new Error('PDF support could not load. Check your internet connection and reload this page.');
     pdf = await pdfjsLib.getDocument({
@@ -1486,29 +1534,23 @@
     if (token !== renderToken) return;
 
     const article = document.createElement('article');
-    article.className = 'document-page docx-page';
+    article.className = 'document-page docx-page docx-body';
     article.dataset.page = '1';
+    article.dataset.renderedZoom = String(currentZoomVal);
+    article.style.setProperty('--doc-zoom', String(currentZoomVal / 100));
     article.innerHTML = result.value || '<p>This document has no readable text.</p>';
     sanitizeDocx(article);
 
     pages.append(article);
     pageNodes.push(article);
     docxMode = true;
-    const downloadBtn = $('download-pdf');
-    if (downloadBtn) {
-      downloadBtn.classList.remove('hidden');
-      downloadBtn.setAttribute('disabled', 'true');
-      downloadBtn.style.opacity = '0.5';
-      downloadBtn.style.cursor = 'not-allowed';
-      downloadBtn.title = 'Export works for PDF files. Highlights on Word files stay in the reader.';
-    }
+    documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
+    updateHighlightUi();
     const pageChip = $('doc-page-chip');
     if (pageChip) {
       pageChip.title = 'Reflowed from Word. Page numbers are estimates.';
     }
     showToast('Reflowed from Word. Page numbers are estimates.', 2500);
-    documentHighlights = JSON.parse(localStorage.getItem('mai-highlights-' + fileKey) || '[]');
-    updateHighlightUi();
     renderPageHighlights(1, article);
 
     outlineItems = [...article.querySelectorAll('h1,h2,h3,h4')].map((h, i) => ({
@@ -1961,7 +2003,29 @@
 
   function updateHighlightUi() {
     const hasHighlights = documentHighlights.length > 0;
-    $('download-pdf')?.classList.toggle('hidden', !hasHighlights);
+    const isDocLoaded = Boolean(currentFile || globalPdfBytes || docxMode);
+
+    const downloadPdf = $('download-pdf');
+    if (downloadPdf) {
+      downloadPdf.classList.toggle('hidden', !isDocLoaded);
+      downloadPdf.removeAttribute('disabled');
+      downloadPdf.style.opacity = '';
+      downloadPdf.textContent = hasHighlights ? 'Export PDF with highlights' : 'Export document as PDF';
+    }
+
+    const headerDownload = $('header-download-btn');
+    if (headerDownload) {
+      headerDownload.classList.toggle('hidden', !isDocLoaded);
+      headerDownload.removeAttribute('disabled');
+      headerDownload.style.opacity = '';
+      const label = headerDownload.querySelector('.btn-text');
+      if (label) {
+        label.textContent = hasHighlights ? `Download PDF (${documentHighlights.length})` : 'Download PDF';
+      }
+      headerDownload.title = hasHighlights ? 'Export document with highlights' : 'Export document as PDF';
+    }
+
+    $('hl-bar-download')?.classList.toggle('hidden', !hasHighlights);
     $('highlight-clear')?.classList.toggle('hidden', !hasHighlights);
 
     // Dock toggle button
@@ -2508,8 +2572,16 @@
   $('dock-scratchpad-toggle')?.addEventListener('click', () => toggleScratchpad());
   $('header-controls-btn')?.addEventListener('click', toggleControls);
 
-  // Export PDF with burned-in highlights
-  $('download-pdf')?.addEventListener('click', async () => {
+  // Export Document with burned-in highlights (PDF via PDF-Lib, DOCX via high-fidelity Print-to-PDF)
+  async function exportCurrentDocumentWithHighlights() {
+    if (docxMode) {
+      showToast('Opening print preview to save as PDF…', 2500);
+      setTimeout(() => {
+        window.print();
+      }, 200);
+      return;
+    }
+
     if (!globalPdfBytes) {
       showToast('Original PDF data not found');
       return;
@@ -2518,25 +2590,53 @@
       showToast('PDF-Lib is still loading. Please retry in a moment.');
       return;
     }
+
     const downloadPdfBtn = $('download-pdf');
+    const headerDownloadBtn = $('header-download-btn');
+    const ribbonDownloadBtn = $('hl-bar-download');
+    const setExporting = () => {
+      [downloadPdfBtn, headerDownloadBtn, ribbonDownloadBtn].forEach(b => {
+        if (b) {
+          b.dataset.prevText = b.textContent;
+          b.style.opacity = '0.6';
+          b.setAttribute('disabled', 'true');
+        }
+      });
+      if (downloadPdfBtn) downloadPdfBtn.textContent = 'Exporting…';
+    };
+    const resetExporting = () => {
+      [downloadPdfBtn, headerDownloadBtn, ribbonDownloadBtn].forEach(b => {
+        if (b) {
+          if (b.dataset.prevText) b.textContent = b.dataset.prevText;
+          b.style.opacity = '';
+          b.removeAttribute('disabled');
+        }
+      });
+    };
+
     try {
-      if (downloadPdfBtn) {
-        downloadPdfBtn.style.opacity = '0.5';
-        downloadPdfBtn.textContent = 'Exporting...';
-      }
+      setExporting();
 
       const { PDFDocument, rgb } = window.PDFLib;
       const pdfDoc = await PDFDocument.load(globalPdfBytes);
       const pages = pdfDoc.getPages();
 
+      const colorMap = {
+        amber: rgb(0.96, 0.84, 0.38),
+        green: rgb(0.58, 0.85, 0.62),
+        blue:  rgb(0.55, 0.77, 0.98),
+        rose:  rgb(0.97, 0.62, 0.72)
+      };
+
       documentHighlights.forEach(h => {
         if (h.page <= pages.length) {
           const page = pages[h.page - 1];
           const { width, height } = page.getSize();
-
           const rectsToDraw = h.rects && h.rects.length ? h.rects : [{ x: h.x, y: h.y, w: h.w, h: h.h }];
+          const hlColor = colorMap[h.color] || colorMap.amber;
 
           rectsToDraw.forEach(r => {
+            if (r.w <= 0 || r.h <= 0) return;
             const x = (r.x / 100) * width;
             const w = (r.w / 100) * width;
             const hPt = (r.h / 100) * height;
@@ -2547,7 +2647,7 @@
               y: y,
               width: w,
               height: hPt,
-              color: rgb(1, 0.92, 0.23),
+              color: hlColor,
               opacity: 0.45,
             });
           });
@@ -2570,13 +2670,14 @@
       console.error(err);
       showToast('Export failed: ' + err.message);
     } finally {
-      if (downloadPdfBtn) {
-        downloadPdfBtn.style.opacity = '';
-        downloadPdfBtn.textContent = 'Export';
-      }
+      resetExporting();
       updateHighlightUi();
     }
-  });
+  }
+
+  $('download-pdf')?.addEventListener('click', exportCurrentDocumentWithHighlights);
+  $('header-download-btn')?.addEventListener('click', exportCurrentDocumentWithHighlights);
+  $('hl-bar-download')?.addEventListener('click', exportCurrentDocumentWithHighlights);
 
   // ── Study Notebooks Reader Engine ─────────────────────────────────────────
   let currentNotebook = null;

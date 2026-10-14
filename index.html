@@ -528,6 +528,15 @@
           <span id="header-notes-dot" class="header-notes-dot hidden" aria-hidden="true"></span>
         </button>
 
+        <button id="header-download-btn" class="reader-top-action-btn hidden" type="button" aria-label="Export document as PDF" title="Export document as PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span class="btn-text">Download PDF</span>
+        </button>
+
         <button id="header-controls-btn" class="reader-top-action-btn icon-only" type="button" aria-label="Reading Controls" title="Reading Controls">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" y1="6" x2="20" y2="6"/>
@@ -761,6 +770,14 @@
         </div>
 
         <div class="hl-bar-actions">
+          <button id="hl-bar-download" class="hl-bar-action-btn hl-download-btn hidden" type="button" title="Export PDF with highlights">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Download</span>
+          </button>
           <button id="highlight-clear" class="hl-bar-action-btn" type="button" title="Clear all highlights in document">Clear</button>
           <button id="highlight-bar-done" class="hl-bar-done-btn" type="button" title="Exit highlighter (Esc)">Done</button>
         </div>
