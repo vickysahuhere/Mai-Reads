@@ -3736,7 +3736,7 @@
     });
   });
 
-  [$('feedback-toggle-welcome'), $('welcome-feedback-btn'), $('controls-feedback-btn')].forEach(btn => {
+  [$('feedback-toggle-welcome'), $('welcome-feedback-btn'), $('controls-feedback-btn'), $('header-feedback-btn')].forEach(btn => {
     btn?.addEventListener('click', openFeedbackModal);
   });
 
