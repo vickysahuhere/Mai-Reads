@@ -1022,14 +1022,17 @@
             </div>
           </div>
 
+          <!-- Anti-spam Honeypot field (hidden via CSS from human users) -->
+          <input type="text" name="_honey" id="feedback-honey" class="feedback-honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
           <div class="feedback-field-group">
             <label for="feedback-message-input" class="feedback-label">Your message or idea *</label>
-            <textarea id="feedback-message-input" class="feedback-textarea" placeholder="Tell us what you'd like to see, change, or improve in Mai-Reads…" required rows="4"></textarea>
+            <textarea id="feedback-message-input" class="feedback-textarea" placeholder="Tell us what you'd like to see, change, or improve in Mai-Reads…" required minlength="5" maxlength="2000" rows="4"></textarea>
           </div>
 
           <div class="feedback-field-group">
             <label for="feedback-email-input" class="feedback-label">Your email (optional, for follow-up)</label>
-            <input id="feedback-email-input" class="feedback-input" type="email" placeholder="you@example.com" />
+            <input id="feedback-email-input" class="feedback-input" type="email" placeholder="you@example.com" maxlength="150" />
           </div>
 
           <div class="feedback-modal-footer">

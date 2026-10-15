@@ -3183,6 +3183,17 @@ input[type="range"].range::-moz-range-thumb {
   stroke: var(--bg);
 }
 
+/* Anti-Spam Honeypot Field */
+.feedback-honey {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
 /* Textarea & Inputs */
 .feedback-textarea,
 .feedback-input {

@@ -703,16 +703,33 @@
   feedbackForm?.addEventListener('submit', async e => {
     e.preventDefault();
     const message = feedbackMessageInput?.value.trim();
-    if (!message) return;
+    if (!message || message.length < 5) {
+      showToast('Please enter at least 5 characters for your feedback.', 3000);
+      feedbackMessageInput?.focus();
+      return;
+    }
+    if (message.length > 2000) {
+      showToast('Feedback message exceeds the 2000 character limit.', 3000);
+      return;
+    }
 
-    const email = feedbackEmailInput?.value.trim() || 'Anonymous';
+    const email = feedbackEmailInput?.value.trim() || '';
+    const honey = $('feedback-honey')?.value || '';
+
+    // Anti-spam honeypot: silently drop bot submissions without hitting network
+    if (honey) {
+      feedbackFormContainer?.classList.add('hidden');
+      feedbackSuccessContainer?.classList.remove('hidden');
+      return;
+    }
+
     if (feedbackSubmitBtn) {
       feedbackSubmitBtn.disabled = true;
       feedbackSubmitBtn.innerHTML = `<span>Sending…</span>`;
     }
 
     try {
-      await fetch('/api/feedback', {
+      const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -721,19 +738,27 @@
           category: selectedFeedbackCategory,
           message: message,
           email: email,
+          _honey: honey,
           timestamp: new Date().toISOString()
         })
       });
-    } catch (err) {
-      console.warn('Feedback dispatch fallback:', err);
-    } finally {
-      if (feedbackSubmitBtn) {
-        feedbackSubmitBtn.disabled = false;
-        feedbackSubmitBtn.innerHTML = `<span>Send Feedback</span>`;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || (data && data.success === false)) {
+        throw new Error(data.message || 'Could not send feedback. Please try again.');
       }
+
       feedbackFormContainer?.classList.add('hidden');
       feedbackSuccessContainer?.classList.remove('hidden');
       showToast('Thank you! We appreciate your feedback.', 3000);
+      feedbackForm?.reset();
+    } catch (err) {
+      console.warn('Feedback dispatch error:', err);
+      showToast(err.message || 'Could not send feedback. Please try again.', 3500);
+    } finally {
+      if (feedbackSubmitBtn) {
+        feedbackSubmitBtn.disabled = false;
+        feedbackSubmitBtn.innerHTML = `<span>Send Feedback</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`;
+      }
     }
   });
 
