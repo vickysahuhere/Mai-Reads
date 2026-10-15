@@ -3227,18 +3227,6 @@ input[type="range"].range::-moz-range-thumb {
   border-top: 1px solid var(--line);
 }
 
-.feedback-mailto-link {
-  font-size: 12.5px;
-  color: var(--muted);
-  text-decoration: underline;
-  margin-right: auto;
-  transition: color 150ms ease;
-}
-
-.feedback-mailto-link:hover {
-  color: var(--ink);
-}
-
 .feedback-secondary-btn {
   height: 38px;
   padding: 0 16px;
@@ -3334,10 +3322,6 @@ input[type="range"].range::-moz-range-thumb {
   .feedback-modal-footer {
     flex-wrap: wrap;
     gap: 8px;
-  }
-  .feedback-mailto-link {
-    width: 100%;
-    margin-bottom: 4px;
   }
 }
 
