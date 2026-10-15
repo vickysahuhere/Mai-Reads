@@ -712,14 +712,12 @@
     }
 
     try {
-      await fetch('https://formsubmit.co/ajax/your-email@example.com', {
+      await fetch('/api/feedback', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          _subject: `Mai-Reads Feedback: ${selectedFeedbackCategory}`,
           category: selectedFeedbackCategory,
           message: message,
           email: email,
@@ -727,7 +725,7 @@
         })
       });
     } catch (err) {
-      console.warn('FormSubmit AJAX fallback:', err);
+      console.warn('Feedback dispatch fallback:', err);
     } finally {
       if (feedbackSubmitBtn) {
         feedbackSubmitBtn.disabled = false;

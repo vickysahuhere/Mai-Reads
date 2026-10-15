@@ -3757,9 +3757,9 @@
 
     for (const item of queue) {
       try {
-        await fetch('https://formsubmit.co/ajax/your-email@example.com', {
+        await fetch('/api/feedback', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(item)
         });
       } catch {}
@@ -3802,16 +3802,15 @@
     }
 
     try {
-      await fetch('https://formsubmit.co/ajax/your-email@example.com', {
+      await fetch('/api/feedback', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
     } catch (err) {
-      console.warn('FormSubmit AJAX fallback:', err);
+      console.warn('Feedback dispatch fallback:', err);
     } finally {
       if (feedbackSubmitBtn) {
         feedbackSubmitBtn.disabled = false;

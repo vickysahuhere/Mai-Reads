@@ -22,6 +22,15 @@ const mimeTypes = {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost:8080');
   let pathname = decodeURIComponent(url.pathname);
+  if (pathname === '/api/feedback') {
+    import('../api/feedback.js').then(mod => {
+      mod.default(req, res);
+    }).catch(err => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
   if (pathname === '/') pathname = '/index.html';
 
   let filePath = path.join(root, pathname);
