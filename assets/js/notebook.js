@@ -245,7 +245,7 @@
       if (files.length > 0) {
         docRows.innerHTML = files.map(f => {
           const ext = f.type || (f.name.endsWith('.docx') ? 'docx' : 'pdf');
-          const docUrl = `index.html?notebook=${encodeURIComponent(nb.id)}&file=${encodeURIComponent(f.key)}`;
+          const docUrl = `/?notebook=${encodeURIComponent(nb.id)}&file=${encodeURIComponent(f.key)}`;
           return `
             <a class="nb-doc-row nb-doc-row-interactive" href="${docUrl}" title="Open ${f.name} in reader">
               <span class="nb-file-badge nb-file-badge-${ext}">${ext.toUpperCase()}</span>
@@ -270,7 +270,7 @@
 
     if (openBtn) {
       const activeParam = nb.activeFileKey ? `&file=${encodeURIComponent(nb.activeFileKey)}` : '';
-      openBtn.href = `index.html?notebook=${encodeURIComponent(nb.id)}${activeParam}`;
+      openBtn.href = `/?notebook=${encodeURIComponent(nb.id)}${activeParam}`;
     }
 
     if (addBtn) {
@@ -389,7 +389,7 @@
 
       card.addEventListener('dblclick', () => {
         const activeParam = nb.activeFileKey ? `&file=${encodeURIComponent(nb.activeFileKey)}` : '';
-        window.location.href = `index.html?notebook=${encodeURIComponent(nb.id)}${activeParam}`;
+        window.location.href = `/?notebook=${encodeURIComponent(nb.id)}${activeParam}`;
       });
 
       card.addEventListener('keydown', e => {

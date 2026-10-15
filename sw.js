@@ -1,9 +1,12 @@
-const CACHE_NAME = 'mai-reads-v29-offline';
+const CACHE_NAME = 'mai-reads-v30-offline';
 const ASSETS = [
   './',
   './index.html',
   './docs.html',
   './notebook.html',
+  './read-pdf-offline.html',
+  './open-docx-online-free.html',
+  './multi-pdf-reader.html',
   './assets/css/styles.css',
   './assets/css/docs.css',
   './assets/css/notebook.css',
@@ -64,6 +67,15 @@ self.addEventListener('fetch', event => {
         }
         if (url.pathname === '/docs' || url.pathname === '/docs/') {
           return caches.match('./docs.html');
+        }
+        if (url.pathname === '/read-pdf-offline' || url.pathname === '/read-pdf-offline/') {
+          return caches.match('./read-pdf-offline.html');
+        }
+        if (url.pathname === '/open-docx-online-free' || url.pathname === '/open-docx-online-free/') {
+          return caches.match('./open-docx-online-free.html');
+        }
+        if (url.pathname === '/multi-pdf-reader' || url.pathname === '/multi-pdf-reader/') {
+          return caches.match('./multi-pdf-reader.html');
         }
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');

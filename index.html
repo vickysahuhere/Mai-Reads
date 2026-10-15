@@ -274,7 +274,7 @@
     </div>
     <div id="history-list" class="history-list"></div>
     <div class="history-footer">
-      <a href="docs.html" class="history-docs-link">Documentation &amp; Features</a>
+      <a href="/docs" class="history-docs-link">Documentation &amp; Features</a>
       <span class="history-footer-sep" aria-hidden="true">·</span>
       <button id="history-clear" class="history-clear-btn" type="button">Clear history</button>
     </div>
@@ -286,22 +286,32 @@
     <div class="welcome-inner">
       <!-- Topbar Header Row -->
       <header class="welcome-topbar">
-        <a href="index.html" class="welcome-wordmark" aria-label="Mai-Reads Home">
+        <a href="/" class="welcome-wordmark" aria-label="Mai-Reads Home">
           <span class="wordmark-icon" aria-hidden="true">M</span>
           <span class="wordmark-text">Mai-Reads</span>
         </a>
         <div class="welcome-topbar-actions">
-          <button id="history-toggle-welcome" class="topbar-btn" type="button" aria-label="Reading history (H)" title="Reading history (H)">
-            <span>History</span>
-            <kbd class="key-hint" aria-hidden="true">H</kbd>
-            <span id="welcome-history-dot" class="nav-badge hidden"></span>
+          <button id="history-toggle-welcome" class="icon-button topbar-icon-btn" type="button" aria-label="Reading history (H)" title="Reading history (H)">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+              <path d="M12 7v5l4 2"/>
+            </svg>
+            <span id="welcome-history-dot" class="nav-badge hidden" aria-hidden="true"></span>
           </button>
-          <a id="welcome-notebooks-link" href="notebook.html" class="topbar-btn" aria-label="Study Notebooks (N)" title="Study Notebooks (N)">
-            <span>Notebooks</span>
-            <kbd class="key-hint" aria-hidden="true">N</kbd>
-            <span id="welcome-notebook-dot" class="nav-badge hidden"></span>
+          <a id="welcome-notebooks-link" href="/notebook" class="icon-button topbar-icon-btn" aria-label="Study Notebooks (N)" title="Study Notebooks (N)">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span id="welcome-notebook-dot" class="nav-badge hidden" aria-hidden="true"></span>
             <span id="welcome-notebook-count" class="sr-only">0</span>
           </a>
+          <button id="feedback-toggle-welcome" class="icon-button topbar-icon-btn" type="button" aria-label="Share Feedback &amp; Suggestions" title="Feedback &amp; Suggestions">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
           <button id="theme-toggle" class="icon-button topbar-theme-btn" type="button" aria-label="Switch theme" title="Switch theme">
             <span id="theme-icon" class="theme-icon-wrap" aria-hidden="true"></span>
           </button>
@@ -334,7 +344,7 @@
               </svg>
               <span>Choose file</span>
             </button>
-            <a href="notebook.html" class="btn-secondary">
+            <a href="/notebook" class="btn-secondary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -346,7 +356,7 @@
 
         <!-- 3-Pillar Feature Showcase Cards -->
         <div class="welcome-features-grid">
-          <a href="notebook.html" class="feature-card">
+          <a href="/notebook" class="feature-card">
             <div class="feature-icon-wrap" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -403,7 +413,6 @@
         <!-- Hidden elements preserved for reader.js backward-compatibility -->
         <div class="sr-only" aria-hidden="true">
           <button id="resume-btn" type="button"><span id="resume-title"></span><span id="resume-meta"></span></button>
-          <button id="feedback-toggle-welcome" type="button"></button>
           <span id="pwa-install-dock-sep" class="pwa-install-dock-sep"></span>
         </div>
       </section>
@@ -453,7 +462,7 @@
 
       <!-- Welcome Footer -->
       <footer class="welcome-footer">
-        <a href="docs.html" class="welcome-foot-link">Guide</a>
+        <a href="/docs" class="welcome-foot-link">Guide</a>
         <span class="welcome-foot-sep" aria-hidden="true">·</span>
         <button id="welcome-feedback-btn" class="welcome-foot-link" type="button">Feedback</button>
         <span class="welcome-foot-sep pwa-install-foot-sep" aria-hidden="true">·</span>
@@ -483,7 +492,7 @@
         </svg>
         <span>History</span>
       </button>
-      <a id="mobile-nav-notebooks" href="notebook.html" class="mobile-nav-item">
+      <a id="mobile-nav-notebooks" href="/notebook" class="mobile-nav-item">
         <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -508,43 +517,29 @@
       </div>
 
       <div class="doc-title-right">
-        <button id="header-highlighter-btn" class="reader-top-action-btn" type="button" aria-label="Highlighter Tool (H)" title="Highlighter Tool (H)">
+        <button id="header-highlighter-btn" class="reader-top-action-btn icon-only" type="button" aria-label="Highlighter Tool (H)" title="Highlighter Tool (H)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
             <path d="m2 2 7.586 7.586"/>
           </svg>
-          <span class="btn-text">Highlighter</span>
           <span class="header-hl-indicator" aria-hidden="true"></span>
         </button>
 
-        <button id="header-scratchpad-btn" class="reader-top-action-btn" type="button" aria-label="Study Scratchpad Notes (S)" title="Study Scratchpad Notes (S)">
+        <button id="header-scratchpad-btn" class="reader-top-action-btn icon-only" type="button" aria-label="Study Scratchpad Notes (S)" title="Study Scratchpad Notes (S)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
             <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
             <path d="M9 12h6"/>
             <path d="M9 16h4"/>
           </svg>
-          <span class="btn-text">Scratchpad</span>
           <span id="header-notes-dot" class="header-notes-dot hidden" aria-hidden="true"></span>
         </button>
 
-        <button id="header-download-btn" class="reader-top-action-btn hidden" type="button" aria-label="Export document as PDF" title="Export document as PDF">
+        <button id="header-download-btn" class="reader-top-action-btn icon-only hidden" type="button" aria-label="Export document as PDF" title="Export document as PDF">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          <span class="btn-text">Download PDF</span>
-        </button>
-
-        <button id="header-controls-btn" class="reader-top-action-btn icon-only" type="button" aria-label="Reading Controls" title="Reading Controls">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="6" x2="20" y2="6"/>
-            <line x1="4" y1="12" x2="20" y2="12"/>
-            <line x1="4" y1="18" x2="20" y2="18"/>
-            <circle cx="8" cy="6" r="2" fill="currentColor"/>
-            <circle cx="16" cy="12" r="2" fill="currentColor"/>
-            <circle cx="10" cy="18" r="2" fill="currentColor"/>
           </svg>
         </button>
       </div>
@@ -552,7 +547,7 @@
 
     <!-- Floating Top Document Tab Strip for Notebooks -->
     <div id="notebook-tabs-bar" class="notebook-tabs-bar hidden" role="tablist" aria-label="Notebook document tabs">
-      <a id="notebook-exit-link" href="notebook.html" class="notebook-tab-action-btn" title="Back to Notebooks library" aria-label="Back to Notebooks library">
+      <a id="notebook-exit-link" href="/notebook" class="notebook-tab-action-btn" title="Back to Notebooks library" aria-label="Back to Notebooks library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
@@ -563,37 +558,24 @@
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
-      <button id="notebook-binder-toggle-btn" class="notebook-tab-action-btn" type="button" title="Open Binder & Notes" aria-label="Open Binder & Notes">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button id="notebook-binder-toggle-btn" class="notebook-tab-action-btn icon-only" type="button" title="Open Binder & Notes" aria-label="Open Binder & Notes">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
         </svg>
-        <span class="binder-btn-text">Binder</span>
       </button>
-      <button id="nb-tab-hl-btn" class="notebook-tab-action-btn" type="button" title="Highlighter Tool (H)" aria-label="Highlighter Tool (H)">
+      <button id="nb-tab-hl-btn" class="notebook-tab-action-btn icon-only" type="button" title="Highlighter Tool (H)" aria-label="Highlighter Tool (H)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
           <path d="m2 2 7.586 7.586"/>
         </svg>
-        <span class="binder-btn-text">Highlight</span>
         <span class="header-hl-indicator" aria-hidden="true"></span>
       </button>
-      <button id="nb-tab-download-btn" class="notebook-tab-action-btn" type="button" title="Export document as PDF" aria-label="Export document as PDF">
+      <button id="nb-tab-download-btn" class="notebook-tab-action-btn icon-only" type="button" title="Export document as PDF" aria-label="Export document as PDF">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        <span class="binder-btn-text">Download</span>
-      </button>
-      <button id="nb-tab-controls-btn" class="notebook-tab-action-btn icon-only" type="button" title="Reading Controls" aria-label="Reading Controls">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="4" y1="6" x2="20" y2="6"/>
-          <line x1="4" y1="12" x2="20" y2="12"/>
-          <line x1="4" y1="18" x2="20" y2="18"/>
-          <circle cx="8" cy="6" r="2" fill="currentColor"/>
-          <circle cx="16" cy="12" r="2" fill="currentColor"/>
-          <circle cx="10" cy="18" r="2" fill="currentColor"/>
         </svg>
       </button>
     </div>
@@ -646,7 +628,7 @@
       </div>
 
       <div class="binder-footer">
-        <a href="notebook.html" class="history-docs-link">Manage All Notebooks</a>
+        <a href="/notebook" class="history-docs-link">Manage All Notebooks</a>
       </div>
     </aside>
     <div id="binder-backdrop" class="history-backdrop hidden"></div>
@@ -769,11 +751,13 @@
         </svg>
         <span>Add to Notes</span>
       </button>
-      <button id="btn-copy-selection" class="tooltip-btn" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <button id="btn-copy-selection" class="tooltip-btn" type="button" title="Copy selected text">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
           <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
         </svg>
+        <span id="btn-copy-selection-label">Copy</span>
+      </button>
     </div>
 
     <!-- Contextual Action Menu for Existing Highlights (Color Switcher, Note, Copy, Delete) -->
@@ -898,7 +882,7 @@
           <button id="zoom-fit-width" class="chip-btn" type="button">Fit width</button>
           <button id="zoom-fit-page" class="chip-btn" type="button">Fit page</button>
         </div>
-        <input id="zoom" class="range sr-only" type="range" min="60" max="200" value="100" aria-label="Document zoom" />
+        <input id="zoom" class="range sr-only" type="range" min="60" max="400" value="100" aria-label="Document zoom" />
       </div>
 
       <!-- 4. Paper brightness -->

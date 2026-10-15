@@ -2,6 +2,43 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/index",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/notebook.html",
+      "destination": "/notebook",
+      "permanent": true
+    },
+    {
+      "source": "/docs.html",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/read-pdf-offline.html",
+      "destination": "/read-pdf-offline",
+      "permanent": true
+    },
+    {
+      "source": "/open-docx-online-free.html",
+      "destination": "/open-docx-online-free",
+      "permanent": true
+    },
+    {
+      "source": "/multi-pdf-reader.html",
+      "destination": "/multi-pdf-reader",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/sw.js",

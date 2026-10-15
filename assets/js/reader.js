@@ -761,7 +761,7 @@
   $('doc-title-back')?.addEventListener('click', async e => {
     e.stopPropagation();
     if (currentNotebook) {
-      window.location.href = 'notebook.html';
+      window.location.href = '/notebook';
     } else {
       $('back-to-home')?.click();
     }
@@ -845,21 +845,29 @@
       if ($('history-panel')?.classList.contains('open')) return;
       if ($('search-box') && !$('search-box').classList.contains('hidden')) return;
       if ($('highlight-action-menu') && !$('highlight-action-menu').classList.contains('hidden')) return;
-      if ($('shortcuts-modal-backdrop') && !$('shortcuts-modal-backdrop').classList.contains('hidden')) return;
-      if ($('feedback-modal-backdrop') && !$('feedback-modal-backdrop').classList.contains('hidden')) return;
+      if ($('shortcuts-modal-backdrop')?.classList.contains('open')) return;
+      if ($('feedback-modal-backdrop')?.classList.contains('open')) return;
+      if ($('pwa-install-modal-backdrop')?.classList.contains('open')) return;
       readerDock.classList.add('dock-hidden');
     }, 2200);
   }
 
-  window.addEventListener('mousemove', wakeDock, { passive: true });
-  window.addEventListener('touchstart', wakeDock, { passive: true });
-  window.addEventListener('touchmove', wakeDock, { passive: true });
-  window.addEventListener('keydown', wakeDock, { passive: true });
+  let lastDockWakeTime = 0;
+  function throttledWakeDock() {
+    const now = performance.now();
+    if (now - lastDockWakeTime < 160) return;
+    lastDockWakeTime = now;
+    wakeDock();
+  }
+
+  window.addEventListener('mousemove', throttledWakeDock, { passive: true });
+  window.addEventListener('touchstart', throttledWakeDock, { passive: true });
+  window.addEventListener('touchmove', throttledWakeDock, { passive: true });
+  window.addEventListener('keydown', throttledWakeDock, { passive: true });
 
   surface.addEventListener('scroll', () => {
-    if (readerDock && !isInteractingWithDock) readerDock.classList.add('dock-hidden');
     clearTimeout(dockIdleTimer);
-    dockIdleTimer = setTimeout(wakeDock, 120);
+    dockIdleTimer = setTimeout(wakeDock, 1400);
   }, { passive: true });
 
   readerDock?.addEventListener('mouseenter', () => clearTimeout(dockIdleTimer));
@@ -875,6 +883,77 @@
 
   // Start with dock awake and begin idle auto-hide countdown
   wakeDock();
+
+  // ── Top Header & Notebook Tabs Proximity Controller ──────────────────────
+  const docTitleEl = $('doc-title');
+  const nbTabsBarEl = $('notebook-tabs-bar');
+  let topBarHideTimer = null;
+  let isTopBarHovered = false;
+
+  function showTopBar() {
+    clearTimeout(topBarHideTimer);
+    docTitleEl?.classList.add('top-bar-visible');
+    nbTabsBarEl?.classList.add('top-bar-visible');
+  }
+
+  function scheduleHideTopBar(delay = 1200) {
+    clearTimeout(topBarHideTimer);
+    topBarHideTimer = setTimeout(() => {
+      if (reader.classList.contains('hidden')) return;
+      if (isTopBarHovered) return;
+      if (docTitleEl?.matches(':hover') || nbTabsBarEl?.matches(':hover')) return;
+      if (docTitleEl?.contains(document.activeElement) || nbTabsBarEl?.contains(document.activeElement)) return;
+      if ($('search-box') && !$('search-box').classList.contains('hidden')) return;
+      if ($('shortcuts-modal-backdrop')?.classList.contains('open')) return;
+      if ($('feedback-modal-backdrop')?.classList.contains('open')) return;
+      if ($('pwa-install-modal-backdrop')?.classList.contains('open')) return;
+      
+      docTitleEl?.classList.remove('top-bar-visible');
+      nbTabsBarEl?.classList.remove('top-bar-visible');
+    }, delay);
+  }
+
+  // Cursor proximity listener: reveal when cursor is near top (clientY <= 52) or hovering the bar
+  let lastTopBarCheck = 0;
+  window.addEventListener('mousemove', e => {
+    if (reader.classList.contains('hidden')) return;
+    const now = performance.now();
+    if (now - lastTopBarCheck < 80) return;
+    lastTopBarCheck = now;
+    if (e.clientY <= 52 || (e.target && e.target.closest && e.target.closest('#doc-title, #notebook-tabs-bar'))) {
+      showTopBar();
+    } else {
+      scheduleHideTopBar(1200);
+    }
+  }, { passive: true });
+
+  docTitleEl?.addEventListener('mouseenter', () => {
+    isTopBarHovered = true;
+    showTopBar();
+  });
+  docTitleEl?.addEventListener('mouseleave', () => {
+    isTopBarHovered = false;
+    scheduleHideTopBar(1000);
+  });
+
+  nbTabsBarEl?.addEventListener('mouseenter', () => {
+    isTopBarHovered = true;
+    showTopBar();
+  });
+  nbTabsBarEl?.addEventListener('mouseleave', () => {
+    isTopBarHovered = false;
+    scheduleHideTopBar(1000);
+  });
+
+  // Touch support: Tap near top reveals top bar
+  window.addEventListener('touchstart', e => {
+    if (reader.classList.contains('hidden')) return;
+    const touch = e.touches[0];
+    if (touch && touch.clientY <= 64) {
+      showTopBar();
+      scheduleHideTopBar(3500);
+    }
+  }, { passive: true });
 
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
@@ -983,7 +1062,7 @@
 
   function applyBatchPageDimensions(zoomVal) {
     refreshPageBaseDimensions();
-    const clamped = Math.max(60, Math.min(200, Number(zoomVal) || 100));
+    const clamped = Math.max(60, Math.min(400, Number(zoomVal) || 100));
     currentZoomVal = clamped;
     zoomInput.value = String(clamped);
     const zoomValEl = $('zoom-value');
@@ -1003,7 +1082,7 @@
 
   function setLiveZoom(targetVal, anchor = null) {
     const min = Number(zoomInput.min || 60);
-    const max = Number(zoomInput.max || 200);
+    const max = Number(zoomInput.max || 400);
     const clamped = Math.max(min, Math.min(max, Math.round(targetVal)));
 
     if (clamped === currentZoomVal && !anchor) return;
@@ -1015,6 +1094,38 @@
     if (!rafZoomId) {
       rafZoomId = requestAnimationFrame(applyLiveZoomFrame);
     }
+  }
+
+  let zoomTweenRaf = null;
+
+  function animateZoomTo(targetVal, anchor = null, duration = 140) {
+    if (zoomTweenRaf) {
+      cancelAnimationFrame(zoomTweenRaf);
+      zoomTweenRaf = null;
+    }
+    const min = Number(zoomInput.min || 60);
+    const max = Number(zoomInput.max || 400);
+    const targetClamped = Math.max(min, Math.min(max, Math.round(targetVal)));
+    const startVal = currentZoomVal;
+    if (Math.abs(targetClamped - startVal) < 1) return;
+
+    const startTime = performance.now();
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // easeOutCubic: 1 - Math.pow(1 - progress, 3)
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const val = startVal + (targetClamped - startVal) * ease;
+      setLiveZoom(val, anchor);
+      if (progress < 1) {
+        zoomTweenRaf = requestAnimationFrame(step);
+      } else {
+        zoomTweenRaf = null;
+        setLiveZoom(targetClamped, anchor);
+        scheduleZoomRedraw(40);
+      }
+    }
+    zoomTweenRaf = requestAnimationFrame(step);
   }
 
   function applyLiveZoomFrame() {
@@ -1043,19 +1154,22 @@
       }
     }
 
-    if (pdf && pageNodes.length && prevZoom !== newZoom) {
+    if (pageNodes.length && prevZoom !== newZoom) {
       // Fluid geometric anchor preservation without layout thrashing
-      const anchorY = anchor?.y !== undefined ? anchor.y : (surface.clientHeight * 0.35);
-      const contentPointY = surface.scrollTop + anchorY;
-      const ratio = newZoom / Math.max(1, prevZoom);
-      const newContentPointY = contentPointY * ratio;
-      surface.scrollTop = Math.max(0, Math.round(newContentPointY - anchorY));
+      const focalY = (anchor && anchor.y !== undefined) ? anchor.y : (surface.clientHeight * 0.38);
+      const focalX = (anchor && anchor.x !== undefined) ? anchor.x : (surface.clientWidth / 2);
+      const paperTop = paper.offsetTop || 0;
+      const paperLeft = paper.offsetLeft || 0;
+      const contentPointY = (surface.scrollTop + focalY) - paperTop;
+      const contentPointX = (surface.scrollLeft + focalX) - paperLeft;
+      const scaleRatio = newZoom / Math.max(1, prevZoom);
 
-      if (anchor?.x !== undefined && surface.scrollWidth > surface.clientWidth) {
-        const anchorX = anchor.x;
-        const contentPointX = surface.scrollLeft + anchorX;
-        const newContentPointX = contentPointX * ratio;
-        surface.scrollLeft = Math.max(0, Math.round(newContentPointX - anchorX));
+      const targetScrollTop = paperTop + (contentPointY * scaleRatio) - focalY;
+      surface.scrollTop = Math.max(0, Math.round(targetScrollTop));
+
+      if (surface.scrollWidth > surface.clientWidth) {
+        const targetScrollLeft = paperLeft + (contentPointX * scaleRatio) - focalX;
+        surface.scrollLeft = Math.max(0, Math.round(targetScrollLeft));
       }
     }
 
@@ -1064,7 +1178,7 @@
 
   function updateZoomButtonsState(zoom) {
     const min = Number(zoomInput.min || 60);
-    const max = Number(zoomInput.max || 200);
+    const max = Number(zoomInput.max || 400);
     const zoomOut = $('zoom-out-btn');
     const zoomIn = $('zoom-in-btn');
     if (zoomOut) {
@@ -1080,6 +1194,10 @@
   }
 
   zoomInput.addEventListener('input', e => {
+    if (zoomTweenRaf) {
+      cancelAnimationFrame(zoomTweenRaf);
+      zoomTweenRaf = null;
+    }
     const val = Number(e.target.value);
     setLiveZoom(val, null);
   });
@@ -1089,18 +1207,17 @@
   });
 
   $('zoom-in-btn')?.addEventListener('click', () => {
-    setLiveZoom(currentZoomVal + 10);
-    scheduleZoomRedraw(40);
+    const step = currentZoomVal >= 200 ? 25 : (currentZoomVal >= 100 ? 15 : 10);
+    animateZoomTo(currentZoomVal + step);
   });
 
   $('zoom-out-btn')?.addEventListener('click', () => {
-    setLiveZoom(currentZoomVal - 10);
-    scheduleZoomRedraw(40);
+    const step = currentZoomVal > 200 ? 25 : (currentZoomVal > 100 ? 15 : 10);
+    animateZoomTo(currentZoomVal - step);
   });
 
   $('zoom-value')?.addEventListener('click', () => {
-    setLiveZoom(100);
-    scheduleZoomRedraw(40);
+    animateZoomTo(100);
     showToast('Zoom reset to 100%');
   });
 
@@ -1109,14 +1226,13 @@
       const isMobile = window.innerWidth <= 600;
       const hPadding = isMobile ? 24 : 64;
       const availW = surface.clientWidth - hPadding;
-      const targetZoom = Math.max(60, Math.min(200, Math.round((availW / 820) * 100)));
-      setLiveZoom(targetZoom);
-      scheduleZoomRedraw(40);
+      const targetZoom = Math.max(60, Math.min(400, Math.round((availW / 820) * 100)));
+      animateZoomTo(targetZoom);
       showToast(`Fit width (${targetZoom}%)`);
       return;
     }
     if (!pdf || !pageNodes.length) {
-      setLiveZoom(100);
+      animateZoomTo(100);
       return;
     }
     const currIdx = Math.max(0, Math.min(pageNodes.length - 1, currentPage - 1));
@@ -1128,22 +1244,20 @@
     const baseScale = getPdfPageScale(base, 100);
     const baseW = base.width * baseScale;
     if (baseW > 0) {
-      const targetZoom = Math.max(60, Math.min(200, Math.round((availW / baseW) * 100)));
-      setLiveZoom(targetZoom);
-      scheduleZoomRedraw(40);
+      const targetZoom = Math.max(60, Math.min(400, Math.round((availW / baseW) * 100)));
+      animateZoomTo(targetZoom);
       showToast(`Fit width (${targetZoom}%)`);
     }
   }
 
   function zoomFitPage() {
     if (docxMode) {
-      setLiveZoom(100);
-      scheduleZoomRedraw(40);
+      animateZoomTo(100);
       showToast('Reset zoom (100%)');
       return;
     }
     if (!pdf || !pageNodes.length) {
-      setLiveZoom(100);
+      animateZoomTo(100);
       return;
     }
     const currIdx = Math.max(0, Math.min(pageNodes.length - 1, currentPage - 1));
@@ -1156,8 +1270,7 @@
     const baseH = base.height * baseScale;
     if (baseH > 0) {
       const targetZoom = Math.max(60, Math.min(200, Math.round((availH / baseH) * 100)));
-      setLiveZoom(targetZoom);
-      scheduleZoomRedraw(40);
+      animateZoomTo(targetZoom);
       showToast(`Fit page (${targetZoom}%)`);
     }
   }
@@ -1189,11 +1302,24 @@
     }, 600);
   }
 
-  // Trackpad pinch (Ctrl + Wheel) with smooth exponential scaling & anchor lock
+  // Trackpad pinch (Ctrl + Wheel) & physical wheel zoom with smooth scaling & anchor lock
   surface.addEventListener('wheel', e => {
     if (!e.ctrlKey || reader.classList.contains('hidden')) return;
     e.preventDefault();
-    const factor = Math.exp(-e.deltaY * 0.003);
+    if (zoomTweenRaf) {
+      cancelAnimationFrame(zoomTweenRaf);
+      zoomTweenRaf = null;
+    }
+
+    // Distinguish between physical mouse wheel (discrete large delta notches)
+    // and continuous trackpad pinch (small continuous deltas)
+    let factor;
+    if (Math.abs(e.deltaY) >= 40) {
+      factor = e.deltaY < 0 ? 1.08 : 0.925;
+    } else {
+      factor = Math.exp(-e.deltaY * 0.0035);
+    }
+
     const current = pendingZoom !== null ? pendingZoom : currentZoomVal;
     const rect = surface.getBoundingClientRect();
     const anchor = {
@@ -1208,6 +1334,10 @@
   // Two-finger touch pinch
   surface.addEventListener('pointerdown', e => {
     if (e.pointerType !== 'touch') return;
+    if (zoomTweenRaf) {
+      cancelAnimationFrame(zoomTweenRaf);
+      zoomTweenRaf = null;
+    }
     touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (touchPointers.size === 2) {
       const [a, b] = [...touchPointers.values()];
@@ -1221,6 +1351,10 @@
     touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (touchPointers.size === 2 && touchStartDist > 0) {
       e.preventDefault();
+      if (zoomTweenRaf) {
+        cancelAnimationFrame(zoomTweenRaf);
+        zoomTweenRaf = null;
+      }
       const [a, b] = [...touchPointers.values()];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       if (dist > 5) {
@@ -1346,7 +1480,7 @@
     }
 
     if (!inInput && (e.key === 'n' || e.key === 'N') && !welcome.classList.contains('hidden')) {
-      window.location.href = 'notebook.html';
+      window.location.href = '/notebook';
     }
 
     if (!inInput && !reader.classList.contains('hidden')) {
@@ -1386,6 +1520,8 @@
     welcome.classList.add('hidden');
     reader.classList.remove('hidden');
     wakeDock();
+    showTopBar();
+    scheduleHideTopBar(2500);
     $('loading').classList.remove('hidden');
     $('error').classList.add('hidden');
 
@@ -1600,9 +1736,8 @@
     const scale = getPdfPageScale(base, zoomVal);
     const viewport = page.getViewport({ scale });
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
-
-    canvas.width = Math.floor(viewport.width * ratio);
-    canvas.height = Math.floor(viewport.height * ratio);
+    const targetW = Math.floor(viewport.width * ratio);
+    const targetH = Math.floor(viewport.height * ratio);
 
     const baseScale = getPdfPageScale(base, 100);
     node.style.setProperty('--rendered-scale', String(scale / Math.max(0.001, baseScale)));
@@ -1616,8 +1751,16 @@
       node._renderTask = null;
     }
 
+    // Double-buffered rendering via offscreen canvas:
+    // Render into an offscreen buffer first so the active canvas
+    // is never wiped or flashed white while PDF.js rasterizes.
+    const offscreen = document.createElement('canvas');
+    offscreen.width = targetW;
+    offscreen.height = targetH;
+    const offCtx = offscreen.getContext('2d');
+
     const renderTask = page.render({
-      canvasContext: canvas.getContext('2d'),
+      canvasContext: offCtx,
       viewport,
       transform: ratio === 1 ? null : [ratio, 0, 0, ratio, 0, 0]
     });
@@ -1625,6 +1768,13 @@
 
     try {
       await renderTask.promise;
+      // Atomic buffer swap: update canvas dimensions and draw rendered frame instantaneously
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(offscreen, 0, 0);
     } catch (err) {
       if (err?.name === 'RenderingCancelledException') return;
       const n = node.dataset.page || '?';
@@ -2263,16 +2413,14 @@
     });
   });
 
-  $('hl-menu-copy-btn')?.addEventListener('click', e => {
+  $('hl-menu-copy-btn')?.addEventListener('click', async e => {
     e.stopPropagation();
     if (!activeHighlightForMenu) return;
     const text = activeHighlightForMenu.text || '';
     if (text) {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast('Text copied to clipboard!');
-      }).catch(() => {
-        showToast('Text copied');
-      });
+      const ok = await copyTextToClipboard(text);
+      if (ok) showToast('Text copied to clipboard!');
+      else showToast('Could not copy text');
     } else {
       showToast('No text available to copy');
     }
@@ -2383,6 +2531,86 @@
 
   let currentSelectionRange = null;
   let currentSelectedText = '';
+  let cachedSelectionData = null;
+
+  async function copyTextToClipboard(text) {
+    if (!text) return false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {}
+    }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.top = '-9999px';
+      ta.style.left = '-9999px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function resolvePageForNode(node) {
+    if (!node) return null;
+    const el = node.nodeType === 1 ? node : node.parentElement;
+    return el ? el.closest('.document-page') : null;
+  }
+
+  function extractHighlightRectsFromRange(range, text) {
+    if (!range) return [];
+    const clientRects = Array.from(range.getClientRects()).filter(r => r.width >= 1 && r.height >= 1);
+    if (!clientRects.length) return [];
+
+    const defaultPage = resolvePageForNode(range.startContainer) ||
+                        resolvePageForNode(range.commonAncestorContainer) ||
+                        resolvePageForNode(range.endContainer) ||
+                        document.querySelector('.document-page');
+    if (!defaultPage) return [];
+
+    const pageGroups = new Map();
+
+    clientRects.forEach(r => {
+      let matchedPage = null;
+      for (const node of pageNodes) {
+        const pr = node.getBoundingClientRect();
+        if (r.bottom >= pr.top && r.top <= pr.bottom) {
+          matchedPage = node;
+          break;
+        }
+      }
+      if (!matchedPage) matchedPage = defaultPage;
+
+      if (!pageGroups.has(matchedPage)) pageGroups.set(matchedPage, []);
+      pageGroups.get(matchedPage).push(r);
+    });
+
+    const results = [];
+    pageGroups.forEach((pRects, pageNode) => {
+      const pageRect = pageNode.getBoundingClientRect();
+      const pageNum = Number(pageNode.dataset.page) || 1;
+      const highlightRects = pRects.map(r => ({
+        x: ((r.left - pageRect.left) / pageRect.width) * 100,
+        y: ((r.top - pageRect.top) / pageRect.height) * 100,
+        w: (r.width / pageRect.width) * 100,
+        h: (r.height / pageRect.height) * 100
+      })).filter(r => r.w > 0.04 && r.h > 0.04);
+
+      if (highlightRects.length) {
+        results.push({ pageNum, pageNode, highlightRects, text });
+      }
+    });
+
+    return results;
+  }
 
   function hideSelectionTooltip() {
     $('selection-tooltip')?.classList.add('hidden');
@@ -2396,7 +2624,7 @@
     }
 
     const range = selection.getRangeAt(0);
-    let selectedText = selection.toString().trim() || (range ? range.toString().trim() : '');
+    const selectedText = selection.toString().trim() || (range ? range.toString().trim() : '');
     if (!selectedText) {
       hideSelectionTooltip();
       return;
@@ -2415,8 +2643,14 @@
       return;
     }
 
+    const groups = extractHighlightRectsFromRange(range, selectedText);
     currentSelectionRange = range.cloneRange();
     currentSelectedText = selectedText;
+    cachedSelectionData = {
+      range: range.cloneRange(),
+      text: selectedText,
+      groups
+    };
 
     // If highlighter mode is actively on and set to 'text', highlight immediately on selection!
     if (isHighlighting && highlighterMode === 'text') {
@@ -2427,7 +2661,7 @@
     const tooltip = $('selection-tooltip');
     if (!tooltip) return;
 
-    const isNearTop = rect.top < 52;
+    const isNearTop = rect.top < 54;
     const left = Math.max(80, Math.min(window.innerWidth - 80, rect.left + rect.width / 2));
     const top = isNearTop ? rect.bottom + 8 : rect.top - 8;
     tooltip.style.left = `${left}px`;
@@ -2437,75 +2671,44 @@
   }
 
   function applyHighlightToSelection() {
-    const selection = window.getSelection();
-    let range = null;
-    let selectedText = '';
+    let text = '';
+    let groups = [];
 
+    const selection = window.getSelection();
     if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
-      range = selection.getRangeAt(0);
-      selectedText = selection.toString().trim() || (range ? range.toString().trim() : '');
-    } else if (currentSelectionRange && currentSelectedText) {
-      range = currentSelectionRange;
-      selectedText = currentSelectedText;
+      const r = selection.getRangeAt(0);
+      text = selection.toString().trim() || r.toString().trim();
+      groups = extractHighlightRectsFromRange(r, text);
+    }
+    if (!groups.length && cachedSelectionData && cachedSelectionData.groups?.length) {
+      text = cachedSelectionData.text;
+      groups = cachedSelectionData.groups;
     }
 
-    if (!selectedText || !range) return;
-
-    const rects = Array.from(range.getClientRects());
-    if (!rects.length) return;
-
-    // Multi-page grouping: map each client rectangle to its respective page container
-    const pageGroups = new Map();
-
-    rects.forEach(r => {
-      if (r.width < 1 || r.height < 1) return;
-      const midX = r.left + r.width / 2;
-      const midY = r.top + r.height / 2;
-      const els = document.elementsFromPoint(midX, midY) || [];
-      const pageNode = els.find(el => el.classList.contains('document-page'));
-      if (pageNode) {
-        if (!pageGroups.has(pageNode)) pageGroups.set(pageNode, []);
-        pageGroups.get(pageNode).push(r);
-      }
-    });
-
-    // Fallback if elementsFromPoint fails (e.g. scroll edge)
-    if (!pageGroups.size) {
-      let container = range.commonAncestorContainer;
-      if (container.nodeType === 3) container = container.parentElement;
-      const fallbackNode = container.closest('.document-page');
-      if (fallbackNode) pageGroups.set(fallbackNode, rects);
-      else return;
+    if (!groups.length) {
+      showToast('Could not highlight selection');
+      return;
     }
 
     let addedCount = 0;
-    pageGroups.forEach((pRects, pageNode) => {
-      const pageRect = pageNode.getBoundingClientRect();
-      const pageNum = Number(pageNode.dataset.page) || 1;
-
-      const highlightRects = pRects.map(r => ({
-        x: ((r.left - pageRect.left) / pageRect.width) * 100,
-        y: ((r.top - pageRect.top) / pageRect.height) * 100,
-        w: (r.width / pageRect.width) * 100,
-        h: (r.height / pageRect.height) * 100
-      })).filter(r => r.w > 0.04 && r.h > 0.04);
-
-      if (highlightRects.length) {
-        const highlightItem = {
-          id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-          page: pageNum,
-          color: currentHighlightColor,
-          text: selectedText,
-          rects: highlightRects
-        };
-        documentHighlights.push(highlightItem);
-        renderPageHighlights(pageNum, pageNode);
-        addedCount++;
-      }
+    groups.forEach(({ pageNum, pageNode, highlightRects, text: hlText }) => {
+      if (!highlightRects.length) return;
+      const highlightItem = {
+        id: 'hl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        page: pageNum,
+        color: currentHighlightColor,
+        text: hlText || text,
+        rects: highlightRects
+      };
+      documentHighlights.push(highlightItem);
+      renderPageHighlights(pageNum, pageNode);
+      addedCount++;
     });
 
     if (addedCount > 0) {
       saveHighlights();
+      updateHighlightUi();
+      cachedSelectionData = null;
       currentSelectionRange = null;
       currentSelectedText = '';
       window.getSelection()?.removeAllRanges();
@@ -2515,7 +2718,7 @@
   }
 
   // Selection events
-  document.addEventListener('mouseup', () => setTimeout(handleTextSelection, 30));
+  document.addEventListener('mouseup', () => setTimeout(handleTextSelection, 40));
   document.addEventListener('touchend', () => setTimeout(handleTextSelection, 120));
   document.addEventListener('mousedown', e => {
     if (!e.target.closest('#selection-tooltip')) {
@@ -2533,22 +2736,68 @@
   window.addEventListener('resize', hideSelectionTooltip, { passive: true });
   $('btn-highlight-selection')?.addEventListener('click', applyHighlightToSelection);
 
-  $('btn-copy-selection')?.addEventListener('click', () => {
+  $('btn-copy-selection')?.addEventListener('click', async () => {
     const selection = window.getSelection();
     let text = (selection && !selection.isCollapsed) ? selection.toString().trim() : '';
+    if (!text && cachedSelectionData) text = cachedSelectionData.text;
     if (!text) text = currentSelectedText;
-    if (text) {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast('Copied to clipboard');
-        currentSelectionRange = null;
-        currentSelectedText = '';
+
+    if (!text) {
+      showToast('No text selected to copy');
+      return;
+    }
+
+    const ok = await copyTextToClipboard(text);
+    const label = $('btn-copy-selection-label');
+    if (ok) {
+      if (label) label.textContent = 'Copied!';
+      showToast('Copied to clipboard');
+      setTimeout(() => {
+        if (label) label.textContent = 'Copy';
         hideSelectionTooltip();
-      }).catch(() => {
-        showToast('Text copied');
-        currentSelectionRange = null;
-        currentSelectedText = '';
-        hideSelectionTooltip();
-      });
+      }, 700);
+    } else {
+      showToast('Could not copy to clipboard');
+    }
+  });
+
+  // Native keyboard copy support for transparent PDF text spans
+  document.addEventListener('copy', e => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    const text = selection.toString();
+    if (text && e.clipboardData) {
+      e.clipboardData.setData('text/plain', text);
+    }
+  });
+
+  // Click on existing highlight to open the action menu (without blocking text selection)
+  surface.addEventListener('click', e => {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.toString().trim()) return;
+
+    const pageNode = e.target.closest('.document-page');
+    if (!pageNode) return;
+    const pageNum = Number(pageNode.dataset.page) || 1;
+    const pageRect = pageNode.getBoundingClientRect();
+    const px = ((e.clientX - pageRect.left) / pageRect.width) * 100;
+    const py = ((e.clientY - pageRect.top) / pageRect.height) * 100;
+
+    const hitHighlight = documentHighlights.find(h => {
+      if (h.page !== pageNum) return false;
+      if (h.rects && h.rects.length) {
+        return h.rects.some(r => px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h);
+      }
+      if (h.x !== undefined && h.w !== undefined) {
+        return px >= h.x && px <= h.x + h.w && py >= h.y && py <= h.y + h.h;
+      }
+      return false;
+    });
+
+    if (hitHighlight) {
+      const wrap = pageNode.querySelector(`.text-highlight-wrap[data-id="${hitHighlight.id}"]`);
+      const targetEl = wrap?.firstElementChild || pageNode;
+      showHighlightActionMenu(hitHighlight, targetEl);
     }
   });
 
@@ -2606,6 +2855,29 @@
   let activeHighlightBox = null;
   let activePageNode = null;
   let activePageNum = null;
+  let rafHighlightBoxId = null;
+  let pendingHighlightPos = null;
+
+  function updateHighlightBoxFrame() {
+    rafHighlightBoxId = null;
+    if (!highlightStart || !activeHighlightBox || !pendingHighlightPos) return;
+
+    const { clientX, clientY } = pendingHighlightPos;
+    const { rectLeft, rectTop, rectW, rectH, x: startX, y: startY } = highlightStart;
+
+    const currentX = Math.max(0, Math.min(clientX - rectLeft, rectW));
+    const currentY = Math.max(0, Math.min(clientY - rectTop, rectH));
+
+    const minX = Math.min(startX, currentX);
+    const minY = Math.min(startY, currentY);
+    const width = Math.abs(currentX - startX);
+    const height = Math.abs(currentY - startY);
+
+    activeHighlightBox.style.left = `${(minX / rectW) * 100}%`;
+    activeHighlightBox.style.top = `${(minY / rectH) * 100}%`;
+    activeHighlightBox.style.width = `${(width / rectW) * 100}%`;
+    activeHighlightBox.style.height = `${(height / rectH) * 100}%`;
+  }
 
   surface.addEventListener('pointerdown', e => {
     if (!isHighlighting || !pdf) return;
@@ -2631,9 +2903,13 @@
       clientY: e.clientY,
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
+      rectLeft: rect.left,
+      rectTop: rect.top,
       rectW: rect.width,
       rectH: rect.height
     };
+
+    try { targetNode.setPointerCapture(e.pointerId); } catch {}
 
     activeHighlightBox = document.createElement('div');
     activeHighlightBox.className = `highlight-box highlight-drawing hl-${currentHighlightColor}`;
@@ -2648,23 +2924,25 @@
     if (!highlightStart || !activeHighlightBox || !activePageNode) return;
     e.preventDefault();
 
-    const rect = activePageNode.getBoundingClientRect();
-    const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-
-    const minX = Math.min(highlightStart.x, currentX);
-    const minY = Math.min(highlightStart.y, currentY);
-    const width = Math.abs(currentX - highlightStart.x);
-    const height = Math.abs(currentY - highlightStart.y);
-
-    activeHighlightBox.style.left = `${(minX / rect.width) * 100}%`;
-    activeHighlightBox.style.top = `${(minY / rect.height) * 100}%`;
-    activeHighlightBox.style.width = `${(width / rect.width) * 100}%`;
-    activeHighlightBox.style.height = `${(height / rect.height) * 100}%`;
+    pendingHighlightPos = { clientX: e.clientX, clientY: e.clientY };
+    if (!rafHighlightBoxId) {
+      rafHighlightBoxId = requestAnimationFrame(updateHighlightBoxFrame);
+    }
   }, { passive: false });
 
   window.addEventListener('pointerup', e => {
     if (!highlightStart || !activeHighlightBox || !activePageNode) return;
+
+    if (rafHighlightBoxId) {
+      cancelAnimationFrame(rafHighlightBoxId);
+      rafHighlightBoxId = null;
+    }
+    if (pendingHighlightPos) {
+      updateHighlightBoxFrame();
+      pendingHighlightPos = null;
+    }
+
+    try { activePageNode.releasePointerCapture(e.pointerId); } catch {}
 
     const pixelWidth = Math.abs(e.clientX - highlightStart.clientX);
     const pixelHeight = Math.abs(e.clientY - highlightStart.clientY);
@@ -2890,14 +3168,12 @@
   // Synchronized Header & Dock Buttons
   $('header-scratchpad-btn')?.addEventListener('click', () => toggleScratchpad());
   $('dock-scratchpad-toggle')?.addEventListener('click', () => toggleScratchpad());
-  $('header-controls-btn')?.addEventListener('click', toggleControls);
 
   // Synchronized Notebook Tab Bar Action Buttons
   $('nb-tab-hl-btn')?.addEventListener('click', () => {
     setHighlighterMode(!isHighlighting);
   });
   $('nb-tab-download-btn')?.addEventListener('click', exportCurrentDocumentWithHighlights);
-  $('nb-tab-controls-btn')?.addEventListener('click', () => toggleControls());
 
   // Horizontal wheel scroll for notebook document tabs
   $('notebook-tab-items')?.addEventListener('wheel', e => {
@@ -2933,21 +3209,25 @@
     const setExporting = () => {
       [downloadPdfBtn, headerDownloadBtn, ribbonDownloadBtn].forEach(b => {
         if (b) {
-          b.dataset.prevText = b.textContent;
           b.style.opacity = '0.6';
           b.setAttribute('disabled', 'true');
         }
       });
-      if (downloadPdfBtn) downloadPdfBtn.textContent = 'Exporting…';
+      if (downloadPdfBtn) {
+        downloadPdfBtn.dataset.prevText = downloadPdfBtn.textContent;
+        downloadPdfBtn.textContent = 'Exporting…';
+      }
     };
     const resetExporting = () => {
       [downloadPdfBtn, headerDownloadBtn, ribbonDownloadBtn].forEach(b => {
         if (b) {
-          if (b.dataset.prevText) b.textContent = b.dataset.prevText;
           b.style.opacity = '';
           b.removeAttribute('disabled');
         }
       });
+      if (downloadPdfBtn && downloadPdfBtn.dataset.prevText) {
+        downloadPdfBtn.textContent = downloadPdfBtn.dataset.prevText;
+      }
     };
 
     try {
@@ -3093,7 +3373,11 @@
 
     // Show top tabs bar in reader
     const tabsBar = $('notebook-tabs-bar');
-    if (tabsBar) tabsBar.classList.remove('hidden');
+    if (tabsBar) {
+      tabsBar.classList.remove('hidden');
+      showTopBar();
+      scheduleHideTopBar(2500);
+    }
 
     // Populate binder panel details
     const titleEl = $('binder-notebook-title');
