@@ -115,8 +115,17 @@ export default async function handler(req, res) {
   const allowedCategories = ['Feature Request', 'Improvement', 'Issue / Bug', 'Bug Report', 'General'];
   const safeCategory = allowedCategories.includes(category) ? category : 'General';
 
-  // Recipient email is securely held server-side, never exposed to client browsers or web scrapers
-  const recipient = process.env.FEEDBACK_RECIPIENT_EMAIL || 'your-email@example.com';
+  // Recipient email is securely read from environment variable - never hardcoded in source
+  const recipient = process.env.FEEDBACK_RECIPIENT_EMAIL;
+  if (!recipient) {
+    console.error('FEEDBACK_RECIPIENT_EMAIL is not configured in environment variables.');
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ 
+      success: false, 
+      message: 'Feedback service is not currently configured. Please try again later.' 
+    }));
+    return;
+  }
 
   try {
     const fsRes = await fetch(`https://formsubmit.co/ajax/${recipient}`, {

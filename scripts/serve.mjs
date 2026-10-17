@@ -6,6 +6,15 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 
+// Automatically load local .env file in development if present
+if (typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(path.join(root, '.env'));
+  } catch {
+    // .env is optional
+  }
+}
+
 const mimeTypes = {
   '.html': 'text/html',
   '.js': 'text/javascript',

@@ -1,47 +1,86 @@
-# Environment variables
-.env
-.env.local
-.env.*.local
+# ==============================================================================
+# Git Ignore Configuration for Mai-Reads
+# ==============================================================================
 
-# Dependencies
+# 1. Environment Variables & Secrets (CRITICAL: prevents exposing emails, keys & tokens)
+.env
+.env.*
+!.env.example
+*.env
+*.env.local
+
+# 2. Secret Keys, Certificates & Credentials
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.pkcs12
+id_rsa*
+id_ed25519*
+credentials.json
+client_secret*.json
+service-account*.json
+google-services.json
+firebase-admin*.json
+*secret*.json
+*token*.json
+
+# 3. Personal Data, Contacts & Email lists
+emails.txt
+contacts.*
+*.csv
+*.tsv
+
+# 4. Vercel & Deployment CLI State
+.vercel/
+
+# 5. Dependencies
 node_modules/
+.pnp
+.pnp.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# IDE and Editor
+# 6. IDEs & Editors
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
-# Build outputs
-dist/
-build/
-.next/
-out/
-
-# Logs
-*.log
-logs/
-
-# OS specific
+# 7. OS Specific Files
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+Thumbs.db
+desktop.ini
 
-# Testing
-coverage/
-.nyc_output/
-
-# Misc
+# 8. Build Outputs & Caches
+dist/
+build/
+.next/
+out/
 .cache/
-*.bak
+.parcel-cache/
+
+# 9. Logs
+*.log
+logs/
+
+# 10. Temporary & Backup Files
 *.tmp
+*.temp
+*.bak
+*.orig
